@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, Lock, Smartphone, Banknote } from 'lucide-react';
+import { ArrowLeft, CreditCard, Lock, Smartphone, Banknote, FlaskConical } from 'lucide-react';
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -77,16 +77,16 @@ const Checkout = () => {
   const totalAmount = product.price + product.deliveryCharge;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/" className="inline-flex items-center text-white hover:text-purple-300 mb-8 transition-colors">
+        <Link to="/" className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Checkout Form */}
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Lock className="w-5 h-5 mr-2" />
@@ -112,7 +112,7 @@ const Checkout = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -125,13 +125,13 @@ const Checkout = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                   </div>
                 </div>
 
-                <Separator className="bg-white/20" />
+                <Separator className="bg-teal-500/30" />
 
                 {/* Delivery Information */}
                 <div className="space-y-4">
@@ -147,7 +147,7 @@ const Checkout = () => {
                         value={formData.firstName}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -160,7 +160,7 @@ const Checkout = () => {
                         value={formData.lastName}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                   </div>
@@ -175,7 +175,7 @@ const Checkout = () => {
                       value={formData.address}
                       onChange={handleInputChange}
                       required
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                      className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                     />
                   </div>
 
@@ -190,7 +190,7 @@ const Checkout = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                     <div className="space-y-2">
@@ -203,7 +203,7 @@ const Checkout = () => {
                         value={formData.area}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                   </div>
@@ -217,35 +217,35 @@ const Checkout = () => {
                       placeholder="1205"
                       value={formData.zipCode}
                       onChange={handleInputChange}
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                      className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                     />
                   </div>
                 </div>
 
-                <Separator className="bg-white/20" />
+                <Separator className="bg-teal-500/30" />
 
                 {/* Payment Method */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white">Payment Method</h3>
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                    <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="bkash" id="bkash" />
                       <Label htmlFor="bkash" className="text-white flex items-center cursor-pointer">
                         <Smartphone className="w-4 h-4 mr-2 text-pink-400" />
                         bKash
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                    <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="sslcommerz" id="sslcommerz" />
                       <Label htmlFor="sslcommerz" className="text-white flex items-center cursor-pointer">
                         <CreditCard className="w-4 h-4 mr-2 text-blue-400" />
                         SSLCommerz (Card/Mobile Banking)
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                    <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="cod" id="cod" />
                       <Label htmlFor="cod" className="text-white flex items-center cursor-pointer">
-                        <Banknote className="w-4 h-4 mr-2 text-green-400" />
+                        <Banknote className="w-4 h-4 mr-2 text-emerald-400" />
                         Cash on Delivery
                       </Label>
                     </div>
@@ -262,7 +262,7 @@ const Checkout = () => {
                         value={formData.bkashNumber}
                         onChange={handleInputChange}
                         required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                        className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                       />
                     </div>
                   )}
@@ -270,7 +270,7 @@ const Checkout = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white py-3"
                   disabled={isLoading}
                   size="lg"
                 >
@@ -281,12 +281,15 @@ const Checkout = () => {
           </Card>
 
           {/* Order Summary */}
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 h-fit">
+          <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 h-fit">
             <CardHeader>
-              <CardTitle className="text-white">Order Summary</CardTitle>
+              <CardTitle className="text-white flex items-center">
+                <FlaskConical className="w-5 h-5 mr-2" />
+                Order Summary
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
+              <div className="flex items-center space-x-4 p-4 bg-teal-900/20 rounded-lg">
                 <div className="text-4xl">{product.image}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">{product.name}</h3>
@@ -299,14 +302,14 @@ const Checkout = () => {
                 </div>
               </div>
 
-              <Separator className="bg-white/20" />
+              <Separator className="bg-teal-500/30" />
 
               <div className="space-y-2">
                 <div className="flex justify-between text-gray-300">
                   <span>Product Price</span>
                   <span>৳{product.originalPrice}</span>
                 </div>
-                <div className="flex justify-between text-green-400">
+                <div className="flex justify-between text-emerald-400">
                   <span>Discount (33% OFF)</span>
                   <span>-৳{(product.originalPrice - product.price)}</span>
                 </div>
@@ -316,7 +319,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              <Separator className="bg-white/20" />
+              <Separator className="bg-teal-500/30" />
 
               <div className="flex justify-between text-xl font-bold text-white">
                 <span>Total</span>
@@ -324,7 +327,7 @@ const Checkout = () => {
               </div>
 
               <div className="mt-4">
-                <Badge className="bg-green-600 text-white mb-2">
+                <Badge className="bg-emerald-600 text-white mb-2">
                   Limited Time Offer - 33% OFF
                 </Badge>
                 <div className="text-sm text-gray-300 space-y-1">
@@ -332,6 +335,7 @@ const Checkout = () => {
                   <p>• Interactive chemistry simulations</p>
                   <p>• Educational card deck (50+ cards)</p>
                   <p>• Mobile app compatibility</p>
+                  <p>• Premium access codes included</p>
                 </div>
               </div>
 

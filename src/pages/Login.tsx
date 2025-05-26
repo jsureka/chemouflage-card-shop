@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FlaskConical } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -40,15 +40,20 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="inline-flex items-center text-white hover:text-purple-300 mb-8 transition-colors">
+        <Link to="/" className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
         
-        <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
           <CardHeader className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center">
+                <FlaskConical className="w-5 h-5 text-white" />
+              </div>
+            </div>
             <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
             <CardDescription className="text-gray-300">
               Sign in to your Chemouflage account
@@ -65,7 +70,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                  className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                 />
               </div>
               <div className="space-y-2">
@@ -77,12 +82,12 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                  className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
@@ -92,7 +97,7 @@ const Login = () => {
             <div className="mt-6 text-center">
               <p className="text-gray-300">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
+                <Link to="/register" className="text-teal-400 hover:text-teal-300 transition-colors">
                   Sign up
                 </Link>
               </p>

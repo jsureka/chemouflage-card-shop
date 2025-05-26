@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FlaskConical, Cube } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Box } from 'lucide-react';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -67,7 +67,7 @@ const Register = () => {
                 <FlaskConical className="w-5 h-5 text-white" />
               </div>
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-                <Cube className="w-4 h-4 text-white" />
+                <Box className="w-4 h-4 text-white" />
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-white">Create Account</CardTitle>

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FlaskConical } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Cube } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -53,10 +53,13 @@ const Login = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center">
                 <FlaskConical className="w-5 h-5 text-white" />
               </div>
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                <Cube className="w-4 h-4 text-white" />
+              </div>
             </div>
             <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
             <CardDescription className="text-gray-300">
-              Sign in to your Chemouflage account
+              Sign in to your Chemouflage AR Chemistry account
             </CardDescription>
           </CardHeader>
           <CardContent>

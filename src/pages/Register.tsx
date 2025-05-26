@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FlaskConical } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Cube } from 'lucide-react';
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -37,7 +38,7 @@ const Register = () => {
       await register(email, password, name);
       toast({
         title: "Account created!",
-        description: "Welcome to Chemouflage. Your account has been created successfully.",
+        description: "Welcome to Chemouflage AR Chemistry. Your account has been created successfully.",
       });
       navigate('/');
     } catch (error) {
@@ -65,10 +66,13 @@ const Register = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center">
                 <FlaskConical className="w-5 h-5 text-white" />
               </div>
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                <Cube className="w-4 h-4 text-white" />
+              </div>
             </div>
             <CardTitle className="text-2xl font-bold text-white">Create Account</CardTitle>
             <CardDescription className="text-gray-300">
-              Join Chemouflage and start your chemistry journey
+              Join Chemouflage AR Chemistry and start your learning journey
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -81,6 +85,18 @@ const Register = () => {
                   placeholder="Enter your full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
+                  className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
                   className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                 />

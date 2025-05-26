@@ -7,23 +7,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, Lock } from 'lucide-react';
+import { ArrowLeft, CreditCard, Lock, Smartphone, Banknote } from 'lucide-react';
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('bkash');
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
+    phone: '',
     firstName: '',
     lastName: '',
     address: '',
     city: '',
-    state: '',
+    area: '',
     zipCode: '',
-    country: '',
+    bkashNumber: '',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
@@ -31,10 +34,11 @@ const Checkout = () => {
   });
 
   const product = {
-    name: "Chemouflage Pro",
-    price: 99.99,
-    originalPrice: 149.99,
-    image: "🛡️"
+    name: "Chemouflage AR Chemistry Cards",
+    price: 199,
+    originalPrice: 299,
+    deliveryCharge: 60,
+    image: "🧪"
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,21 +58,23 @@ const Checkout = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
-        title: "Order Successful!",
-        description: "Your payment has been processed successfully.",
+        title: "Order Placed Successfully!",
+        description: "Your order has been placed. You will receive tracking details soon.",
       });
       
       navigate('/');
     } catch (error) {
       toast({
-        title: "Payment Failed",
-        description: "There was an error processing your payment. Please try again.",
+        title: "Order Failed",
+        description: "There was an error processing your order. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const totalAmount = product.price + product.deliveryCharge;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -95,26 +101,41 @@ const Checkout = () => {
                 {/* Contact Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white">Contact Information</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-white">Email Address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="john@example.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-white">Email Address</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="01XXXXXXXXX"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <Separator className="bg-white/20" />
 
-                {/* Billing Information */}
+                {/* Delivery Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Billing Information</h3>
+                  <h3 className="text-lg font-semibold text-white">Delivery Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="text-white">First Name</Label>
@@ -145,12 +166,12 @@ const Checkout = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-white">Address</Label>
+                    <Label htmlFor="address" className="text-white">Full Address</Label>
                     <Input
                       id="address"
                       name="address"
                       type="text"
-                      placeholder="123 Main Street"
+                      placeholder="House/Flat, Road, Block"
                       value={formData.address}
                       onChange={handleInputChange}
                       required
@@ -165,7 +186,7 @@ const Checkout = () => {
                         id="city"
                         name="city"
                         type="text"
-                        placeholder="New York"
+                        placeholder="Dhaka"
                         value={formData.city}
                         onChange={handleInputChange}
                         required
@@ -173,13 +194,13 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="state" className="text-white">State</Label>
+                      <Label htmlFor="area" className="text-white">Area/Thana</Label>
                       <Input
-                        id="state"
-                        name="state"
+                        id="area"
+                        name="area"
                         type="text"
-                        placeholder="NY"
-                        value={formData.state}
+                        placeholder="Dhanmondi"
+                        value={formData.area}
                         onChange={handleInputChange}
                         required
                         className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
@@ -187,101 +208,64 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode" className="text-white">ZIP Code</Label>
-                      <Input
-                        id="zipCode"
-                        name="zipCode"
-                        type="text"
-                        placeholder="10001"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country" className="text-white">Country</Label>
-                      <Input
-                        id="country"
-                        name="country"
-                        type="text"
-                        placeholder="United States"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode" className="text-white">Postal Code (Optional)</Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      type="text"
+                      placeholder="1205"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                    />
                   </div>
                 </div>
 
                 <Separator className="bg-white/20" />
 
-                {/* Payment Information */}
+                {/* Payment Method */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center">
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Payment Information
-                  </h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="cardName" className="text-white">Name on Card</Label>
-                    <Input
-                      id="cardName"
-                      name="cardName"
-                      type="text"
-                      placeholder="John Doe"
-                      value={formData.cardName}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                    />
-                  </div>
+                  <h3 className="text-lg font-semibold text-white">Payment Method</h3>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                      <RadioGroupItem value="bkash" id="bkash" />
+                      <Label htmlFor="bkash" className="text-white flex items-center cursor-pointer">
+                        <Smartphone className="w-4 h-4 mr-2 text-pink-400" />
+                        bKash
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                      <RadioGroupItem value="sslcommerz" id="sslcommerz" />
+                      <Label htmlFor="sslcommerz" className="text-white flex items-center cursor-pointer">
+                        <CreditCard className="w-4 h-4 mr-2 text-blue-400" />
+                        SSLCommerz (Card/Mobile Banking)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 bg-white/5 rounded-lg">
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="text-white flex items-center cursor-pointer">
+                        <Banknote className="w-4 h-4 mr-2 text-green-400" />
+                        Cash on Delivery
+                      </Label>
+                    </div>
+                  </RadioGroup>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber" className="text-white">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      name="cardNumber"
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiryDate" className="text-white">Expiry Date</Label>
+                  {paymentMethod === 'bkash' && (
+                    <div className="space-y-2 mt-4">
+                      <Label htmlFor="bkashNumber" className="text-white">bKash Number</Label>
                       <Input
-                        id="expiryDate"
-                        name="expiryDate"
-                        type="text"
-                        placeholder="MM/YY"
-                        value={formData.expiryDate}
+                        id="bkashNumber"
+                        name="bkashNumber"
+                        type="tel"
+                        placeholder="01XXXXXXXXX"
+                        value={formData.bkashNumber}
                         onChange={handleInputChange}
                         required
                         className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv" className="text-white">CVV</Label>
-                      <Input
-                        id="cvv"
-                        name="cvv"
-                        type="text"
-                        placeholder="123"
-                        value={formData.cvv}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 <Button
@@ -290,7 +274,7 @@ const Checkout = () => {
                   disabled={isLoading}
                   size="lg"
                 >
-                  {isLoading ? "Processing..." : `Complete Purchase - $${product.price}`}
+                  {isLoading ? "Processing..." : `Place Order - ৳${totalAmount}`}
                 </Button>
               </form>
             </CardContent>
@@ -306,11 +290,12 @@ const Checkout = () => {
                 <div className="text-4xl">{product.image}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">{product.name}</h3>
-                  <p className="text-gray-300 text-sm">Premium Security Suite</p>
+                  <p className="text-gray-300 text-sm">AR-Based Chemistry Learning Cards</p>
+                  <p className="text-gray-300 text-sm">Interactive 3D Molecular Visualization</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-semibold">${product.price}</div>
-                  <div className="text-gray-400 text-sm line-through">${product.originalPrice}</div>
+                  <div className="text-white font-semibold">৳{product.price}</div>
+                  <div className="text-gray-400 text-sm line-through">৳{product.originalPrice}</div>
                 </div>
               </div>
 
@@ -318,16 +303,16 @@ const Checkout = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between text-gray-300">
-                  <span>Subtotal</span>
-                  <span>${product.originalPrice}</span>
+                  <span>Product Price</span>
+                  <span>৳{product.originalPrice}</span>
                 </div>
                 <div className="flex justify-between text-green-400">
                   <span>Discount (33% OFF)</span>
-                  <span>-${(product.originalPrice - product.price).toFixed(2)}</span>
+                  <span>-৳{(product.originalPrice - product.price)}</span>
                 </div>
                 <div className="flex justify-between text-gray-300">
-                  <span>Tax</span>
-                  <span>$0.00</span>
+                  <span>Delivery Charge</span>
+                  <span>৳{product.deliveryCharge}</span>
                 </div>
               </div>
 
@@ -335,17 +320,23 @@ const Checkout = () => {
 
               <div className="flex justify-between text-xl font-bold text-white">
                 <span>Total</span>
-                <span>${product.price}</span>
+                <span>৳{totalAmount}</span>
               </div>
 
               <div className="mt-4">
-                <Badge className="bg-green-600 text-white">
+                <Badge className="bg-green-600 text-white mb-2">
                   Limited Time Offer - 33% OFF
                 </Badge>
+                <div className="text-sm text-gray-300 space-y-1">
+                  <p>• AR-based 3D molecular visualization</p>
+                  <p>• Interactive chemistry simulations</p>
+                  <p>• Educational card deck (50+ cards)</p>
+                  <p>• Mobile app compatibility</p>
+                </div>
               </div>
 
               <div className="text-xs text-gray-400 mt-4">
-                🔒 Your payment information is secure and encrypted. We never store your credit card details.
+                🔒 Your payment information is secure and encrypted. Order tracking will be available after purchase.
               </div>
             </CardContent>
           </Card>

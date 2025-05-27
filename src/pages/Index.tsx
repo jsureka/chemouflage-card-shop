@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { ShoppingCart, Star, Shield, Zap, Users, Menu, X, FlaskConical, Atom, Microscope, Smartphone, Monitor, Play, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Notice } from '@/components/Notice';
+import { HeroSlider } from '@/components/HeroSlider';
 
 const Index = () => {
   const { user, logout } = useAuth();
@@ -108,7 +109,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="bg-black/20 backdrop-blur-lg border-b border-teal-500/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -191,120 +192,15 @@ const Index = () => {
         )}
       </nav>
 
-      {/* Hero Section with Image Slider */}
-      <div className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Parallax Background Elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-blue-500/10 rounded-full blur-lg animate-pulse delay-500"></div>
-          <div className="absolute top-1/3 right-1/3 w-64 h-64 bg-gradient-to-r from-teal-500/5 to-emerald-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <Badge className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white mb-6 animate-fade-in">
-                🚀 Now with AR Technology
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in">
-                Master Chemistry with{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500">
-                  AR Magic
-                </span>
-              </h1>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl">
-                Experience chemistry like never before with our revolutionary AR cards. Point your phone at any card to see molecules come alive in 3D space.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/checkout">
-                  <Button size="lg" className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-4 text-lg hover-scale">
-                    <FlaskConical className="w-5 h-5 mr-2" />
-                    Get Started - ৳{product.price}
-                  </Button>
-                </Link>
-                <Button size="lg" variant="outline" className="border-teal-500 text-teal-300 hover:bg-teal-500/20 px-8 py-4 text-lg">
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Demo
-                </Button>
-              </div>
-              <div className="flex items-center justify-center lg:justify-start mt-6 space-x-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <span className="text-white font-semibold">{product.rating}</span>
-                <span className="text-gray-300">({product.reviews} reviews)</span>
-              </div>
-            </div>
-
-            {/* Image Slider */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-lg">
-                <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-br from-teal-900/40 to-emerald-900/40 backdrop-blur-lg border border-teal-500/30 shadow-2xl">
-                  {/* Slider Images */}
-                  <div 
-                    className="flex transition-transform duration-500 ease-in-out h-full"
-                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-                  >
-                    {heroSlides.map((slide, index) => (
-                      <div key={index} className="w-full h-full flex-shrink-0 relative">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} opacity-80`}></div>
-                        <img 
-                          src={slide.image} 
-                          alt={slide.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/40"></div>
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                          <h3 className="text-xl font-bold mb-2">{slide.title}</h3>
-                          <p className="text-sm text-gray-200">{slide.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <button 
-                    onClick={prevSlide}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button 
-                    onClick={nextSlide}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-
-                  {/* Slide Indicators */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                    {heroSlides.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentSlide(index)}
-                        className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                          index === currentSlide ? 'bg-white' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Floating AR Card */}
-                <div className="absolute -top-4 -right-4 w-20 h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg transform rotate-12 animate-pulse">
-                  <div className="h-full flex flex-col justify-center items-center text-white">
-                    <span className="text-lg font-bold">C</span>
-                    <span className="text-xs">Carbon</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Notice Section */}
+      <div className="container mx-auto px-4 pt-4">
+        <Notice />
       </div>
+
+      {/* Hero Section with Dynamic Slider */}
+      <section className="container mx-auto px-4 py-8">
+        <HeroSlider />
+      </section>
 
       {/* App Screenshots Slider */}
       <div className="py-24 bg-black/20 backdrop-blur-sm">

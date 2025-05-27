@@ -1,15 +1,52 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { ShoppingCart, Star, Shield, Zap, Users, Menu, X, FlaskConical, Atom, Microscope, Smartphone, Monitor, Play, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Star, Shield, Zap, Users, Menu, X, FlaskConical, Atom, Microscope, Smartphone, Monitor, Play, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 const Index = () => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const heroSlides = [
+    {
+      title: "AR Molecule Viewer",
+      description: "Point your camera at any chemistry card to see 3D molecular structures",
+      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop",
+      gradient: "from-blue-600 to-purple-600"
+    },
+    {
+      title: "Interactive Periodic Table",
+      description: "Tap elements to explore detailed information and properties",
+      image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&h=400&fit=crop",
+      gradient: "from-teal-600 to-emerald-600"
+    },
+    {
+      title: "Virtual Chemistry Lab",
+      description: "Conduct safe experiments in our virtual laboratory environment",
+      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=400&fit=crop",
+      gradient: "from-purple-600 to-pink-600"
+    },
+    {
+      title: "Physical AR Cards",
+      description: "118 beautifully designed cards with AR-enabled chemistry elements",
+      image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=600&h=400&fit=crop",
+      gradient: "from-orange-600 to-red-600"
+    }
+  ];
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
 
   const features = [
     {
@@ -154,7 +191,7 @@ const Index = () => {
         )}
       </nav>
 
-      {/* Hero Section with Parallax */}
+      {/* Hero Section with Image Slider */}
       <div className="relative overflow-hidden min-h-screen flex items-center">
         {/* Parallax Background Elements */}
         <div className="absolute inset-0 z-0">
@@ -202,42 +239,65 @@ const Index = () => {
               </div>
             </div>
 
-            {/* 3D Product Showcase */}
+            {/* Image Slider */}
             <div className="flex justify-center lg:justify-end">
-              <div className="relative">
-                <div className="w-80 h-80 relative">
-                  {/* Main AR Card */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-2xl shadow-2xl transform rotate-12 hover:rotate-6 transition-transform duration-500 hover-scale">
-                    <div className="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-emerald-500/20 rounded-2xl"></div>
-                    <div className="relative z-10 h-full flex flex-col justify-between p-6">
-                      <div className="text-right">
-                        <span className="text-white/80 text-sm font-medium">6</span>
-                      </div>
-                      <div className="text-center">
-                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg">
-                          <span className="text-teal-600 text-3xl font-bold">C</span>
+              <div className="relative w-full max-w-lg">
+                <div className="relative h-96 overflow-hidden rounded-2xl bg-gradient-to-br from-teal-900/40 to-emerald-900/40 backdrop-blur-lg border border-teal-500/30 shadow-2xl">
+                  {/* Slider Images */}
+                  <div 
+                    className="flex transition-transform duration-500 ease-in-out h-full"
+                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  >
+                    {heroSlides.map((slide, index) => (
+                      <div key={index} className="w-full h-full flex-shrink-0 relative">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} opacity-80`}></div>
+                        <img 
+                          src={slide.image} 
+                          alt={slide.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                          <h3 className="text-xl font-bold mb-2">{slide.title}</h3>
+                          <p className="text-sm text-gray-200">{slide.description}</p>
                         </div>
-                        <div className="text-white text-lg font-bold">12.0107</div>
-                        <div className="text-white/90 text-sm">Carbon</div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-white/80 text-xs">Tap for AR</div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
-                  {/* Secondary Cards */}
-                  <div className="absolute -top-4 -left-4 w-24 h-32 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg transform -rotate-12 opacity-80">
-                    <div className="h-full flex flex-col justify-center items-center text-white">
-                      <span className="text-lg font-bold">H</span>
-                      <span className="text-xs">Hydrogen</span>
-                    </div>
+                  {/* Navigation Buttons */}
+                  <button 
+                    onClick={prevSlide}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={nextSlide}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+
+                  {/* Slide Indicators */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    {heroSlides.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                          index === currentSlide ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
                   </div>
-                  <div className="absolute -bottom-4 -right-4 w-24 h-32 bg-gradient-to-br from-red-500 to-red-700 rounded-lg shadow-lg transform rotate-12 opacity-80">
-                    <div className="h-full flex flex-col justify-center items-center text-white">
-                      <span className="text-lg font-bold">O</span>
-                      <span className="text-xs">Oxygen</span>
-                    </div>
+                </div>
+
+                {/* Floating AR Card */}
+                <div className="absolute -top-4 -right-4 w-20 h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg transform rotate-12 animate-pulse">
+                  <div className="h-full flex flex-col justify-center items-center text-white">
+                    <span className="text-lg font-bold">C</span>
+                    <span className="text-xs">Carbon</span>
                   </div>
                 </div>
               </div>

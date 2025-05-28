@@ -11,21 +11,21 @@ const Hero = () => {
       title: "Discover Chemistry with AR",
       subtitle: "Revolutionary AR Chemistry Experience",
       description: "Experience chemistry like never before with our cutting-edge AR technology. Visualize molecular structures, conduct virtual experiments, and unlock the mysteries of the chemical world.",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=600&fit=crop",
       cta: "Start Exploring"
     },
     {
       title: "Interactive Learning",
       subtitle: "Hands-on Chemistry Education",
       description: "Learn chemistry through interactive AR experiences. From basic elements to complex reactions, our platform makes learning engaging and memorable.",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop",
       cta: "Learn More"
     },
     {
       title: "Professional Tools",
       subtitle: "Advanced AR Chemistry Kit",
       description: "Access professional-grade AR chemistry tools and simulations. Perfect for students, educators, and professionals exploring the molecular world.",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop",
       cta: "Get Started"
     }
   ];

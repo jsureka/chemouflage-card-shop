@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -149,6 +150,14 @@ const Index = () => {
               <div className="max-w-md">
                 <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300">
                   <CardHeader>
+                    <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
+                      <img 
+                        src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop" 
+                        alt={premiumARCards.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
+                    </div>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-white text-lg">{premiumARCards.name}</CardTitle>
                       {premiumARCards.discount_percentage > 0 && (

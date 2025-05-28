@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,12 +22,14 @@ import {
 const Index = () => {
   const { user, isAdmin, logout } = useAuth();
   const { products } = useProducts();
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [premiumARCards, setPremiumARCards] = useState(null);
 
   useEffect(() => {
-    // Get active products for display
-    const activeProducts = products.filter(product => product.is_active);
-    setFeaturedProducts(activeProducts.slice(0, 4));
+    // Find the premium AR cards product
+    const arCards = products.find(product => 
+      product.is_active && product.name.toLowerCase().includes('ar') && product.name.toLowerCase().includes('cards')
+    );
+    setPremiumARCards(arCards);
   }, [products]);
 
   const features = [
@@ -133,39 +134,39 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Products Section */}
-      {featuredProducts.length > 0 && (
+      {/* Premium AR Cards Product Section */}
+      {premiumARCards && (
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-4">Our Products</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">Our Premium Product</h2>
               <p className="text-xl text-gray-300">
-                Discover our range of AR chemistry educational products
+                Discover our flagship AR chemistry educational product
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {featuredProducts.map((product: any) => (
-                <Card key={product.id} className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300">
+            <div className="flex justify-center">
+              <div className="max-w-md">
+                <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-white text-lg">{product.name}</CardTitle>
-                      {product.discount_percentage > 0 && (
+                      <CardTitle className="text-white text-lg">{premiumARCards.name}</CardTitle>
+                      {premiumARCards.discount_percentage > 0 && (
                         <Badge className="bg-emerald-600">
-                          {product.discount_percentage}% OFF
+                          {premiumARCards.discount_percentage}% OFF
                         </Badge>
                       )}
                     </div>
-                    <CardDescription className="text-gray-300 line-clamp-2">
-                      {product.description}
+                    <CardDescription className="text-gray-300 line-clamp-3">
+                      {premiumARCards.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-2xl font-bold text-white">৳{product.price}</span>
-                        {product.original_price > product.price && (
-                          <span className="text-gray-400 line-through ml-2">৳{product.original_price}</span>
+                        <span className="text-2xl font-bold text-white">৳{premiumARCards.price}</span>
+                        {premiumARCards.original_price > premiumARCards.price && (
+                          <span className="text-gray-400 line-through ml-2">৳{premiumARCards.original_price}</span>
                         )}
                       </div>
                       <div className="flex items-center space-x-1">
@@ -176,7 +177,7 @@ const Index = () => {
                     
                     <div className="text-sm text-gray-400">
                       <Badge variant="outline" className="text-teal-400 border-teal-400">
-                        {product.category}
+                        {premiumARCards.category}
                       </Badge>
                     </div>
 
@@ -188,7 +189,7 @@ const Index = () => {
                     </Link>
                   </CardContent>
                 </Card>
-              ))}
+              </div>
             </div>
           </div>
         </section>

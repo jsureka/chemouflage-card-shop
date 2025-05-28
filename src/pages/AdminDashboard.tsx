@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -72,7 +71,7 @@ const AdminDashboard = () => {
         .limit(10);
 
       // Calculate revenue from orders
-      const totalRevenue = ordersData?.reduce((sum, order) => sum + parseFloat(order.total_amount), 0) || 0;
+      const totalRevenue = ordersData?.reduce((sum, order) => sum + parseFloat(order.total_amount.toString()), 0) || 0;
 
       setStats({
         totalProducts: productsCount || 0,

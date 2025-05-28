@@ -1,19 +1,26 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
-  email: string;
-  name: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
   role: 'customer' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  register: (email: string, password: string, fullName: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,62 +35,126 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileData) {
+        setProfile({
+          ...profileData,
+          role: roleData?.role || 'customer'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
     }
-    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Mock login - replace with actual authentication
-      const mockUser: User = {
-        id: '1',
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-        role: email.includes('admin') ? 'admin' : 'customer'
-      };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      throw new Error('Login failed');
+        password,
+      });
+      if (error) throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (email: string, password: string, fullName: string) => {
     setIsLoading(true);
     try {
-      // Mock registration - replace with actual authentication
-      const mockUser: User = {
-        id: '2',
+      const { error } = await supabase.auth.signUp({
         email,
-        name,
-        role: 'customer'
-      };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      throw new Error('Registration failed');
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+      if (error) throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+    if (error) throw error;
   };
 
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
+
+  const isAdmin = profile?.role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      session,
+      login,
+      register,
+      loginWithGoogle,
+      logout,
+      isLoading,
+      isAdmin
+    }}>
       {children}
     </AuthContext.Provider>
   );

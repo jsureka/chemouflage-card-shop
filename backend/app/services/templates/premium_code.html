@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Premium Codes</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 10px;
+      }
+      .premium-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .code-container {
+        background-color: #f8f9fa;
+        border: 2px dashed #6c757d;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .code {
+        font-family: "Courier New", monospace;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #e9ecef;
+        padding: 10px 15px;
+        border-radius: 6px;
+        display: inline-block;
+        margin: 10px 0;
+        letter-spacing: 2px;
+        border: 1px solid #adb5bd;
+      }
+      .code-info {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #6c757d;
+      }
+      .btn {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        margin: 10px 5px;
+        text-align: center;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+        color: #6c757d;
+        font-size: 14px;
+      }
+      .warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+      .success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">{{ company_name }}</div>
+        <h1>🎉 Your Premium Codes</h1>
+      </div>
+
+      <div>
+        <h2>Hello {{ customer_name }}!</h2>
+        <p>
+          Great news! Your premium codes for order
+          <strong>{{ order_id }}</strong> are ready!
+        </p>
+      </div>
+
+      <div class="premium-section">
+        <h3>✨ Premium Access Activated</h3>
+        <p>You now have access to exclusive premium content!</p>
+      </div>
+
+      <div class="success">
+        <h3>📋 Instructions</h3>
+        <p>{{ instructions }}</p>
+      </div>
+
+      {% for code in premium_codes %}
+      <div class="code-container">
+        <h4>{{ code.product_name or code.name or "Premium Code" }}</h4>
+        <div class="code">{{ code.code }}</div>
+        <div class="code-info">
+          {% if code.description %}
+          <p><strong>Description:</strong> {{ code.description }}</p>
+          {% endif %} {% if code.expires_at %}
+          <p><strong>Expires:</strong> {{ code.expires_at }}</p>
+          {% endif %} {% if code.usage_limit %}
+          <p><strong>Usage Limit:</strong> {{ code.usage_limit }} uses</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="warning">
+        <h3>⚠️ Important Notes</h3>
+        <ul>
+          <li>Keep these codes safe and secure</li>
+          <li>Each code can typically only be used once</li>
+          <li>Codes are case-sensitive</li>
+          <li>Contact support if you have any issues using your codes</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin: 30px 0">
+        <a href="{{ frontend_url }}" class="btn">Visit Our Store</a>
+        <a href="mailto:{{ support_email }}" class="btn">Contact Support</a>
+      </div>
+
+      <div class="footer">
+        <p>
+          Questions about your codes? Reply to this email or contact us at {{
+          support_email }}
+        </p>
+        <p>
+          {{ company_name }} - Your trusted partner for premium digital content
+        </p>
+        <p>
+          <small
+            >This is an automated email. Please do not reply directly to this
+            message.</small
+          >
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

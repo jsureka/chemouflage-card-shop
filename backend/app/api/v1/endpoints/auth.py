@@ -7,19 +7,32 @@ from app.core.config import settings
 from app.core.security import create_access_token
 from app.models.user import Token, User, UserCreate, UserProfile, UserUpdate
 from app.repositories.user import UserRepository, UserRoleRepository
-from fastapi import APIRouter, Depends, HTTPException, status
+from app.services.email import EmailService
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
-async def register(user_in: UserCreate) -> Any:
+async def register(
+    user_in: UserCreate,
+    background_tasks: BackgroundTasks
+) -> Any:
     """
     Register a new user.
     """
     try:
         user_id = await UserRepository.create(user_in)
         user = await UserRepository.get_by_id(user_id)
+        
+        # Send welcome email in background
+        if user and user.email:
+            background_tasks.add_task(
+                EmailService.send_welcome_email,
+                recipient_email=user.email,
+                customer_name=user.full_name or user.email
+            )
+        
         return user
     except ValueError as e:
         raise HTTPException(

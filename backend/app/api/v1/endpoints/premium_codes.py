@@ -1,12 +1,16 @@
 from typing import List
 
 from app.api.dependencies import get_current_admin, get_current_user
+from app.core.config import settings
 from app.models.product import (PremiumCode, PremiumCodeBind,
                                 PremiumCodeCreate, PremiumCodeGenerate,
                                 PremiumCodeUpdate)
 from app.models.user import User
 from app.repositories.premium_code import PremiumCodeRepository
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.repositories.user import UserRepository
+from app.services.email import EmailService
+from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
+                     status)
 
 router = APIRouter()
 
@@ -141,6 +145,7 @@ async def get_premium_code(
 async def bind_premium_code(
     code_id: str,
     bind_request: PremiumCodeBind,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_admin)
 ):
     """Bind a premium code to a user."""
@@ -158,11 +163,36 @@ async def bind_premium_code(
                 detail="Premium code is already bound to a user"
             )
         
+        # Get user details for email notification
+        user = await UserRepository.get_by_email(bind_request.user_email)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with email {bind_request.user_email} not found"
+            )
+        
         updated_code = await PremiumCodeRepository.bind_to_user(code_id, bind_request)
         if not updated_code:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to bind premium code"
+            )
+        
+        # Send premium code email notification in background
+        if user.email:
+            premium_codes = [{
+                "code": updated_code.code,
+                "product_name": updated_code.description or "Premium Access",
+                "instructions": "This premium code has been assigned to your account. Use it to access your exclusive content."
+            }]
+            
+            background_tasks.add_task(
+                EmailService.send_premium_code,
+                recipient_email=user.email,
+                customer_name=user.full_name or user.email,
+                order_id="MANUAL-BIND",  # Special identifier for manual binds
+                premium_codes=premium_codes,
+                instructions="Your premium code has been manually assigned to your account by an administrator."
             )
         
         return updated_code

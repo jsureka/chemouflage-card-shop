@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  # MongoDB for testing
+  mongodb-test:
+    image: mongo:7.0
+    container_name: chemouflage-mongodb-test
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: testpassword
+      MONGO_INITDB_DATABASE: chemouflage_test
+    ports:
+      - "27018:27017"
+    networks:
+      - chemouflage-test-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017/chemouflage_test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend tests
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: chemouflage-backend-test
+    environment:
+      - MONGODB_URL=mongodb://admin:testpassword@mongodb-test:27017/chemouflage_test?authSource=admin
+      - SECRET_KEY=test-secret-key
+      - ENVIRONMENT=test
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+    networks:
+      - chemouflage-test-network
+    volumes:
+      - ./backend:/app
+    command: pytest -v --tb=short
+
+  # Frontend tests
+  frontend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: chemouflage-frontend-test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm test
+
+networks:
+  chemouflage-test-network:
+    driver: bridge

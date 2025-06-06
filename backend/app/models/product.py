@@ -201,7 +201,7 @@ class PremiumCode(PremiumCodeBase):
     id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
-    bound_user_id: Optional[str] = None
+    bound_user_id: Optional[PyObjectId] = None
     bound_user_email: Optional[str] = None  # For display purposes
     
     model_config = {

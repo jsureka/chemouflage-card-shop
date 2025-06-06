@@ -1,17 +1,22 @@
-
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FlaskConical, Box } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
@@ -27,7 +32,7 @@ const Login = () => {
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
-      navigate('/');
+      navigate("/");
     } catch (error) {
       toast({
         title: "Login failed",
@@ -42,22 +47,27 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors">
+        <Link
+          to="/"
+          className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
-        
+
         <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
           <CardHeader className="text-center">
+            {" "}
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center">
-                <FlaskConical className="w-5 h-5 text-white" />
-              </div>
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-                <Box className="w-4 h-4 text-white" />
-              </div>
+              <img
+                src="/logoRound (1).png"
+                alt="Chemouflage Logo"
+                className="w-12 h-12 object-contain"
+              />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-bold text-white">
+              Welcome Back
+            </CardTitle>
             <CardDescription className="text-gray-300">
               Sign in to your Chemouflage AR Chemistry account
             </CardDescription>
@@ -65,7 +75,9 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
+                <Label htmlFor="email" className="text-white">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -77,7 +89,9 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">Password</Label>
+                <Label htmlFor="password" className="text-white">
+                  Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
@@ -96,11 +110,14 @@ const Login = () => {
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center">
               <p className="text-gray-300">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-teal-400 hover:text-teal-300 transition-colors">
+                Don't have an account?{" "}
+                <Link
+                  to="/register"
+                  className="text-teal-400 hover:text-teal-300 transition-colors"
+                >
                   Sign up
                 </Link>
               </p>

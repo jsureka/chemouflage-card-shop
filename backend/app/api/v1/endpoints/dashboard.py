@@ -20,16 +20,15 @@ async def get_dashboard_stats(
     total_orders = await OrderRepository.count()
     total_revenue = await OrderRepository.get_total_revenue()
     total_customers = await UserRepository.count()
-    
     return {
-        "total_products": total_products,
-        "total_orders": total_orders,
-        "total_revenue": total_revenue,
-        "total_customers": total_customers,
-        "change": {
-            "products": "+12.5%",  # Mock data, would be calculated from historical data
-            "orders": "+8.2%",
-            "revenue": "+15.3%",
-            "customers": "+4.1%"
-        }
+    "totalProducts": total_products,
+    "totalOrders": total_orders,
+    "totalRevenue": total_revenue,
+    "totalCustomers": total_customers,
+    "change": {
+        "products": "+12.5%",  # Mock data, would be calculated from historical data
+        "orders": "+8.2%",
+        "revenue": "+15.3%",
+        "customers": "+4.1%"
     }
+}

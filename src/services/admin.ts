@@ -34,7 +34,6 @@ class AdminService {
       return { error: "Failed to process response" };
     }
   }
-
   async getDashboardStats(): Promise<
     ApiResponse<{
       totalProducts: number;
@@ -43,12 +42,9 @@ class AdminService {
       totalCustomers: number;
     }>
   > {
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/admin/dashboard/stats`,
-      {
-        headers: this.setAuthHeader(),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
+      headers: this.setAuthHeader(),
+    });
 
     return this.handleResponse<{
       totalProducts: number;

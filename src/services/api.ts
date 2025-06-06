@@ -226,7 +226,6 @@ class ApiService {
 
     return this.handleResponse<Order>(response);
   }
-
   // Admin dashboard methods
   async getDashboardStats(): Promise<
     ApiResponse<{
@@ -236,12 +235,9 @@ class ApiService {
       totalCustomers: number;
     }>
   > {
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/admin/dashboard/stats`,
-      {
-        headers: this.setAuthHeader(),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
+      headers: this.setAuthHeader(),
+    });
 
     return this.handleResponse<{
       totalProducts: number;
@@ -250,10 +246,9 @@ class ApiService {
       totalCustomers: number;
     }>(response);
   }
-
   async getRecentOrders(limit: number = 10): Promise<ApiResponse<Order[]>> {
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/admin/orders?limit=${limit}`,
+      `${API_BASE_URL}/api/v1/orders?limit=${limit}`,
       {
         headers: this.setAuthHeader(),
       }

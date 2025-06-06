@@ -1,59 +1,61 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  original_price: number;
-  discount_percentage: number;
-  image_url: string | null;
-  category: string;
-  stock_quantity: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { useToast } from "@/hooks/use-toast";
+import { Product, productsService } from "@/services";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface ProductsContextType {
   products: Product[];
   loading: boolean;
-  fetchProducts: () => Promise<void>;
-  createProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  fetchProducts: (params?: {
+    skip?: number;
+    limit?: number;
+    active_only?: boolean;
+    category?: string;
+  }) => Promise<void>;
+  createProduct: (
+    product: Omit<Product, "id" | "created_at" | "updated_at">
+  ) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  searchProducts: (query: string) => Promise<Product[]>;
+  getProductById: (id: string) => Promise<Product | null>;
 }
 
-const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
+const ProductsContext = createContext<ProductsContextType | undefined>(
+  undefined
+);
 
 export const useProducts = () => {
   const context = useContext(ProductsContext);
   if (context === undefined) {
-    throw new Error('useProducts must be used within a ProductsProvider');
+    throw new Error("useProducts must be used within a ProductsProvider");
   }
   return context;
 };
 
-export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  const fetchProducts = async () => {
+  const fetchProducts = async (
+    params: {
+      skip?: number;
+      limit?: number;
+      active_only?: boolean;
+      category?: string;
+    } = { skip: 0, limit: 20, active_only: true }
+  ) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await productsService.getProducts(params);
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error);
+      }
       setProducts(data || []);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       toast({
         title: "Error",
         description: "Failed to fetch products",
@@ -63,23 +65,24 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLoading(false);
     }
   };
-
-  const createProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+  const createProduct = async (
+    product: Omit<Product, "id" | "created_at" | "updated_at">
+  ) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .insert([product]);
+      const { data, error } = await productsService.createProduct(product);
 
-      if (error) throw error;
-      
+      if (error) {
+        throw new Error(error);
+      }
+
       toast({
         title: "Success",
         description: "Product created successfully",
       });
-      
+
       await fetchProducts();
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
       toast({
         title: "Error",
         description: "Failed to create product",
@@ -87,24 +90,22 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
     }
   };
-
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id);
+      const { data, error } = await productsService.updateProduct(id, updates);
 
-      if (error) throw error;
-      
+      if (error) {
+        throw new Error(error);
+      }
+
       toast({
         title: "Success",
         description: "Product updated successfully",
       });
-      
+
       await fetchProducts();
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error("Error updating product:", error);
       toast({
         title: "Error",
         description: "Failed to update product",
@@ -112,24 +113,22 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
     }
   };
-
   const deleteProduct = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
+      const { error } = await productsService.deleteProduct(id);
 
-      if (error) throw error;
-      
+      if (error) {
+        throw new Error(error);
+      }
+
       toast({
         title: "Success",
         description: "Product deleted successfully",
       });
-      
+
       await fetchProducts();
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error("Error deleting product:", error);
       toast({
         title: "Error",
         description: "Failed to delete product",
@@ -138,19 +137,63 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const searchProducts = async (query: string): Promise<Product[]> => {
+    try {
+      const { data, error } = await productsService.searchProducts(query);
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Error searching products:", error);
+      toast({
+        title: "Error",
+        description: "Failed to search products",
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
+  const getProductById = async (id: string): Promise<Product | null> => {
+    try {
+      const { data, error } = await productsService.getProductById(id);
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      return data || null;
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch product",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   return (
-    <ProductsContext.Provider value={{
-      products,
-      loading,
-      fetchProducts,
-      createProduct,
-      updateProduct,
-      deleteProduct
-    }}>
+    <ProductsContext.Provider
+      value={{
+        products,
+        loading,
+        fetchProducts,
+        createProduct,
+        updateProduct,
+        deleteProduct,
+        searchProducts,
+        getProductById,
+      }}
+    >
       {children}
     </ProductsContext.Provider>
   );

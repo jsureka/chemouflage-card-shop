@@ -1,36 +1,51 @@
-
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, Lock, Smartphone, Banknote, FlaskConical } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { ordersService } from "@/services";
+import {
+  ArrowLeft,
+  Banknote,
+  CreditCard,
+  FlaskConical,
+  Lock,
+  Smartphone,
+} from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('bkash');
+  const [paymentMethod, setPaymentMethod] = useState("bkash");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
-    email: '',
-    phone: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    area: '',
-    zipCode: '',
-    bkashNumber: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: ''
+    email: "",
+    phone: "",
+    firstName: "",
+    lastName: "",
+    address: "",
+    city: "",
+    area: "",
+    zipCode: "",
+    bkashNumber: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    cardName: "",
   });
 
   const product = {
@@ -38,14 +53,14 @@ const Checkout = () => {
     price: 199,
     originalPrice: 299,
     deliveryCharge: 60,
-    image: "🧪"
+    image: "🧪",
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -54,19 +69,58 @@ const Checkout = () => {
     setIsLoading(true);
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Check if user is authenticated
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to place an order.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      } // Prepare order data
+      const orderData = {
+        total_amount: totalAmount,
+        payment_method: paymentMethod,
+        shipping_address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          area: formData.area,
+          zipCode: formData.zipCode,
+          ...(paymentMethod === "bkash" && {
+            bkashNumber: formData.bkashNumber,
+          }),
+        },
+        items: [
+          {
+            product_id: "chemouflage-ar-cards", // This should come from actual product data
+            quantity: 1,
+            price: product.price,
+          },
+        ],
+      };
+
+      const { data, error } = await ordersService.createOrder(orderData);
+
+      if (error) {
+        throw new Error(error);
+      }
+
       toast({
         title: "Order Placed Successfully!",
-        description: "Your order has been placed. You will receive tracking details soon.",
+        description: `Your order #${data?.id} has been placed. You will receive tracking details soon.`,
       });
-      
-      navigate('/');
-    } catch (error) {
+
+      navigate("/");
+    } catch (error: any) {
       toast({
         title: "Order Failed",
-        description: "There was an error processing your order. Please try again.",
+        description:
+          error.message ||
+          "There was an error processing your order. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -79,7 +133,10 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/" className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors">
+        <Link
+          to="/"
+          className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
@@ -100,10 +157,14 @@ const Checkout = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Contact Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Contact Information</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    Contact Information
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white">Email Address</Label>
+                      <Label htmlFor="email" className="text-white">
+                        Email Address
+                      </Label>
                       <Input
                         id="email"
                         name="email"
@@ -116,7 +177,9 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-white">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-white">
+                        Phone Number
+                      </Label>
                       <Input
                         id="phone"
                         name="phone"
@@ -135,10 +198,14 @@ const Checkout = () => {
 
                 {/* Delivery Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Delivery Information</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    Delivery Information
+                  </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-white">First Name</Label>
+                      <Label htmlFor="firstName" className="text-white">
+                        First Name
+                      </Label>
                       <Input
                         id="firstName"
                         name="firstName"
@@ -151,7 +218,9 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-white">Last Name</Label>
+                      <Label htmlFor="lastName" className="text-white">
+                        Last Name
+                      </Label>
                       <Input
                         id="lastName"
                         name="lastName"
@@ -164,9 +233,11 @@ const Checkout = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-white">Full Address</Label>
+                    <Label htmlFor="address" className="text-white">
+                      Full Address
+                    </Label>
                     <Input
                       id="address"
                       name="address"
@@ -181,7 +252,9 @@ const Checkout = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="city" className="text-white">City</Label>
+                      <Label htmlFor="city" className="text-white">
+                        City
+                      </Label>
                       <Input
                         id="city"
                         name="city"
@@ -194,7 +267,9 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="area" className="text-white">Area/Thana</Label>
+                      <Label htmlFor="area" className="text-white">
+                        Area/Thana
+                      </Label>
                       <Input
                         id="area"
                         name="area"
@@ -209,7 +284,9 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="zipCode" className="text-white">Postal Code (Optional)</Label>
+                    <Label htmlFor="zipCode" className="text-white">
+                      Postal Code (Optional)
+                    </Label>
                     <Input
                       id="zipCode"
                       name="zipCode"
@@ -226,34 +303,50 @@ const Checkout = () => {
 
                 {/* Payment Method */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">Payment Method</h3>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <h3 className="text-lg font-semibold text-white">
+                    Payment Method
+                  </h3>
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                  >
                     <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="bkash" id="bkash" />
-                      <Label htmlFor="bkash" className="text-white flex items-center cursor-pointer">
+                      <Label
+                        htmlFor="bkash"
+                        className="text-white flex items-center cursor-pointer"
+                      >
                         <Smartphone className="w-4 h-4 mr-2 text-pink-400" />
                         bKash
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="sslcommerz" id="sslcommerz" />
-                      <Label htmlFor="sslcommerz" className="text-white flex items-center cursor-pointer">
+                      <Label
+                        htmlFor="sslcommerz"
+                        className="text-white flex items-center cursor-pointer"
+                      >
                         <CreditCard className="w-4 h-4 mr-2 text-blue-400" />
                         SSLCommerz (Card/Mobile Banking)
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2 p-3 bg-teal-900/20 rounded-lg border border-teal-500/30">
                       <RadioGroupItem value="cod" id="cod" />
-                      <Label htmlFor="cod" className="text-white flex items-center cursor-pointer">
+                      <Label
+                        htmlFor="cod"
+                        className="text-white flex items-center cursor-pointer"
+                      >
                         <Banknote className="w-4 h-4 mr-2 text-emerald-400" />
                         Cash on Delivery
                       </Label>
                     </div>
                   </RadioGroup>
 
-                  {paymentMethod === 'bkash' && (
+                  {paymentMethod === "bkash" && (
                     <div className="space-y-2 mt-4">
-                      <Label htmlFor="bkashNumber" className="text-white">bKash Number</Label>
+                      <Label htmlFor="bkashNumber" className="text-white">
+                        bKash Number
+                      </Label>
                       <Input
                         id="bkashNumber"
                         name="bkashNumber"
@@ -274,7 +367,9 @@ const Checkout = () => {
                   disabled={isLoading}
                   size="lg"
                 >
-                  {isLoading ? "Processing..." : `Place Order - ৳${totalAmount}`}
+                  {isLoading
+                    ? "Processing..."
+                    : `Place Order - ৳${totalAmount}`}
                 </Button>
               </form>
             </CardContent>
@@ -292,12 +387,20 @@ const Checkout = () => {
                 <div className="text-4xl">{product.image}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">{product.name}</h3>
-                  <p className="text-gray-300 text-sm">AR-Based Chemistry Learning Cards</p>
-                  <p className="text-gray-300 text-sm">Interactive 3D Molecular Visualization</p>
+                  <p className="text-gray-300 text-sm">
+                    AR-Based Chemistry Learning Cards
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    Interactive 3D Molecular Visualization
+                  </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-semibold">৳{product.price}</div>
-                  <div className="text-gray-400 text-sm line-through">৳{product.originalPrice}</div>
+                  <div className="text-white font-semibold">
+                    ৳{product.price}
+                  </div>
+                  <div className="text-gray-400 text-sm line-through">
+                    ৳{product.originalPrice}
+                  </div>
                 </div>
               </div>
 
@@ -310,7 +413,7 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-emerald-400">
                   <span>Discount (33% OFF)</span>
-                  <span>-৳{(product.originalPrice - product.price)}</span>
+                  <span>-৳{product.originalPrice - product.price}</span>
                 </div>
                 <div className="flex justify-between text-gray-300">
                   <span>Delivery Charge</span>
@@ -339,10 +442,11 @@ const Checkout = () => {
               </div>
 
               <div className="text-xs text-gray-400 mt-4">
-                🔒 Your payment information is secure and encrypted. Order tracking will be available after purchase.
+                🔒 Your payment information is secure and encrypted. Order
+                tracking will be available after purchase.
               </div>
             </CardContent>
-          </Card>
+          </Card>{" "}
         </div>
       </div>
     </div>

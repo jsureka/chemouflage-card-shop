@@ -1,13 +1,12 @@
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { useProducts } from '@/contexts/ProductsContext';
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,51 +14,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Plus, Edit, Trash2, Package, DollarSign, Tag, Archive } from 'lucide-react';
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useProducts } from "@/contexts/ProductsContext";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Archive,
+  DollarSign,
+  Edit,
+  Package,
+  Plus,
+  Tag,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 
 const ProductManagement = () => {
-  const { products, loading, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, createProduct, updateProduct, deleteProduct } =
+    useProducts();
   const { toast } = useToast();
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    original_price: '',
-    discount_percentage: '',
-    category: '',
-    stock_quantity: '',
+    name: "",
+    description: "",
+    price: "",
+    original_price: "",
+    discount_percentage: "",
+    category: "",
+    stock_quantity: "",
     is_active: true,
-    image_url: ''
+    image_url: "",
   });
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      original_price: '',
-      discount_percentage: '',
-      category: '',
-      stock_quantity: '',
+      name: "",
+      description: "",
+      price: "",
+      original_price: "",
+      discount_percentage: "",
+      category: "",
+      stock_quantity: "",
       is_active: true,
-      image_url: ''
+      image_url: "",
     });
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreate = async () => {
@@ -73,14 +87,14 @@ const ProductManagement = () => {
         category: formData.category,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         is_active: formData.is_active,
-        image_url: formData.image_url || null
+        image_url: formData.image_url || null,
       };
 
       await createProduct(productData);
       setIsCreateDialogOpen(false);
       resetForm();
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
     }
   };
 
@@ -95,7 +109,7 @@ const ProductManagement = () => {
       category: product.category,
       stock_quantity: product.stock_quantity.toString(),
       is_active: product.is_active,
-      image_url: product.image_url || ''
+      image_url: product.image_url || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -113,7 +127,7 @@ const ProductManagement = () => {
         category: formData.category,
         stock_quantity: parseInt(formData.stock_quantity) || 0,
         is_active: formData.is_active,
-        image_url: formData.image_url || null
+        image_url: formData.image_url || null,
       };
 
       await updateProduct(editingProduct.id, updates);
@@ -121,12 +135,12 @@ const ProductManagement = () => {
       setEditingProduct(null);
       resetForm();
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error("Error updating product:", error);
     }
   };
 
   const handleDelete = async (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       await deleteProduct(productId);
     }
   };
@@ -138,14 +152,17 @@ const ProductManagement = () => {
           <Label className="text-white">Product Name</Label>
           <Input
             value={formData.name}
-            onChange={(e) => handleInputChange('name', e.target.value)}
+            onChange={(e) => handleInputChange("name", e.target.value)}
             className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="Enter product name"
           />
         </div>
         <div className="space-y-2">
           <Label className="text-white">Category</Label>
-          <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+          <Select
+            value={formData.category}
+            onValueChange={(value) => handleInputChange("category", value)}
+          >
             <SelectTrigger className="bg-slate-700 border-teal-500/30 text-white">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -163,7 +180,7 @@ const ProductManagement = () => {
         <Label className="text-white">Description</Label>
         <Textarea
           value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
+          onChange={(e) => handleInputChange("description", e.target.value)}
           className="bg-slate-700 border-teal-500/30 text-white"
           placeholder="Enter product description"
           rows={3}
@@ -176,7 +193,7 @@ const ProductManagement = () => {
           <Input
             type="number"
             value={formData.price}
-            onChange={(e) => handleInputChange('price', e.target.value)}
+            onChange={(e) => handleInputChange("price", e.target.value)}
             className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="199.00"
           />
@@ -186,7 +203,9 @@ const ProductManagement = () => {
           <Input
             type="number"
             value={formData.original_price}
-            onChange={(e) => handleInputChange('original_price', e.target.value)}
+            onChange={(e) =>
+              handleInputChange("original_price", e.target.value)
+            }
             className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="299.00"
           />
@@ -196,7 +215,9 @@ const ProductManagement = () => {
           <Input
             type="number"
             value={formData.discount_percentage}
-            onChange={(e) => handleInputChange('discount_percentage', e.target.value)}
+            onChange={(e) =>
+              handleInputChange("discount_percentage", e.target.value)
+            }
             className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="33"
           />
@@ -209,14 +230,21 @@ const ProductManagement = () => {
           <Input
             type="number"
             value={formData.stock_quantity}
-            onChange={(e) => handleInputChange('stock_quantity', e.target.value)}
+            onChange={(e) =>
+              handleInputChange("stock_quantity", e.target.value)
+            }
             className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="100"
           />
         </div>
         <div className="space-y-2">
           <Label className="text-white">Status</Label>
-          <Select value={formData.is_active.toString()} onValueChange={(value) => handleInputChange('is_active', value === 'true')}>
+          <Select
+            value={formData.is_active.toString()}
+            onValueChange={(value) =>
+              handleInputChange("is_active", value === "true")
+            }
+          >
             <SelectTrigger className="bg-slate-700 border-teal-500/30 text-white">
               <SelectValue />
             </SelectTrigger>
@@ -232,7 +260,7 @@ const ProductManagement = () => {
         <Label className="text-white">Image URL (Optional)</Label>
         <Input
           value={formData.image_url}
-          onChange={(e) => handleInputChange('image_url', e.target.value)}
+          onChange={(e) => handleInputChange("image_url", e.target.value)}
           className="bg-slate-700 border-teal-500/30 text-white"
           placeholder="https://example.com/image.jpg"
         />
@@ -257,7 +285,7 @@ const ProductManagement = () => {
           onClick={isEdit ? handleUpdate : handleCreate}
           className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
         >
-          {isEdit ? 'Update Product' : 'Create Product'}
+          {isEdit ? "Update Product" : "Create Product"}
         </Button>
       </div>
     </div>
@@ -272,7 +300,9 @@ const ProductManagement = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Product Management</h2>
-          <p className="text-gray-300">Manage your product catalog, pricing, and inventory</p>
+          <p className="text-gray-300">
+            Manage your product catalog, pricing, and inventory
+          </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -295,12 +325,21 @@ const ProductManagement = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <Card key={product.id} className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+          <Card
+            key={product.id}
+            className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30"
+          >
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white text-lg">{product.name}</CardTitle>
-                <Badge className={product.is_active ? 'bg-emerald-600' : 'bg-gray-600'}>
-                  {product.is_active ? 'Active' : 'Inactive'}
+                <CardTitle className="text-white text-lg">
+                  {product.name}
+                </CardTitle>
+                <Badge
+                  className={
+                    product.is_active ? "bg-emerald-600" : "bg-gray-600"
+                  }
+                >
+                  {product.is_active ? "Active" : "Inactive"}
                 </Badge>
               </div>
               <CardDescription className="text-gray-300 line-clamp-2">
@@ -310,8 +349,7 @@ const ProductManagement = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center text-gray-300">
-                  <DollarSign className="w-4 h-4 mr-1" />
-                  ৳{product.price}
+                  <DollarSign className="w-4 h-4 mr-1" />৳{product.price}
                 </div>
                 <div className="flex items-center text-gray-300">
                   <Tag className="w-4 h-4 mr-1" />
@@ -326,13 +364,12 @@ const ProductManagement = () => {
                   {product.category}
                 </div>
               </div>
-              
+
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(product)}
-                  className="flex-1 text-white border-teal-500/30 hover:bg-teal-900/50"
                 >
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
@@ -341,7 +378,7 @@ const ProductManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(product.id)}
-                  className="flex-1 text-red-400 border-red-500/30 hover:bg-red-900/50"
+                  className="text-red-500 border-red-500 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete

@@ -1,33 +1,58 @@
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, FlaskConical, Sparkles } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FlaskConical,
+  Play,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
   const slides = [
     {
       title: "Discover Chemistry with AR",
       subtitle: "Revolutionary AR Chemistry Experience",
-      description: "Experience chemistry like never before with our cutting-edge AR technology. Visualize molecular structures, conduct virtual experiments, and unlock the mysteries of the chemical world.",
-      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=600&fit=crop",
-      cta: "Start Exploring"
+      description:
+        "Experience chemistry like never before with our cutting-edge AR technology. Visualize molecular structures, conduct virtual experiments, and unlock the mysteries of the chemical world.",
+      image: "/Screenshot_20250529_001009_Chemouflage.jpg",
+      cta: "Start Exploring",
     },
     {
       title: "Interactive Learning",
       subtitle: "Hands-on Chemistry Education",
-      description: "Learn chemistry through interactive AR experiences. From basic elements to complex reactions, our platform makes learning engaging and memorable.",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop",
-      cta: "Learn More"
+      description:
+        "Learn chemistry through interactive AR experiences. From basic elements to complex reactions, our platform makes learning engaging and memorable.",
+      image: "/Screenshot_20250529_001026_Chemouflage.jpg",
+      cta: "Learn More",
     },
     {
       title: "Professional Tools",
       subtitle: "Advanced AR Chemistry Kit",
-      description: "Access professional-grade AR chemistry tools and simulations. Perfect for students, educators, and professionals exploring the molecular world.",
-      image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop",
-      cta: "Get Started"
-    }
+      description:
+        "Access professional-grade AR chemistry tools and simulations. Perfect for students, educators, and professionals exploring the molecular world.",
+      image: "/Screenshot_20250529_001902_Chemouflage (1).jpg",
+      cta: "Get Started",
+    },
+    {
+      title: "Advanced Experiments",
+      subtitle: "Complex Chemical Reactions",
+      description:
+        "Explore advanced chemistry concepts with our comprehensive AR platform. Perfect for higher education and research applications.",
+      image: "/Screenshot_20250529_002417_Chemouflage.jpg",
+      cta: "Explore Now",
+    },
+    {
+      title: "Molecular Visualization",
+      subtitle: "3D Chemical Structures",
+      description:
+        "Visualize complex molecular structures in stunning 3D detail with our advanced AR technology and interactive learning tools.",
+      image: "/Screenshot_20250529_012431_Chemouflage.jpg",
+      cta: "View Demo",
+    },
   ];
 
   useEffect(() => {
@@ -53,93 +78,117 @@ const Hero = () => {
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-xl animate-pulse delay-1000" />
         <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-cyan-500/5 rounded-full blur-lg animate-bounce" />
       </div>
-
       {/* Slider Content */}
       <div className="relative z-10 container mx-auto px-4 h-screen flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
           {/* Text Content */}
           <div className="space-y-8">
-            <div className="flex items-center space-x-2 text-teal-400">
+            {" "}
+            <div className="flex items-center space-x-2 text-teal-400 transition-opacity duration-500">
               <FlaskConical className="w-6 h-6" />
               <span className="text-sm font-medium uppercase tracking-wider">
                 {slides[currentSlide].subtitle}
               </span>
               <Sparkles className="w-4 h-4" />
             </div>
-            
-            <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
+            <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight transition-opacity duration-500">
               {slides[currentSlide].title}
             </h1>
-            
-            <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
+            <p className="text-xl text-gray-300 max-w-lg leading-relaxed transition-opacity duration-500">
               {slides[currentSlide].description}
             </p>
-            
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-teal-500/25 transition-all duration-300"
               >
                 {slides[currentSlide].cta}
-              </Button>
-              <Button 
-                variant="outline" 
+              </Button>{" "}
+              <Button
+                variant="outline"
                 size="lg"
+                onClick={() => setShowVideo(true)}
                 className="border-2 border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-slate-900 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all duration-300"
               >
-                Watch Demo
+                <Play className="w-5 h-5 mr-2" />
+                Watch Effusion Demo
               </Button>
             </div>
-          </div>
-
+          </div>{" "}
           {/* Image/Visual Content */}
           <div className="relative">
-            <div className="relative w-full h-96 lg:h-[500px] bg-gradient-to-br from-teal-500/20 to-emerald-500/20 rounded-3xl backdrop-blur-sm border border-teal-500/30 overflow-hidden">
-              <img 
-                src={slides[currentSlide].image} 
+            <div className="relative w-full max-w-md mx-auto lg:max-w-lg xl:max-w-xl bg-gradient-to-br from-teal-500/20 to-emerald-500/20 rounded-3xl backdrop-blur-sm border border-teal-500/30 overflow-hidden shadow-2xl">
+              <img
+                src={slides[currentSlide].image}
                 alt={slides[currentSlide].title}
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-contain transition-opacity duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 to-transparent" />
             </div>
           </div>
         </div>
-      </div>
-
+      </div>{" "}
       {/* Navigation Controls */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">
         <Button
           variant="ghost"
           size="icon"
           onClick={prevSlide}
-          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
-        
+
         <div className="flex space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide 
-                  ? 'bg-teal-400 scale-125' 
-                  : 'bg-white/30 hover:bg-white/50'
+                index === currentSlide
+                  ? "bg-teal-400 scale-125 shadow-lg shadow-teal-400/50"
+                  : "bg-white/30 hover:bg-white/50 hover:scale-110"
               }`}
             />
           ))}
         </div>
-        
+
         <Button
           variant="ghost"
           size="icon"
           onClick={nextSlide}
-          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
       </div>
+      {/* Video Modal */}
+      {showVideo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setShowVideo(false)}
+        >
+          <div
+            className="relative bg-black rounded-lg overflow-hidden max-w-4xl w-full max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors"
+            >
+              ✕
+            </button>
+            <video
+              controls
+              autoPlay
+              className="w-full h-full"
+              src="/3. Effusion_"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

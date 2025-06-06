@@ -279,7 +279,6 @@ const Checkout = () => {
               </form>
             </CardContent>
           </Card>
-
           {/* Order Summary */}
           <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 h-fit">
             <CardHeader>

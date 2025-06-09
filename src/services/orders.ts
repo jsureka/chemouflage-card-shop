@@ -1,5 +1,10 @@
 import { authService } from "./auth";
-import { ApiResponse, Order } from "./types";
+import {
+  ApiResponse,
+  Order,
+  OrderCreationResponse,
+  PaginatedResponse,
+} from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -34,13 +39,39 @@ class OrdersService {
       return { error: "Failed to process response" };
     }
   }
+  async getOrders(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }): Promise<ApiResponse<PaginatedResponse<Order>>> {
+    const queryParams = new URLSearchParams();
 
-  async getOrders(): Promise<ApiResponse<Order[]>> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/orders/`, {
+    if (params?.page !== undefined) {
+      queryParams.append("page", params.page.toString());
+    }
+    if (params?.limit !== undefined) {
+      queryParams.append("limit", params.limit.toString());
+    }
+    if (params?.status) {
+      queryParams.append("status", params.status);
+    }
+
+    const url = `${API_BASE_URL}/api/v1/orders/${
+      queryParams.toString() ? "?" + queryParams.toString() : ""
+    }`;
+
+    const response = await fetch(url, {
       headers: this.setAuthHeader(),
     });
 
-    return this.handleResponse<Order[]>(response);
+    return this.handleResponse<PaginatedResponse<Order>>(response);
+  }
+  async getOrderById(orderId: string): Promise<ApiResponse<Order>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
+      headers: this.setAuthHeader(),
+    });
+
+    return this.handleResponse<Order>(response);
   }
   async getUserOrders(): Promise<ApiResponse<Order[]>> {
     const response = await fetch(`${API_BASE_URL}/api/v1/orders/my-orders`, {
@@ -54,7 +85,7 @@ class OrdersService {
     payment_method: string;
     shipping_address: any;
     items: Array<{ product_id: string; quantity: number; price: number }>;
-  }): Promise<ApiResponse<Order>> {
+  }): Promise<ApiResponse<OrderCreationResponse>> {
     // Get current user
     const userResponse = await authService.getCurrentUser();
     if (userResponse.error || !userResponse.data) {
@@ -73,6 +104,7 @@ class OrdersService {
         zipCode: orderData.shipping_address.zipCode,
         phone: orderData.shipping_address.phone,
       },
+      items: orderData.items, // Include items in the order creation request
     };
 
     const response = await fetch(`${API_BASE_URL}/api/v1/orders/`, {
@@ -81,25 +113,9 @@ class OrdersService {
       body: JSON.stringify(backendOrderData),
     });
 
-    const result = await this.handleResponse<Order>(response);
+    const result = await this.handleResponse<OrderCreationResponse>(response);
 
-    // If order creation was successful, create order items
-    if (result.data && orderData.items && orderData.items.length > 0) {
-      try {
-        for (const item of orderData.items) {
-          await this.createOrderItem({
-            order_id: result.data.id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: item.price,
-          });
-        }
-      } catch (error) {
-        console.error("Error creating order items:", error);
-        // Order was created but items failed - you might want to handle this differently
-      }
-    }
-
+    // Items are now created as part of the order creation, so no need for separate calls
     return result;
   }
 

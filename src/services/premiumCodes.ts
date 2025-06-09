@@ -1,5 +1,5 @@
 import { authService } from "./auth";
-import { ApiResponse } from "./types";
+import { ApiResponse, PaginatedResponse } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -111,19 +111,31 @@ class PremiumCodesService {
       response
     );
   }
-
   async getPremiumCodes(
-    skip: number = 0,
-    limit: number = 100
-  ): Promise<ApiResponse<PremiumCode[]>> {
+    page: number = 1,
+    limit: number = 100,
+    active_only?: boolean,
+    bound_only?: boolean
+  ): Promise<ApiResponse<PaginatedResponse<PremiumCode>>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+
+    if (active_only !== undefined) {
+      queryParams.append("active_only", active_only.toString());
+    }
+    if (bound_only !== undefined) {
+      queryParams.append("bound_only", bound_only.toString());
+    }
+
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/premium-codes/?skip=${skip}&limit=${limit}`,
+      `${API_BASE_URL}/api/v1/premium-codes/?${queryParams.toString()}`,
       {
         headers: this.setAuthHeader(),
       }
     );
 
-    return this.handleResponse<PremiumCode[]>(response);
+    return this.handleResponse<PaginatedResponse<PremiumCode>>(response);
   }
 
   async getPremiumCodeStats(): Promise<ApiResponse<PremiumCodeStats>> {

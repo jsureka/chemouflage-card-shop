@@ -11,6 +11,26 @@ import { useEffect, useState } from "react";
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+
+  // Available video demos
+  const videoDemos = [
+    {
+      title: "Effusion Demo",
+      path: "/3. Effusion_",
+      description: "Watch how gases diffuse through molecular visualization",
+    },
+    {
+      title: "Reversible & Irreversible Reactions",
+      path: "/17. Reversible &Irreversible Reaction_",
+      description: "Explore chemical reaction dynamics and equilibrium",
+    },
+    {
+      title: "Build an Atom",
+      path: "/4. Build an Atom",
+      description: "Interactive atomic structure construction",
+    },
+  ];
 
   const slides = [
     {
@@ -111,7 +131,7 @@ const Hero = () => {
                 className="border-2 border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-slate-900 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all duration-300"
               >
                 <Play className="w-5 h-5 mr-2" />
-                Watch Effusion Demo
+                Watch Demos
               </Button>
             </div>
           </div>{" "}
@@ -161,7 +181,7 @@ const Hero = () => {
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
-      </div>
+      </div>{" "}
       {/* Video Modal */}
       {showVideo && (
         <div
@@ -169,7 +189,7 @@ const Hero = () => {
           onClick={() => setShowVideo(false)}
         >
           <div
-            className="relative bg-black rounded-lg overflow-hidden max-w-4xl w-full max-h-[80vh]"
+            className="relative bg-black rounded-lg overflow-hidden max-w-5xl w-full max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -178,11 +198,40 @@ const Hero = () => {
             >
               ✕
             </button>
+
+            {/* Video Demo Selector */}
+            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+              {videoDemos.map((demo, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentVideoIndex(index)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    index === currentVideoIndex
+                      ? "bg-teal-500 text-white"
+                      : "bg-white/20 text-white hover:bg-white/30"
+                  }`}
+                >
+                  {demo.title}
+                </button>
+              ))}
+            </div>
+
+            {/* Video Title and Description */}
+            <div className="absolute bottom-4 left-4 right-4 z-10 bg-black/60 rounded-lg p-4">
+              <h3 className="text-white text-lg font-semibold mb-1">
+                {videoDemos[currentVideoIndex].title}
+              </h3>
+              <p className="text-gray-300 text-sm">
+                {videoDemos[currentVideoIndex].description}
+              </p>
+            </div>
+
             <video
               controls
               autoPlay
+              key={currentVideoIndex} // Forces video reload when demo changes
               className="w-full h-full"
-              src="/3. Effusion_"
+              src={videoDemos[currentVideoIndex].path}
             >
               Your browser does not support the video tag.
             </video>

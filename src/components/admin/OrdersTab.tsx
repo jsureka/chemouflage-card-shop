@@ -9,22 +9,26 @@ import AdminTable, {
 
 interface OrdersTabProps {
   allOrders: any[];
+  ordersPagination: any;
   ordersLoading: boolean;
   ordersPage: number;
   ordersLimit: number;
   onRefreshOrders: () => void;
   onEditOrder: (order: Order) => void;
   onSetOrdersPage: (page: number) => void;
+  onSetOrdersPageSize?: (pageSize: number) => void;
 }
 
 const OrdersTab = ({
   allOrders,
+  ordersPagination,
   ordersLoading,
   ordersPage,
   ordersLimit,
   onRefreshOrders,
   onEditOrder,
   onSetOrdersPage,
+  onSetOrdersPageSize,
 }: OrdersTabProps) => {
   const getStatusBadge = (
     status: string,
@@ -158,12 +162,11 @@ const OrdersTab = ({
       variant: "outline",
     },
   ];
-
   const pagination: PaginationInfo = {
-    currentPage: ordersPage,
-    pageSize: ordersLimit,
-    hasNextPage: allOrders.length === ordersLimit,
-    hasPreviousPage: ordersPage > 0,
+    currentPage: ordersPagination?.current_page || 1,
+    pageSize: ordersPagination?.page_size || ordersLimit,
+    hasNextPage: ordersPagination?.has_next || false,
+    hasPreviousPage: ordersPagination?.has_previous || false,
   };
 
   const renderCustomRow = (order: any, index: number) => (
@@ -228,7 +231,6 @@ const OrdersTab = ({
       )}
     </div>
   );
-
   return (
     <AdminTable
       title="Order Management"
@@ -243,6 +245,7 @@ const OrdersTab = ({
       emptyText="No orders found"
       pagination={pagination}
       onPageChange={onSetOrdersPage}
+      onPageSizeChange={onSetOrdersPageSize}
       onRefresh={onRefreshOrders}
       renderRow={renderCustomRow}
       keyField="id"

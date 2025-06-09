@@ -54,11 +54,11 @@ class ProductRepository:
         db = await get_database()
         result = await db.products.delete_one({"_id": ObjectId(product_id)})
         return result.deleted_count > 0
-    
     @staticmethod
-    async def count() -> int:
+    async def count(active_only: bool = False) -> int:
         db = await get_database()
-        return await db.products.count_documents({})
+        query = {"is_active": True} if active_only else {}
+        return await db.products.count_documents(query)
     
     @staticmethod
     async def search(query: str) -> List[Product]:

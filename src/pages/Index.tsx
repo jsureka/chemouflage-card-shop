@@ -327,6 +327,13 @@ const Index = () => {
           </div>
 
           <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-gray-400">
+            <div className="flex items-center justify-center">
+              <img
+                src="/aamarpay-footer.png"
+                alt="AamarPay - Secure Payment Gateway"
+                className="h-6 opacity-80 hover:opacity-100 transition-opacity"
+              />
+            </div>
             <p>&copy; 2024 Chemouflage. All rights reserved.</p>
           </div>
         </div>

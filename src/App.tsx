@@ -13,6 +13,9 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import OrderTracking from "./pages/OrderTracking";
+import PaymentCancelled from "./pages/PaymentCancelled";
+import PaymentFailed from "./pages/PaymentFailed";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import ProductDetail from "./pages/ProductDetail";
 import Register from "./pages/Register";
 
@@ -33,9 +36,12 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/products" element={<ProductBrowser />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/products/:id" element={<ProductDetail />} />{" "}
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/track-order" element={<OrderTracking />} />
+              <Route path="/payment/success" element={<PaymentSuccess />} />
+              <Route path="/payment/failed" element={<PaymentFailed />} />
+              <Route path="/payment/cancelled" element={<PaymentCancelled />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -34,16 +34,17 @@ const AdminDashboard = () => {
     totalRevenue: 0,
     totalCustomers: 0,
   });
-  const [orders, setOrders] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [orders, setOrders] = useState([]);  const [customers, setCustomers] = useState([]);
+  const [customersPagination, setCustomersPagination] = useState(null);
   const [customersLoading, setCustomersLoading] = useState(false);
-  const [customersPage, setCustomersPage] = useState(0);
-  const [customersLimit] = useState(20);
+  const [customersPage, setCustomersPage] = useState(1);
+  const [customersLimit, setCustomersLimit] = useState(20);
   // Orders management state
   const [allOrders, setAllOrders] = useState([]);
+  const [ordersPagination, setOrdersPagination] = useState(null);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const [ordersPage, setOrdersPage] = useState(0);
-  const [ordersLimit] = useState(20);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersLimit, setOrdersLimit] = useState(20);
 
   // Order editing modal state
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -57,18 +58,17 @@ const AdminDashboard = () => {
     if (isAdmin) {
       fetchDashboardData();
     }
-  }, [user, isAdmin, isLoading, navigate]);
-  useEffect(() => {
+  }, [user, isAdmin, isLoading, navigate]);  useEffect(() => {
     if (activeTab === "customers" && isAdmin) {
       fetchCustomers();
     }
-  }, [activeTab, isAdmin, customersPage]);
+  }, [activeTab, isAdmin, customersPage, customersLimit]);
 
   useEffect(() => {
     if (activeTab === "orders" && isAdmin) {
       fetchAllOrders();
     }
-  }, [activeTab, isAdmin, ordersPage]);
+  }, [activeTab, isAdmin, ordersPage, ordersLimit]);
 
   const fetchDashboardData = async () => {
     try {
@@ -78,9 +78,7 @@ const AdminDashboard = () => {
 
       if (statsError) {
         throw new Error(statsError);
-      }
-
-      // Fetch recent orders
+      } // Fetch recent orders
       const { data: ordersData, error: ordersError } =
         await adminService.getRecentOrders(10);
 
@@ -92,7 +90,12 @@ const AdminDashboard = () => {
         setStats(statsData);
       }
 
-      setOrders(ordersData || []);
+      // Handle paginated response for recent orders
+      if (ordersData) {
+        setOrders(ordersData.data || []);
+      } else {
+        setOrders([]);
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       toast({
@@ -102,23 +105,25 @@ const AdminDashboard = () => {
       });
     }
   };
-
   const fetchCustomers = async () => {
     try {
       setCustomersLoading(true);
 
       // Fetch customers/users with pagination
       const { data: customersData, error: customersError } =
-        await adminService.getAllUsers(
-          customersPage * customersLimit,
-          customersLimit
-        );
+        await adminService.getAllUsers(customersPage, customersLimit);
 
       if (customersError) {
         throw new Error(customersError);
       }
 
-      setCustomers(customersData || []);
+      if (customersData) {
+        setCustomers(customersData.data || []);
+        setCustomersPagination(customersData.pagination);
+      } else {
+        setCustomers([]);
+        setCustomersPagination(null);
+      }
     } catch (error) {
       console.error("Error fetching customers:", error);
       toast({
@@ -136,13 +141,19 @@ const AdminDashboard = () => {
 
       // Fetch all orders with pagination
       const { data: ordersData, error: ordersError } =
-        await adminService.getAllOrders(ordersPage * ordersLimit, ordersLimit);
+        await adminService.getAllOrders(ordersPage, ordersLimit);
 
       if (ordersError) {
         throw new Error(ordersError);
       }
 
-      setAllOrders(ordersData || []);
+      if (ordersData) {
+        setAllOrders(ordersData.data || []);
+        setOrdersPagination(ordersData.pagination);
+      } else {
+        setAllOrders([]);
+        setOrdersPagination(null);
+      }
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast({
@@ -154,10 +165,19 @@ const AdminDashboard = () => {
       setOrdersLoading(false);
     }
   };
-
   const handleEditOrder = (order: Order) => {
     setSelectedOrder(order);
     setIsOrderEditModalOpen(true);
+  };
+
+  const handleOrdersPageSizeChange = (newSize: number) => {
+    setOrdersLimit(newSize);
+    setOrdersPage(1); // Reset to first page when changing page size
+  };
+
+  const handleCustomersPageSizeChange = (newSize: number) => {
+    setCustomersLimit(newSize);
+    setCustomersPage(1); // Reset to first page when changing page size
   };
 
   const handleOrderUpdated = () => {
@@ -254,28 +274,31 @@ const AdminDashboard = () => {
         {/* Products Tab */}
         {activeTab === "products" && <ProductManagement />}
         {/* Premium Codes Tab */}
-        {activeTab === "premium-codes" && <PremiumCodeManagement />}
-        {/* Orders Tab */}
+        {activeTab === "premium-codes" && <PremiumCodeManagement />}{" "}        {/* Orders Tab */}
         {activeTab === "orders" && (
           <OrdersTab
             allOrders={allOrders}
+            ordersPagination={ordersPagination}
             ordersLoading={ordersLoading}
             ordersPage={ordersPage}
             ordersLimit={ordersLimit}
             onRefreshOrders={fetchAllOrders}
             onEditOrder={handleEditOrder}
             onSetOrdersPage={setOrdersPage}
+            onSetOrdersPageSize={handleOrdersPageSizeChange}
           />
-        )}
+        )}{" "}
         {/* Customers Tab */}
         {activeTab === "customers" && (
           <CustomersTab
             customers={customers}
+            customersPagination={customersPagination}
             customersLoading={customersLoading}
             customersPage={customersPage}
             customersLimit={customersLimit}
             onRefreshCustomers={fetchCustomers}
             onSetCustomersPage={setCustomersPage}
+            onSetCustomersPageSize={handleCustomersPageSizeChange}
           />
         )}
         {/* Settings Tab */}

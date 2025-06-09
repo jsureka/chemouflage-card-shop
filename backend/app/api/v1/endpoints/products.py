@@ -1,9 +1,11 @@
 from typing import Any, List, Optional
 
 from app.api.dependencies import get_current_admin, get_current_user
+from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import Product, ProductCreate, ProductUpdate
 from app.models.user import User
 from app.repositories.product import ProductRepository
+from app.utils.pagination import create_paginated_response
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 router = APIRouter()
@@ -19,21 +21,36 @@ async def create_product(
     product_id = await ProductRepository.create(product_in)
     return await ProductRepository.get_by_id(product_id)
 
-@router.get("/", response_model=List[Product])
+@router.get("/", response_model=PaginatedResponse[Product])
 async def read_products(
-    skip: int = 0,
-    limit: int = 100,
+    pagination: PaginationParams = Depends(),
     active_only: bool = Query(False, description="Filter only active products"),
     category: Optional[str] = Query(None, description="Filter by category")
 ) -> Any:
     """
-    Retrieve products, with optional filtering.
-    """
+    Retrieve products with pagination, with optional filtering.
+    """    
     if category:
+        # For category filtering, we need to implement pagination differently
+        # For now, we'll return all products by category (not paginated)
         products = await ProductRepository.find_by_category(category)
+        # Create a simple paginated response for category filtering
+        return await create_paginated_response(
+            data=products,
+            page=1,
+            limit=len(products) if products else 0,
+            total_count=len(products) if products else 0
+        )
     else:
-        products = await ProductRepository.get_all(skip=skip, limit=limit, active_only=active_only)
-    return products
+        products = await ProductRepository.get_all(skip=pagination.skip, limit=pagination.limit, active_only=active_only)
+        total_count = await ProductRepository.count(active_only=active_only)
+        
+        return await create_paginated_response(
+            data=products,
+            page=pagination.page,
+            limit=pagination.limit,
+            total_count=total_count
+        )
 
 @router.get("/{product_id}", response_model=Product)
 async def read_product(

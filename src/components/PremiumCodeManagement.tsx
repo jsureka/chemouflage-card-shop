@@ -17,8 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ModernPagination from "@/components/ui/ModernPagination";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { PaginationMetadata } from "@/services";
 import {
   PremiumCode,
   PremiumCodeBind,
@@ -43,6 +45,7 @@ import { useEffect, useState } from "react";
 
 const PremiumCodeManagement = () => {
   const [codes, setCodes] = useState<PremiumCode[]>([]);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [stats, setStats] = useState<PremiumCodeStats>({
     total_codes: 0,
     active_codes: 0,
@@ -54,6 +57,9 @@ const PremiumCodeManagement = () => {
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isBindDialogOpen, setIsBindDialogOpen] = useState(false);
   const [selectedCode, setSelectedCode] = useState<PremiumCode | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterActiveOnly, setFilterActiveOnly] = useState(false);
+  const [filterBoundOnly, setFilterBoundOnly] = useState(false);
   const { toast } = useToast();
 
   // Form states
@@ -74,18 +80,22 @@ const PremiumCodeManagement = () => {
   const [bindForm, setBindForm] = useState<PremiumCodeBind>({
     user_email: "",
   });
-
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage, filterActiveOnly, filterBoundOnly]);
 
-  const fetchData = async () => {
+  const fetchData = async (page: number = currentPage) => {
     try {
       setLoading(true);
 
       // Fetch codes and stats in parallel
       const [codesResponse, statsResponse] = await Promise.all([
-        premiumCodesService.getPremiumCodes(0, 100),
+        premiumCodesService.getPremiumCodes(
+          page,
+          20,
+          filterActiveOnly,
+          filterBoundOnly
+        ),
         premiumCodesService.getPremiumCodeStats(),
       ]);
 
@@ -97,7 +107,13 @@ const PremiumCodeManagement = () => {
         throw new Error(statsResponse.error);
       }
 
-      setCodes(codesResponse.data || []);
+      if (codesResponse.data) {
+        setCodes(codesResponse.data.data || []);
+        setPagination(codesResponse.data.pagination);
+      } else {
+        setCodes([]);
+        setPagination(null);
+      }
       setStats(statsResponse.data || stats);
     } catch (error) {
       console.error("Error fetching premium codes data:", error);
@@ -123,10 +139,9 @@ const PremiumCodeManagement = () => {
         title: "Success",
         description: "Premium code created successfully",
       });
-
       setIsCreateDialogOpen(false);
       resetCreateForm();
-      fetchData(); // Refresh data
+      await fetchData(1); // Reset to first page after creation
     } catch (error) {
       console.error("Error creating premium code:", error);
       toast({
@@ -160,10 +175,9 @@ const PremiumCodeManagement = () => {
         title: "Success",
         description: `Generated ${generateForm.count} premium codes successfully`,
       });
-
       setIsGenerateDialogOpen(false);
       resetGenerateForm();
-      fetchData(); // Refresh data
+      await fetchData(1); // Reset to first page after generation
     } catch (error) {
       console.error("Error generating premium codes:", error);
       toast({
@@ -191,11 +205,10 @@ const PremiumCodeManagement = () => {
         title: "Success",
         description: "Premium code bound to user successfully",
       });
-
       setIsBindDialogOpen(false);
       setSelectedCode(null);
       resetBindForm();
-      fetchData(); // Refresh data
+      await fetchData(); // Refresh current page
     } catch (error) {
       console.error("Error binding premium code:", error);
       toast({
@@ -213,13 +226,12 @@ const PremiumCodeManagement = () => {
       if (response.error) {
         throw new Error(response.error);
       }
-
       toast({
         title: "Success",
         description: "Premium code unbound successfully",
       });
 
-      fetchData(); // Refresh data
+      await fetchData(); // Refresh current page
     } catch (error) {
       console.error("Error unbinding premium code:", error);
       toast({
@@ -241,13 +253,12 @@ const PremiumCodeManagement = () => {
       if (response.error) {
         throw new Error(response.error);
       }
-
       toast({
         title: "Success",
         description: "Premium code deleted successfully",
       });
 
-      fetchData(); // Refresh data
+      await fetchData(); // Refresh current page
     } catch (error) {
       console.error("Error deleting premium code:", error);
       toast({
@@ -281,10 +292,13 @@ const PremiumCodeManagement = () => {
       user_email: "",
     });
   };
-
   const openBindDialog = (code: PremiumCode) => {
     setSelectedCode(code);
     setIsBindDialogOpen(true);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const formatDate = (dateString: string) => {
@@ -306,9 +320,29 @@ const PremiumCodeManagement = () => {
           <p className="text-gray-300">
             Create, manage, and track premium access codes
           </p>
-        </div>
+        </div>{" "}
         <div className="flex space-x-2">
-          <Button onClick={fetchData} variant="outline">
+          <Button
+            onClick={() => {
+              setFilterActiveOnly(!filterActiveOnly);
+              setCurrentPage(1);
+            }}
+            variant={filterActiveOnly ? "default" : "outline"}
+            size="sm"
+          >
+            Active Only
+          </Button>
+          <Button
+            onClick={() => {
+              setFilterBoundOnly(!filterBoundOnly);
+              setCurrentPage(1);
+            }}
+            variant={filterBoundOnly ? "default" : "outline"}
+            size="sm"
+          >
+            Bound Only
+          </Button>
+          <Button onClick={() => fetchData()} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
@@ -657,8 +691,7 @@ const PremiumCodeManagement = () => {
                           <User className="w-4 h-4 mr-1" />
                           Bind
                         </Button>
-                      )}
-
+                      )}{" "}
                       <Button
                         onClick={() => handleDelete(code.id)}
                         variant="outline"
@@ -674,7 +707,19 @@ const PremiumCodeManagement = () => {
               )}
             </div>
           </CardContent>
-        </Card>
+        </Card>{" "}
+        {/* Pagination Controls */}
+        {pagination && pagination.total_pages > 1 && (
+          <ModernPagination
+            currentPage={pagination.current_page}
+            totalPages={pagination.total_pages}
+            hasNext={pagination.has_next}
+            hasPrevious={pagination.has_previous}
+            totalItems={pagination.total_items}
+            pageSize={pagination.page_size}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
 
       {/* Bind Code Dialog */}

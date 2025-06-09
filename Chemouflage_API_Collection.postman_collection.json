@@ -404,7 +404,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"total_amount\": 259.99,\n  \"payment_method\": \"bkash\",\n  \"shipping_address\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main Street, Apt 4B\",\n    \"city\": \"Dhaka\",\n    \"area\": \"Dhanmondi\",\n    \"zipCode\": \"1205\",\n    \"phone\": \"+8801234567890\"\n  },\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"total_amount\": 259.99,\n  \"payment_method\": \"aamarpay\",\n  \"shipping_address\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main Street, Apt 4B\",\n    \"city\": \"Dhaka\",\n    \"area\": \"Dhanmondi\",\n    \"zipCode\": \"1205\",\n    \"phone\": \"+8801234567890\"\n  },\n  \"status\": \"pending\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/orders/",

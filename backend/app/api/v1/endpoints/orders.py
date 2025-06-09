@@ -1,7 +1,9 @@
+import logging
 from typing import Any, List, Optional
 
 from app.api.dependencies import get_current_admin, get_current_user
 from app.core.config import settings
+from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
                                 OrderItem, OrderItemCreate, OrderUpdate,
                                 OrderWithItems)
@@ -9,29 +11,117 @@ from app.models.user import User
 from app.repositories.order import OrderItemRepository, OrderRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
+from app.utils.pagination import create_paginated_response
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/", response_model=Order, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order_in: OrderCreate,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Create a new order.
+    Create a new order and handle payment initiation if needed.
     """
-    # Ensure the user can only create orders for themselves
+    logger.info(f"Creating order for user {current_user.id} with payment method: {order_in.payment_method}")# Ensure the user can only create orders for themselves
     if order_in.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only create orders for yourself"
         )
+      # Validate payment method is enabled
+    if order_in.payment_method:
+        from app.db.mongodb import get_database
+        from app.repositories.payment_settings import PaymentSettingsRepository
+        
+        db = await get_database()
+        payment_settings_repo = PaymentSettingsRepository(db)
+        payment_settings = await payment_settings_repo.get_settings()
+        
+        if payment_settings:
+            method_enabled = False
+            if order_in.payment_method == "aamarpay" and payment_settings.aamarpay.is_enabled:
+                method_enabled = True
+            elif order_in.payment_method == "cash_on_delivery" and payment_settings.cash_on_delivery.is_enabled:
+                method_enabled = True
+            
+            if not method_enabled:                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Payment method '{order_in.payment_method}' is not available"
+                )
     
     order_id = await OrderRepository.create(order_in)
     order = await OrderRepository.get_by_id(order_id)
+    logger.info(f"Order {order_id} created successfully")
     
+    # Create order items if provided
+    if order_in.items and len(order_in.items) > 0:
+        logger.info(f"Creating {len(order_in.items)} order items for order {order_id}")
+        for item_data in order_in.items:
+            item_create = OrderItemCreate(
+                order_id=order_id,
+                product_id=item_data["product_id"],
+                quantity=item_data["quantity"],
+                price=item_data["price"]
+            )
+            await OrderItemRepository.create(item_create)
+        logger.info(f"Order items created successfully for order {order_id}")
+      # Handle AamarPay payment initiation
+    if order_in.payment_method == "aamarpay":
+        try:
+            from app.services.aamarpay import aamarpay_service
+
+            # Prepare customer information - shipping_address is a Pydantic model, not a dict
+            customer_name = f"{order_in.shipping_address.firstName} {order_in.shipping_address.lastName}".strip()
+            customer_email = current_user.email
+            customer_phone = order_in.shipping_address.phone
+            customer_address = order_in.shipping_address.address
+            customer_city = order_in.shipping_address.city
+            
+            # Create payment request
+            payment_result = aamarpay_service.create_payment(
+                order_id=order_id,
+                amount=order_in.total_amount,
+                customer_name=customer_name or current_user.username or "Customer",
+                customer_email=customer_email,
+                customer_phone=customer_phone,
+                customer_address=customer_address,
+                customer_city=customer_city,
+                description=f"Payment for Order #{order_id}"
+            )
+            if payment_result.get("success"):
+                # Return order details with payment URL
+                return {
+                    "order": order.model_dump(),
+                    "payment_required": True,
+                    "payment_url": payment_result["payment_url"],
+                    "transaction_id": payment_result["transaction_id"],
+                    "message": "Order created successfully. Please complete payment."
+                }
+            else:
+                # Payment initiation failed, but order was created
+                return {
+                    "order": order.model_dump(),
+                    "payment_required": True,
+                    "payment_error": payment_result.get("error", "Failed to initiate payment"),
+                    "message": "Order created but payment initiation failed. Please try again or contact support."
+                }
+        except Exception as e:
+            # Payment initiation failed, but order was created
+            logger.error(f"Payment initiation failed for order {order_id}: {str(e)}")
+            logger.error(f"Exception details: {type(e).__name__}: {str(e)}")
+            
+            return {
+                "order": order.model_dump(),
+                "payment_required": True,
+                "payment_error": f"Payment initiation error: {str(e)}",
+                "message": "Order created but payment initiation failed. Please try again or contact support."
+            }
+    
+    # For cash on delivery or other payment methods
     # Get order with items for email
     order_with_items = await OrderRepository.get_with_items(order_id)
     
@@ -62,7 +152,11 @@ async def create_order(
             tracking_url=tracking_url
         )
     
-    return order
+    return {
+        "order": order.model_dump(),
+        "payment_required": False,
+        "message": "Order created successfully."
+    }
 
 @router.post("/items", response_model=OrderItem)
 async def create_order_item(
@@ -91,17 +185,17 @@ async def create_order_item(
     item_id = await OrderItemRepository.create(item_in)
     return await OrderItemRepository.get_by_id(item_id)
 
-@router.get("/", response_model=List[Order])
+@router.get("/", response_model=PaginatedResponse[Order])
 async def read_orders(
-    skip: int = 0,
-    limit: int = 100,
+    pagination: PaginationParams = Depends(),
     current_user: User = Depends(get_current_admin)
 ) -> Any:
     """
     Retrieve orders. Only for admins.
     """
-    orders = await OrderRepository.get_all(skip=skip, limit=limit)
-    return orders
+    orders = await OrderRepository.get_all(skip=pagination.skip, limit=pagination.limit)
+    total_count = await OrderRepository.count()
+    return await create_paginated_response(orders, pagination.page, pagination.limit, total_count)
 
 @router.get("/my-orders", response_model=List[Order])
 async def read_my_orders(

@@ -1,12 +1,13 @@
 import { useToast } from "@/hooks/use-toast";
-import { Product, productsService } from "@/services";
+import { PaginationMetadata, Product, productsService } from "@/services";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface ProductsContextType {
   products: Product[];
+  pagination: PaginationMetadata | null;
   loading: boolean;
   fetchProducts: (params?: {
-    skip?: number;
+    page?: number;
     limit?: number;
     active_only?: boolean;
     category?: string;
@@ -36,15 +37,16 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const fetchProducts = async (
     params: {
-      skip?: number;
+      page?: number;
       limit?: number;
       active_only?: boolean;
       category?: string;
-    } = { skip: 0, limit: 20, active_only: true }
+    } = { page: 1, limit: 20, active_only: true }
   ) => {
     try {
       setLoading(true);
@@ -53,7 +55,13 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
       if (error) {
         throw new Error(error);
       }
-      setProducts(data || []);
+      if (data) {
+        setProducts(data.data || []);
+        setPagination(data.pagination);
+      } else {
+        setProducts([]);
+        setPagination(null);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
       toast({
@@ -180,11 +188,11 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     fetchProducts();
   }, []);
-
   return (
     <ProductsContext.Provider
       value={{
         products,
+        pagination,
         loading,
         fetchProducts,
         createProduct,

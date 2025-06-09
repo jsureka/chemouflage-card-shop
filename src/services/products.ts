@@ -1,5 +1,5 @@
 import { authService } from "./auth";
-import { ApiResponse, Product } from "./types";
+import { ApiResponse, PaginatedResponse, Product } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -35,15 +35,15 @@ class ProductsService {
     }
   }
   async getProducts(params?: {
-    skip?: number;
+    page?: number;
     limit?: number;
     active_only?: boolean;
     category?: string;
-  }): Promise<ApiResponse<Product[]>> {
+  }): Promise<ApiResponse<PaginatedResponse<Product>>> {
     const queryParams = new URLSearchParams();
 
-    if (params?.skip !== undefined) {
-      queryParams.append("skip", params.skip.toString());
+    if (params?.page !== undefined) {
+      queryParams.append("page", params.page.toString());
     }
     if (params?.limit !== undefined) {
       queryParams.append("limit", params.limit.toString());
@@ -64,7 +64,7 @@ class ProductsService {
       headers: this.setAuthHeader(),
     });
 
-    return this.handleResponse<Product[]>(response);
+    return this.handleResponse<PaginatedResponse<Product>>(response);
   }
 
   async createProduct(

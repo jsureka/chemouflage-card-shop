@@ -13,3 +13,5 @@ python-dotenv==1.0.0
 fastapi-mail==1.4.1
 jinja2==3.1.3
 aiofiles==23.2.1
+aamarpay==1.0.1
+requests==2.26.0

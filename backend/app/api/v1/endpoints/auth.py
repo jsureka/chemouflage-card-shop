@@ -5,9 +5,11 @@ from app.api.dependencies import (get_current_admin, get_current_user,
                                   get_current_user_profile)
 from app.core.config import settings
 from app.core.security import create_access_token
+from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.user import Token, User, UserCreate, UserProfile, UserUpdate
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
+from app.utils.pagination import create_paginated_response
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -91,22 +93,30 @@ async def update_user_me(
     user = await UserRepository.update(current_user.id, user_update)
     return user
 
-@router.get("/users", response_model=List[UserProfile])
+@router.get("/users", response_model=PaginatedResponse[UserProfile])
 async def read_users(
-    skip: int = 0, 
-    limit: int = 100, 
+    pagination: PaginationParams = Depends(),
     current_user: User = Depends(get_current_admin)
 ) -> Any:
     """
-    Retrieve users. Only for admins.
+    Retrieve users with pagination. Only for admins.
     """
-    users = await UserRepository.get_all(skip=skip, limit=limit)
+    users = await UserRepository.get_all(skip=pagination.skip, limit=pagination.limit)
+    total_count = await UserRepository.count()
+    
+    # Convert users to profiles
     result = []
     for user in users:
         profile = await UserRepository.get_profile(user.id)
         if profile:
             result.append(profile)
-    return result
+    
+    return await create_paginated_response(
+        data=result,
+        page=pagination.page,
+        limit=pagination.limit,
+        total_count=total_count
+    )
 
 @router.post("/users/{user_id}/make-admin", response_model=UserProfile)
 async def make_admin(

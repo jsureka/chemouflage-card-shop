@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from app.db.mongodb import get_database
@@ -69,11 +69,13 @@ class OrderRepository:
             doc["user_id"] = str(doc["user_id"])
             orders.append(Order(**doc, id=str(doc["_id"])))
         return orders
-    
     @staticmethod
-    async def get_all(skip: int = 0, limit: int = 100) -> List[Order]:
+    async def get_all(skip: int = 0, limit: int = 100, status_filter: Optional[str] = None) -> List[Order]:
         db = await get_database()
-        cursor = db.orders.find().skip(skip).limit(limit).sort("created_at", -1)
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        cursor = db.orders.find(query).skip(skip).limit(limit).sort("created_at", -1)
         orders = []
         async for doc in cursor:
             doc["user_id"] = str(doc["user_id"])
@@ -103,11 +105,13 @@ class OrderRepository:
             await db.order_items.delete_many({"order_id": ObjectId(order_id)})
             return True
         return False
-    
     @staticmethod
-    async def count() -> int:
+    async def count(status_filter: Optional[str] = None) -> int:
         db = await get_database()
-        return await db.orders.count_documents({})
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        return await db.orders.count_documents(query)
     
     @staticmethod
     async def count_by_user(user_id: str) -> int:
@@ -119,6 +123,27 @@ class OrderRepository:
         pipeline = [{"$group": {"_id": None, "total": {"$sum": "$total_amount"}}}]
         result = await db.orders.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
+    
+    @staticmethod
+    async def get_revenue_by_period(days_ago: int) -> float:
+        """Get total revenue from a specific number of days ago to now"""
+        db = await get_database()
+        start_date = datetime.utcnow() - timedelta(days=days_ago)
+        
+        pipeline = [
+            {"$match": {"created_at": {"$gte": start_date}}},
+            {"$group": {"_id": None, "total": {"$sum": "$total_amount"}}}
+        ]
+        result = await db.orders.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+    
+    @staticmethod
+    async def get_count_by_period(days_ago: int) -> int:
+        """Get order count from a specific number of days ago to now"""
+        db = await get_database()
+        start_date = datetime.utcnow() - timedelta(days=days_ago)
+        
+        return await db.orders.count_documents({"created_at": {"$gte": start_date}})
     
     @staticmethod
     async def update_admin(order_id: str, order_update: AdminOrderUpdate) -> Optional[Order]:

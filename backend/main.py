@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import List
 
 import uvicorn
@@ -7,6 +8,22 @@ from app.core.config import settings
 from app.db.mongodb import close_mongo_connection, connect_to_mongo
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('app.log')
+    ]
+)
+
+# Set specific loggers
+logging.getLogger("app.services.aamarpay").setLevel(logging.DEBUG)
+logging.getLogger("app.api.v1.endpoints.orders").setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -24,11 +41,15 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_db_client():
+    logger.info("Starting up Chemouflage API...")
     await connect_to_mongo()
+    logger.info("Database connected successfully")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    logger.info("Shutting down Chemouflage API...")
     await close_mongo_connection()
+    logger.info("Database connection closed")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

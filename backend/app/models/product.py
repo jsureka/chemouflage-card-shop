@@ -74,7 +74,7 @@ class OrderBase(BaseModel):
     premium_code_id: Optional[str] = None  # Bound premium code when payment is confirmed
 
 class OrderCreate(OrderBase):
-    pass
+    items: Optional[List[dict]] = None  # Will contain {product_id, quantity, price}
 
 class OrderUpdate(BaseModel):
     payment_method: Optional[str] = None

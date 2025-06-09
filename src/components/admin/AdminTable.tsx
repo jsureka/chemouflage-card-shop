@@ -7,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ModernPagination from "@/components/ui/ModernPagination";
+import PageSizeSelector from "@/components/ui/PageSizeSelector";
 import { RefreshCw } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -64,11 +66,12 @@ interface AdminTableProps<T = any> {
   actions?: TableAction<T>[];
   onRefresh?: () => void;
   refreshDisabled?: boolean;
-
   // Pagination
   pagination?: PaginationInfo;
   onPageChange?: (page: number) => void;
   showPagination?: boolean;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
 
   // Styling
   className?: string;
@@ -97,6 +100,8 @@ const AdminTable = <T extends Record<string, any>>({
   pagination,
   onPageChange,
   showPagination = true,
+  onPageSizeChange,
+  pageSizeOptions = [10, 20, 50, 100],
   className = "",
   cardClassName = "",
   renderRow,
@@ -246,57 +251,48 @@ const AdminTable = <T extends Record<string, any>>({
                   ? renderRow(item, index)
                   : defaultRenderRow(item, index)
               )}
-            </div>
-
-            {/* Pagination Controls */}
+            </div>{" "}            {/* Modern Pagination Controls */}
             {showPagination && pagination && onPageChange && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-teal-500/30">
-                <div className="text-sm text-gray-300">
-                  {pagination.totalItems ? (
-                    <>
-                      Showing {pagination.currentPage * pagination.pageSize + 1}{" "}
-                      -{" "}
-                      {Math.min(
-                        (pagination.currentPage + 1) * pagination.pageSize,
-                        pagination.totalItems
-                      )}{" "}
-                      of {pagination.totalItems} items
-                    </>
-                  ) : (
-                    <>
-                      Page {pagination.currentPage + 1} • Showing {data.length}{" "}
-                      items
-                    </>
+              <div className="mt-6 pt-4 border-t border-teal-500/30">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                  {/* Page Size Selector */}
+                  {onPageSizeChange && (
+                    <PageSizeSelector
+                      value={pagination.pageSize}
+                      onValueChange={onPageSizeChange}
+                      options={pageSizeOptions}
+                      disabled={loading}
+                      className="order-2 sm:order-1"
+                    />
+                  )}
+                  
+                  {/* Pagination Info for mobile */}
+                  {pagination.totalItems && (
+                    <div className="text-sm text-gray-300 order-1 sm:order-2">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(pagination.currentPage - 1) * pagination.pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)}
+                      </span>{" "}
+                      of <span className="font-medium">{pagination.totalItems}</span> results
+                    </div>
                   )}
                 </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      onPageChange(Math.max(0, pagination.currentPage - 1))
-                    }
-                    disabled={pagination.currentPage === 0 || loading}
-                    className="text-teal-400 border-teal-400 hover:bg-teal-900/50"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onPageChange(pagination.currentPage + 1)}
-                    disabled={
-                      (pagination.totalPages &&
-                        pagination.currentPage >= pagination.totalPages - 1) ||
-                      pagination.hasNextPage === false ||
-                      data.length < pagination.pageSize ||
-                      loading
-                    }
-                    className="text-teal-400 border-teal-400 hover:bg-teal-900/50"
-                  >
-                    Next
-                  </Button>
-                </div>
+                
+                <ModernPagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages || 1}
+                  onPageChange={onPageChange}
+                  hasNext={pagination.hasNextPage}
+                  hasPrevious={pagination.hasPreviousPage}
+                  showInfo={false} // We show custom info above
+                  totalItems={pagination.totalItems}
+                  pageSize={pagination.pageSize}
+                  className="text-gray-300"
+                />
               </div>
             )}
           </>

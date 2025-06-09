@@ -35,6 +35,29 @@ export interface Order {
   updated_at: string;
 }
 
+export interface OrderCreationResponse {
+  order: Order;
+  payment_required: boolean;
+  payment_url?: string;
+  transaction_id?: string;
+  payment_error?: string;
+  message: string;
+}
+
+export interface PaginationMetadata {
+  current_page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
+}
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;

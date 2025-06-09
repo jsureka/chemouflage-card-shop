@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ModernPagination from "@/components/ui/ModernPagination";
 import {
   Select,
   SelectContent,
@@ -13,19 +14,20 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useProducts } from "@/contexts/ProductsContext";
 import { Product } from "@/services/types";
-import { ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const ProductBrowser = () => {
-  const { products, loading, fetchProducts, searchProducts } = useProducts();
+  const { products, pagination, loading, fetchProducts, searchProducts } =
+    useProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [filters, setFilters] = useState({
     category: "",
     active_only: true,
-    skip: 0,
+    page: 1,
     limit: 12,
   });
 
@@ -37,10 +39,9 @@ const ProductBrowser = () => {
     "Laboratory",
     "Educational",
   ];
-
   const displayProducts = isSearchMode ? searchResults : products;
-  const totalPages = Math.ceil(displayProducts.length / filters.limit);
-  const currentPage = Math.floor(filters.skip / filters.limit) + 1;
+  const currentPage = pagination?.current_page || 1;
+  const totalPages = pagination?.total_pages || 1;
 
   // Fetch products with current filters
   useEffect(() => {
@@ -59,22 +60,15 @@ const ProductBrowser = () => {
       setSearchResults([]);
     }
   };
-
   const handleFilterChange = (key: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      skip: key !== "skip" ? 0 : value, // Reset to first page when changing other filters
+      page: key !== "page" ? 1 : value, // Reset to first page when changing other filters
     }));
   };
-
-  const handlePageChange = (direction: "prev" | "next") => {
-    const newSkip =
-      direction === "prev"
-        ? Math.max(0, filters.skip - filters.limit)
-        : filters.skip + filters.limit;
-
-    handleFilterChange("skip", newSkip);
+  const handlePageChange = (page: number) => {
+    handleFilterChange("page", page);
   };
 
   const clearSearch = () => {
@@ -184,8 +178,7 @@ const ProductBrowser = () => {
             </CardContent>
           </Card>
         )}
-      </div>
-
+      </div>{" "}
       {/* Results Info */}
       <div className="mb-4 flex justify-between items-center">
         <div className="text-sm text-gray-600">
@@ -195,36 +188,17 @@ const ProductBrowser = () => {
               products
             </span>
           ) : (
-            <span>Showing {displayProducts.length} products</span>
+            <span>
+              Showing {pagination?.total_items || 0} products
+              {pagination && (
+                <span className="ml-2">
+                  (Page {pagination.current_page} of {pagination.total_pages})
+                </span>
+              )}
+            </span>
           )}
         </div>
-
-        {/* Pagination Controls */}
-        {!isSearchMode && totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange("prev")}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange("next")}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
       </div>
-
       {/* Products Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -305,6 +279,21 @@ const ProductBrowser = () => {
               </Card>
             </Link>
           ))}
+        </div>
+      )}
+      {/* Modern Pagination */}
+      {!isSearchMode && totalPages > 1 && (
+        <div className="mt-8">
+          <ModernPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            hasNext={pagination?.has_next}
+            hasPrevious={pagination?.has_previous}
+            showInfo={true}
+            totalItems={pagination?.total_items}
+            pageSize={pagination?.page_size}
+          />
         </div>
       )}
     </div>

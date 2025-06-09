@@ -107,12 +107,19 @@ class PremiumCodeRepository:
             id=str(code_doc["_id"]),
             bound_user_email=bound_user_email
         )
-    
     @staticmethod
-    async def get_all(skip: int = 0, limit: int = 100) -> List[PremiumCode]:
-        """Get all premium codes with pagination."""
+    async def get_all(skip: int = 0, limit: int = 100, active_only: bool = False, bound_only: bool = False) -> List[PremiumCode]:
+        """Get all premium codes with pagination and optional filtering."""
         db = await get_database()
-        cursor = db.premium_codes.find().skip(skip).limit(limit).sort("created_at", -1)
+        
+        # Build query based on filters
+        query = {}
+        if active_only:
+            query["is_active"] = True
+        if bound_only:
+            query["bound_user_id"] = {"$ne": None}
+        
+        cursor = db.premium_codes.find(query).skip(skip).limit(limit).sort("created_at", -1)
         
         codes = []
         async for doc in cursor:
@@ -256,21 +263,23 @@ class PremiumCodeRepository:
         )
         
         return result.modified_count > 0
-    
     @staticmethod
-    async def count() -> int:
-        """Count total premium codes."""
+    async def count(active_only: bool = False, bound_only: bool = False) -> int:
+        """Count premium codes with optional filtering."""
         db = await get_database()
-        return await db.premium_codes.count_documents({})
+        query = {}
+        if active_only:
+            query["is_active"] = True
+        if bound_only:
+            query["bound_user_id"] = {"$ne": None}
+        return await db.premium_codes.count_documents(query)
     
     @staticmethod
     async def count_active() -> int:
         """Count active premium codes."""
-        db = await get_database()
-        return await db.premium_codes.count_documents({"is_active": True})
+        return await PremiumCodeRepository.count(active_only=True)
     
     @staticmethod
     async def count_bound() -> int:
         """Count premium codes bound to users."""
-        db = await get_database()
-        return await db.premium_codes.count_documents({"bound_user_id": {"$ne": None}})
+        return await PremiumCodeRepository.count(bound_only=True)

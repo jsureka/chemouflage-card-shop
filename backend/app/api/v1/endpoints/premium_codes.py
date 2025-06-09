@@ -2,6 +2,7 @@ from typing import List
 
 from app.api.dependencies import get_current_admin, get_current_user
 from app.core.config import settings
+from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import (PremiumCode, PremiumCodeBind,
                                 PremiumCodeCreate, PremiumCodeGenerate,
                                 PremiumCodeUpdate)
@@ -9,6 +10,7 @@ from app.models.user import User
 from app.repositories.premium_code import PremiumCodeRepository
 from app.repositories.user import UserRepository
 from app.services.email import EmailService
+from app.utils.pagination import create_paginated_response
 from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
                      status)
 
@@ -63,16 +65,32 @@ async def generate_premium_codes(
         )
 
 
-@router.get("/", response_model=List[PremiumCode])
+@router.get("/", response_model=PaginatedResponse[PremiumCode])
 async def get_premium_codes(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
+    pagination: PaginationParams = Depends(),
+    active_only: bool = Query(False, description="Filter only active codes"),
+    bound_only: bool = Query(False, description="Filter only bound codes"),
     current_user: User = Depends(get_current_admin)
 ):
-    """Get all premium codes with pagination."""
+    """Get all premium codes with pagination and optional filtering."""
     try:
-        codes = await PremiumCodeRepository.get_all(skip=skip, limit=limit)
-        return codes
+        codes = await PremiumCodeRepository.get_all(
+            skip=pagination.skip, 
+            limit=pagination.limit, 
+            active_only=active_only, 
+            bound_only=bound_only
+        )
+        total_count = await PremiumCodeRepository.count(
+            active_only=active_only, 
+            bound_only=bound_only
+        )
+        
+        return await create_paginated_response(
+            data=codes,
+            page=pagination.page,
+            limit=pagination.limit,
+            total_count=total_count
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

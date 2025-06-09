@@ -4,20 +4,24 @@ import AdminTable, { PaginationInfo, TableColumn } from "./AdminTable";
 
 interface CustomersTabProps {
   customers: any[];
+  customersPagination: any;
   customersLoading: boolean;
   customersPage: number;
   customersLimit: number;
   onRefreshCustomers: () => void;
   onSetCustomersPage: (page: number) => void;
+  onSetCustomersPageSize?: (pageSize: number) => void;
 }
 
 const CustomersTab = ({
   customers,
+  customersPagination,
   customersLoading,
   customersPage,
   customersLimit,
   onRefreshCustomers,
   onSetCustomersPage,
+  onSetCustomersPageSize,
 }: CustomersTabProps) => {
   const columns: TableColumn[] = [
     {
@@ -57,14 +61,12 @@ const CustomersTab = ({
       ),
     },
   ];
-
   const pagination: PaginationInfo = {
-    currentPage: customersPage,
-    pageSize: customersLimit,
-    hasNextPage: customers.length >= customersLimit,
-    hasPreviousPage: customersPage > 0,
+    currentPage: customersPagination?.current_page || 1,
+    pageSize: customersPagination?.page_size || customersLimit,
+    hasNextPage: customersPagination?.has_next || false,
+    hasPreviousPage: customersPagination?.has_previous || false,
   };
-
   return (
     <AdminTable
       title="Customer Management"
@@ -79,6 +81,7 @@ const CustomersTab = ({
       onRefresh={onRefreshCustomers}
       pagination={pagination}
       onPageChange={onSetCustomersPage}
+      onPageSizeChange={onSetCustomersPageSize}
       keyField="id"
     />
   );

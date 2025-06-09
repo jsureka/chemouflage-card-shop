@@ -3,8 +3,16 @@ import { authService } from "./auth";
 import { ordersService } from "./orders";
 import { premiumCodesService } from "./premiumCodes";
 import { productsService } from "./products";
+import { settingsService } from "./settings";
 
-export type { ApiResponse, Order, Product, User } from "./types";
+export type {
+  ApiResponse,
+  Order,
+  PaginatedResponse,
+  PaginationMetadata,
+  Product,
+  User,
+} from "./types";
 
 // Export individual services
 export {
@@ -13,6 +21,7 @@ export {
   ordersService,
   premiumCodesService,
   productsService,
+  settingsService,
 };
 
 // Backward compatibility - export the original apiService structure

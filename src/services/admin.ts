@@ -1,5 +1,5 @@
 import { authService } from "./auth";
-import { ApiResponse, Order, User } from "./types";
+import { ApiResponse, Order, PaginatedResponse, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -53,7 +53,9 @@ class AdminService {
       totalCustomers: number;
     }>(response);
   }
-  async getRecentOrders(limit: number = 10): Promise<ApiResponse<Order[]>> {
+  async getRecentOrders(
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<Order>>> {
     const response = await fetch(
       `${API_BASE_URL}/api/v1/orders?limit=${limit}`,
       {
@@ -61,33 +63,42 @@ class AdminService {
       }
     );
 
-    return this.handleResponse<Order[]>(response);
+    return this.handleResponse<PaginatedResponse<Order>>(response);
   }
   async getAllUsers(
-    skip: number = 0,
+    page: number = 1,
     limit: number = 100
-  ): Promise<ApiResponse<User[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<User>>> {
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/auth/users?skip=${skip}&limit=${limit}`,
+      `${API_BASE_URL}/api/v1/auth/users?page=${page}&limit=${limit}`,
       {
         headers: this.setAuthHeader(),
       }
     );
 
-    return this.handleResponse<User[]>(response);
+    return this.handleResponse<PaginatedResponse<User>>(response);
   }
   async getAllOrders(
-    skip: number = 0,
-    limit: number = 100
-  ): Promise<ApiResponse<Order[]>> {
+    page: number = 1,
+    limit: number = 100,
+    status?: string
+  ): Promise<ApiResponse<PaginatedResponse<Order>>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+
+    if (status) {
+      queryParams.append("status", status);
+    }
+
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/orders?skip=${skip}&limit=${limit}`,
+      `${API_BASE_URL}/api/v1/orders?${queryParams.toString()}`,
       {
         headers: this.setAuthHeader(),
       }
     );
 
-    return this.handleResponse<Order[]>(response);
+    return this.handleResponse<PaginatedResponse<Order>>(response);
   }
 
   async updateOrderStatus(

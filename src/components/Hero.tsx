@@ -1,3 +1,5 @@
+import CloudinaryImage from "@/components/CloudinaryImage";
+import CloudinaryVideo from "@/components/CloudinaryVideo";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
@@ -11,34 +13,22 @@ import { useEffect, useState } from "react";
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-
-  // Available video demos
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0); // Available video demos - using Cloudinary for video delivery
   const videoDemos = [
     {
       title: "Effusion Demo",
-      path: "/3. Effusion_",
+      cloudinaryId: "4_vnfvq8", // Actual Cloudinary public ID
+      fallbackPath: "3. Effusion_",
       description: "Watch how gases diffuse through molecular visualization",
     },
-    {
-      title: "Reversible & Irreversible Reactions",
-      path: "/17. Reversible &Irreversible Reaction_",
-      description: "Explore chemical reaction dynamics and equilibrium",
-    },
-    {
-      title: "Build an Atom",
-      path: "/4. Build an Atom",
-      description: "Interactive atomic structure construction",
-    },
   ];
-
   const slides = [
     {
       title: "Discover Chemistry with AR",
       subtitle: "Revolutionary AR Chemistry Experience",
       description:
         "Experience chemistry like never before with our cutting-edge AR technology. Visualize molecular structures, conduct virtual experiments, and unlock the mysteries of the chemical world.",
-      image: "/Screenshot_20250529_001009_Chemouflage.jpg",
+      image: "Screenshot_20250529_001009_Chemouflage_evwx4m",
       cta: "Start Exploring",
     },
     {
@@ -46,7 +36,7 @@ const Hero = () => {
       subtitle: "Hands-on Chemistry Education",
       description:
         "Learn chemistry through interactive AR experiences. From basic elements to complex reactions, our platform makes learning engaging and memorable.",
-      image: "/Screenshot_20250529_001026_Chemouflage.jpg",
+      image: "Screenshot_20250529_001026_Chemouflage_bko57u",
       cta: "Learn More",
     },
     {
@@ -54,7 +44,7 @@ const Hero = () => {
       subtitle: "Advanced AR Chemistry Kit",
       description:
         "Access professional-grade AR chemistry tools and simulations. Perfect for students, educators, and professionals exploring the molecular world.",
-      image: "/Screenshot_20250529_001902_Chemouflage (1).jpg",
+      image: "Screenshot_20250529_001902_Chemouflage_1_tpikoy",
       cta: "Get Started",
     },
     {
@@ -62,7 +52,7 @@ const Hero = () => {
       subtitle: "Complex Chemical Reactions",
       description:
         "Explore advanced chemistry concepts with our comprehensive AR platform. Perfect for higher education and research applications.",
-      image: "/Screenshot_20250529_002417_Chemouflage.jpg",
+      image: "Screenshot_20250529_002417_Chemouflage_huqki2",
       cta: "Explore Now",
     },
     {
@@ -70,7 +60,7 @@ const Hero = () => {
       subtitle: "3D Chemical Structures",
       description:
         "Visualize complex molecular structures in stunning 3D detail with our advanced AR technology and interactive learning tools.",
-      image: "/Screenshot_20250529_012431_Chemouflage.jpg",
+      image: "Screenshot_20250529_012431_Chemouflage_lv8ifd",
       cta: "View Demo",
     },
   ];
@@ -138,10 +128,15 @@ const Hero = () => {
           {/* Image/Visual Content */}
           <div className="relative">
             <div className="relative w-full max-w-md mx-auto lg:max-w-lg xl:max-w-xl bg-gradient-to-br from-teal-500/20 to-emerald-500/20 rounded-3xl backdrop-blur-sm border border-teal-500/30 overflow-hidden shadow-2xl">
-              <img
-                src={slides[currentSlide].image}
+              {" "}
+              <CloudinaryImage
+                fileName={slides[currentSlide].image}
                 alt={slides[currentSlide].title}
                 className="w-full h-auto object-contain transition-opacity duration-500"
+                width={800}
+                height={400}
+                quality="auto"
+                format="auto"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 to-transparent" />
             </div>
@@ -223,18 +218,21 @@ const Hero = () => {
               </h3>
               <p className="text-gray-300 text-sm">
                 {videoDemos[currentVideoIndex].description}
-              </p>
+              </p>{" "}
             </div>
 
-            <video
+            <CloudinaryVideo
+              publicId={videoDemos[currentVideoIndex].cloudinaryId}
+              fallbackPath={videoDemos[currentVideoIndex].fallbackPath}
               controls
               autoPlay
               key={currentVideoIndex} // Forces video reload when demo changes
               className="w-full h-full"
-              src={videoDemos[currentVideoIndex].path}
-            >
-              Your browser does not support the video tag.
-            </video>
+              width={1280}
+              height={720}
+              quality="auto"
+              format="auto"
+            />
           </div>
         </div>
       )}

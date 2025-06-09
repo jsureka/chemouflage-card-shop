@@ -9,6 +9,7 @@ import { ProductsProvider } from "./contexts/ProductsContext";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
+import Contact from "./pages/Contact";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/products" element={<ProductBrowser />} />
               <Route path="/products/:id" element={<ProductDetail />} />{" "}
               <Route path="/checkout" element={<Checkout />} />

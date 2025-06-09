@@ -251,7 +251,8 @@ const AdminTable = <T extends Record<string, any>>({
                   ? renderRow(item, index)
                   : defaultRenderRow(item, index)
               )}
-            </div>{" "}            {/* Modern Pagination Controls */}
+            </div>{" "}
+            {/* Modern Pagination Controls */}
             {showPagination && pagination && onPageChange && (
               <div className="mt-6 pt-4 border-t border-teal-500/30">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
@@ -265,7 +266,7 @@ const AdminTable = <T extends Record<string, any>>({
                       className="order-2 sm:order-1"
                     />
                   )}
-                  
+
                   {/* Pagination Info for mobile */}
                   {pagination.totalItems && (
                     <div className="text-sm text-gray-300 order-1 sm:order-2">
@@ -275,13 +276,20 @@ const AdminTable = <T extends Record<string, any>>({
                       </span>{" "}
                       to{" "}
                       <span className="font-medium">
-                        {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)}
+                        {Math.min(
+                          pagination.currentPage * pagination.pageSize,
+                          pagination.totalItems
+                        )}
                       </span>{" "}
-                      of <span className="font-medium">{pagination.totalItems}</span> results
+                      of{" "}
+                      <span className="font-medium">
+                        {pagination.totalItems}
+                      </span>{" "}
+                      results
                     </div>
                   )}
                 </div>
-                
+
                 <ModernPagination
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages || 1}

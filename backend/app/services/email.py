@@ -280,3 +280,23 @@ class EmailService:
             template_name="password_reset.html",
             template_data=template_data
         )
+
+
+# Simple function for plain text emails (used by contact form)
+async def send_email(to_email: str, subject: str, content: str) -> bool:
+    """
+    Send a simple plain text email
+    """
+    try:
+        message = MessageSchema(
+            subject=subject,
+            recipients=[to_email],
+            body=content,
+            subtype=MessageType.plain
+        )
+        
+        await fastmail.send_message(message)
+        return True
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        return False

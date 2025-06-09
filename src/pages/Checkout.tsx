@@ -1,3 +1,4 @@
+import CloudinaryImage from "@/components/CloudinaryImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -445,10 +446,12 @@ const Checkout = () => {
                               className="text-white flex items-center cursor-pointer"
                             >
                               {method.name === "aamarpay" ? (
-                                <img
-                                  src="/aamarpay-logo.png"
-                                  alt="AamarPay"
-                                  className="w-6 h-4 mr-2 object-contain"
+                                <CloudinaryImage
+                                  fileName="download_wyg4lw.png"
+                                  alt="AamarPay Logo"
+                                  className="w-12 h-4 mr-2"
+                                  width={96}
+                                  height={24}
                                 />
                               ) : method.icon === "smartphone" ? (
                                 <Smartphone className="w-4 h-4 mr-2 text-pink-400" />
@@ -462,24 +465,6 @@ const Checkout = () => {
                           </div>
                         ))}
                       </RadioGroup>
-
-                      {/* AamarPay Branding - Show when AamarPay is available */}
-                      {availablePaymentMethods.some(
-                        (method) => method.name === "aamarpay"
-                      ) && (
-                        <div className="flex items-center justify-center p-3 bg-slate-800/30 rounded-lg border border-slate-600/30">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-300">
-                              Powered by
-                            </span>
-                            <img
-                              src="/aamarpay-logo.png"
-                              alt="AamarPay"
-                              className="h-6 opacity-80"
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>{" "}
@@ -594,10 +579,11 @@ const Checkout = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center space-y-4">
             <div className="flex items-center justify-center">
-              <img
-                src="/aamarpay-footer.png"
+              <CloudinaryImage
+                fileName="Footer-Logo_vd1b65.png"
                 alt="AamarPay - Secure Payment Gateway"
                 className="h-6 opacity-80 hover:opacity-100 transition-opacity"
+                height={24}
               />
             </div>
             <p className="text-center text-gray-400 text-sm">

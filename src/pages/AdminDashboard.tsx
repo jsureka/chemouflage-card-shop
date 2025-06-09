@@ -1,3 +1,4 @@
+import CloudinaryImage from "@/components/CloudinaryImage";
 import { OrderEditModal } from "@/components/OrderEditModal";
 import PremiumCodeManagement from "@/components/PremiumCodeManagement";
 import ProductManagement from "@/components/ProductManagement";
@@ -34,7 +35,8 @@ const AdminDashboard = () => {
     totalRevenue: 0,
     totalCustomers: 0,
   });
-  const [orders, setOrders] = useState([]);  const [customers, setCustomers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [customersPagination, setCustomersPagination] = useState(null);
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customersPage, setCustomersPage] = useState(1);
@@ -58,7 +60,8 @@ const AdminDashboard = () => {
     if (isAdmin) {
       fetchDashboardData();
     }
-  }, [user, isAdmin, isLoading, navigate]);  useEffect(() => {
+  }, [user, isAdmin, isLoading, navigate]);
+  useEffect(() => {
     if (activeTab === "customers" && isAdmin) {
       fetchCustomers();
     }
@@ -231,10 +234,12 @@ const AdminDashboard = () => {
               <ArrowLeft className="w-6 h-6" />
             </Link>{" "}
             <div className="flex items-center space-x-2">
-              <img
-                src="/logoRound (1).png"
+              <CloudinaryImage
+                fileName="logoRound_1_yn0smh.png"
                 alt="Chemouflage Logo"
                 className="w-8 h-8 object-contain"
+                width={32}
+                height={32}
               />
               <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
             </div>
@@ -274,7 +279,8 @@ const AdminDashboard = () => {
         {/* Products Tab */}
         {activeTab === "products" && <ProductManagement />}
         {/* Premium Codes Tab */}
-        {activeTab === "premium-codes" && <PremiumCodeManagement />}{" "}        {/* Orders Tab */}
+        {activeTab === "premium-codes" && <PremiumCodeManagement />}{" "}
+        {/* Orders Tab */}
         {activeTab === "orders" && (
           <OrdersTab
             allOrders={allOrders}

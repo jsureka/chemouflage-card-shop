@@ -1,3 +1,4 @@
+import CloudinaryImage from "@/components/CloudinaryImage";
 import Hero from "@/components/Hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,10 +16,12 @@ import {
   FlaskConical,
   Globe,
   LogOut,
+  Menu,
   Settings,
   ShoppingCart,
   Star,
   User,
+  X,
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +31,7 @@ const Index = () => {
   const { user, isAdmin, logout } = useAuth();
   const { products } = useProducts();
   const [premiumARCards, setPremiumARCards] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Find the premium AR cards product
@@ -68,26 +72,60 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
+      {" "}
       {/* Navigation */}
       <nav className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
-          {" "}
+          {/* Logo */}
           <div className="flex items-center space-x-2">
-            <img
-              src="/logoRound (1).png"
+            <CloudinaryImage
+              fileName="logoRound_1_yn0smh.png"
               alt="Chemouflage Logo"
               className="w-10 h-10 object-contain"
+              width={40}
+              height={40}
             />
             <span className="text-xl font-bold text-white">Chemouflage</span>
           </div>
-          <div className="flex items-center space-x-4">
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link
+              to="/"
+              className="text-white hover:text-teal-300 transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              to="/checkout"
+              className="text-white hover:text-teal-300 transition-colors"
+            >
+              Buy Cards
+            </Link>
+            <Link
+              to="/track-order"
+              className="text-white hover:text-teal-300 transition-colors"
+            >
+              Track Order
+            </Link>
+            <Link
+              to="/contact"
+              className="text-white hover:text-teal-300 transition-colors"
+            >
+              Contact
+            </Link>
+          </div>
+
+          {/* Desktop Auth Section */}
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <span className="text-white">Welcome, {user.email}</span>
+                <span className="text-white hidden lg:inline">
+                  Welcome, {user.email}
+                </span>
                 {isAdmin && (
                   <Link to="/admin">
-                    {" "}
-                    <Button variant="outline">
+                    <Button variant="outline" size="sm">
                       <Settings className="w-4 h-4 mr-2" />
                       Admin
                     </Button>
@@ -96,6 +134,7 @@ const Index = () => {
                 <Button
                   onClick={logout}
                   variant="ghost"
+                  size="sm"
                   className="text-white hover:bg-teal-900/50"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -111,12 +150,101 @@ const Index = () => {
               </Link>
             )}
           </div>
-        </div>
-      </nav>
 
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 bg-slate-900/95 backdrop-blur-lg rounded-lg border border-teal-500/30 p-4">
+            <div className="flex flex-col space-y-4">
+              {/* Mobile Navigation Links */}
+              <Link
+                to="/"
+                className="text-white hover:text-teal-300 transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/checkout"
+                className="text-white hover:text-teal-300 transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Products
+              </Link>
+              <Link
+                to="/track-order"
+                className="text-white hover:text-teal-300 transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Track Order
+              </Link>
+              <Link
+                to="/contact"
+                className="text-white hover:text-teal-300 transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+
+              {/* Mobile Auth Section */}
+              <div className="border-t border-teal-500/30 pt-4">
+                {user ? (
+                  <div className="space-y-3">
+                    <div className="text-white text-sm">
+                      Welcome, {user.email}
+                    </div>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin
+                        </Button>
+                      </Link>
+                    )}
+                    <Button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-white hover:bg-teal-900/50"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700">
+                      <User className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
       {/* Hero Section */}
       <Hero />
-
       {/* Features Section */}
       <section className="py-20 bg-slate-900/50">
         <div className="container mx-auto px-4">
@@ -151,7 +279,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
       {/* Premium AR Cards Product Section */}
       {premiumARCards && (
         <section className="py-20">
@@ -170,10 +297,12 @@ const Index = () => {
                 <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300">
                   <CardHeader>
                     <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                      <img
-                        src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop"
+                      <CloudinaryImage
+                        fileName={premiumARCards.image_url}
                         alt={premiumARCards.name}
                         className="w-full h-full object-cover"
+                        width={400}
+                        height={600}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
                     </div>
@@ -232,7 +361,6 @@ const Index = () => {
           </div>
         </section>
       )}
-
       {/* Footer */}
       <footer className="bg-slate-900/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
         <div className="container mx-auto px-4">
@@ -249,7 +377,6 @@ const Index = () => {
                 generation of scientists.
               </p>
             </div>
-
             <div>
               <h3 className="text-white font-semibold mb-4">Products</h3>
               <ul className="space-y-2 text-gray-300">
@@ -261,25 +388,8 @@ const Index = () => {
                     AR Chemistry Cards
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/checkout"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Virtual Lab
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/checkout"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Molecule Viewer
-                  </Link>
-                </li>
               </ul>
-            </div>
-
+            </div>{" "}
             <div>
               <h3 className="text-white font-semibold mb-4">Support</h3>
               <ul className="space-y-2 text-gray-300">
@@ -297,41 +407,39 @@ const Index = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-teal-400 transition-colors">
+                  <Link
+                    to="/contact"
+                    className="hover:text-teal-400 transition-colors"
+                  >
                     Contact Us
-                  </a>
+                  </Link>
                 </li>
               </ul>
-            </div>
-
+            </div>{" "}
             <div>
               <h3 className="text-white font-semibold mb-4">Connect</h3>
               <ul className="space-y-2 text-gray-300">
                 <li>
-                  <a href="#" className="hover:text-teal-400 transition-colors">
+                  <a
+                    href="https://www.facebook.com/chemouflage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal-400 transition-colors"
+                  >
                     Facebook
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-teal-400 transition-colors">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-teal-400 transition-colors">
-                    LinkedIn
                   </a>
                 </li>
               </ul>
             </div>
-          </div>
-
+          </div>{" "}
           <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-gray-400">
             <div className="flex items-center justify-center">
-              <img
-                src="/aamarpay-footer.png"
+              {" "}
+              <CloudinaryImage
+                fileName="Footer-Logo_vd1b65.png"
                 alt="AamarPay - Secure Payment Gateway"
                 className="h-6 opacity-80 hover:opacity-100 transition-opacity"
+                height={24}
               />
             </div>
             <p>&copy; 2024 Chemouflage. All rights reserved.</p>

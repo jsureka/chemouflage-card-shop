@@ -1,3 +1,4 @@
+import CloudinaryImage from "@/components/CloudinaryImage";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,10 +69,12 @@ const Auth = () => {
           <CardHeader className="text-center">
             {" "}
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <img
-                src="/logoRound (1).png"
+              <CloudinaryImage
+                fileName="logoRound_1_yn0smh.png"
                 alt="Chemouflage Logo"
                 className="w-12 h-12 object-contain"
+                width={48}
+                height={48}
               />
             </div>
             <CardTitle className="text-2xl font-bold text-white">

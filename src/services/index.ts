@@ -1,5 +1,6 @@
 import { adminService } from "./admin";
 import { authService } from "./auth";
+import { contactService } from "./contact";
 import { ordersService } from "./orders";
 import { premiumCodesService } from "./premiumCodes";
 import { productsService } from "./products";
@@ -37,12 +38,14 @@ export const apiService = {
   createProduct: productsService.createProduct.bind(productsService),
   updateProduct: productsService.updateProduct.bind(productsService),
   deleteProduct: productsService.deleteProduct.bind(productsService),
-
   // Order methods
   getOrders: ordersService.getOrders.bind(ordersService),
   getUserOrders: ordersService.getUserOrders.bind(ordersService),
   createOrder: ordersService.createOrder.bind(ordersService),
   updateOrderStatus: ordersService.updateOrderStatus.bind(ordersService),
+
+  // Contact methods
+  sendContactMessage: contactService.sendMessage.bind(contactService),
 
   // Admin methods
   getDashboardStats: adminService.getDashboardStats.bind(adminService),

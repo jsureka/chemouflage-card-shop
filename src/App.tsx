@@ -48,7 +48,10 @@ const App = () => (
                 <Route path="/track/:orderId" element={<OrderTracking />} />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/failed" element={<PaymentFailed />} />
-                <Route path="/payment/cancelled" element={<PaymentCancelled />} />
+                <Route
+                  path="/payment/cancelled"
+                  element={<PaymentCancelled />}
+                />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

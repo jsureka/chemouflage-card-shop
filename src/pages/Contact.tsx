@@ -232,7 +232,9 @@ const Contact = () => {
             {/* Contact Details */}
             <Card className="bg-background/80 backdrop-blur-lg border border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Contact Information</CardTitle>
+                <CardTitle className="text-foreground">
+                  Contact Information
+                </CardTitle>
                 <CardDescription className="text-muted-foreground">
                   Get in touch with us through any of these channels
                 </CardDescription>
@@ -242,7 +244,9 @@ const Contact = () => {
                   <Mail className="w-5 h-5 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold text-foreground">Email</h3>
-                    <p className="text-muted-foreground">support@chemouflage.com</p>
+                    <p className="text-muted-foreground">
+                      support@chemouflage.com
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       We respond within 24 hours
                     </p>
@@ -262,9 +266,7 @@ const Contact = () => {
                   <MapPin className="w-5 h-5 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold text-foreground">Address</h3>
-                    <p className="text-muted-foreground">
-                      Dhaka, Bangladesh
-                    </p>
+                    <p className="text-muted-foreground">Dhaka, Bangladesh</p>
                     <p className="text-sm text-muted-foreground">
                       Research & Development Center
                     </p>
@@ -284,11 +286,15 @@ const Contact = () => {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monday - Friday</span>
-                  <span className="text-foreground font-medium">9:00 AM - 6:00 PM</span>
+                  <span className="text-foreground font-medium">
+                    9:00 AM - 6:00 PM
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Saturday</span>
-                  <span className="text-foreground font-medium">10:00 AM - 4:00 PM</span>
+                  <span className="text-foreground font-medium">
+                    10:00 AM - 4:00 PM
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sunday</span>
@@ -313,11 +319,19 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex space-x-4">
-                  <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-background/40">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-border text-foreground hover:bg-background/40"
+                  >
                     <Facebook className="w-4 h-4 mr-2" />
                     Facebook
                   </Button>
-                  <Button variant="outline" size="sm" className="border-border text-foreground hover:bg-background/40">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-border text-foreground hover:bg-background/40"
+                  >
                     <Globe className="w-4 h-4 mr-2" />
                     Website
                   </Button>
@@ -331,7 +345,9 @@ const Contact = () => {
         <div className="mt-16 max-w-4xl mx-auto">
           <Card className="bg-background/80 backdrop-blur-lg border border-border">
             <CardHeader className="text-center">
-              <CardTitle className="text-foreground">Frequently Asked Questions</CardTitle>
+              <CardTitle className="text-foreground">
+                Frequently Asked Questions
+              </CardTitle>
               <CardDescription className="text-muted-foreground">
                 Quick answers to common questions about our AR Chemistry Cards
               </CardDescription>
@@ -414,16 +430,23 @@ const Contact = () => {
                 Get your set today and discover molecules like never before!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90"
+                >
                   <Link to="/checkout">
                     <FlaskConical className="w-5 h-5 mr-2" />
                     Order Now
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="border-border text-foreground hover:bg-background/40">
-                  <Link to="/">
-                    Learn More
-                  </Link>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="border-border text-foreground hover:bg-background/40"
+                >
+                  <Link to="/">Learn More</Link>
                 </Button>
               </div>
               <div className="mt-6 flex justify-center">

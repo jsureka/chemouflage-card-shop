@@ -99,7 +99,8 @@ const Hero = () => {
                 {slides[currentSlide].subtitle}
               </span>
               <Sparkles className="w-4 h-4" />
-            </div>            <h1 className="text-5xl lg:text-7xl font-bold text-foreground leading-tight transition-opacity duration-500">
+            </div>{" "}
+            <h1 className="text-5xl lg:text-7xl font-bold text-foreground leading-tight transition-opacity duration-500">
               {slides[currentSlide].title}
             </h1>
             <p className="text-xl text-muted-foreground max-w-lg leading-relaxed transition-opacity duration-500">
@@ -142,7 +143,9 @@ const Hero = () => {
         </div>
       </div>{" "}
       {/* Navigation Controls */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">        <Button
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">
+        {" "}
+        <Button
           variant="ghost"
           size="icon"
           onClick={prevSlide}
@@ -150,7 +153,6 @@ const Hero = () => {
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
-
         <div className="flex space-x-2">
           {slides.map((_, index) => (
             <button
@@ -163,7 +165,8 @@ const Hero = () => {
               }`}
             />
           ))}
-        </div>        <Button
+        </div>{" "}
+        <Button
           variant="ghost"
           size="icon"
           onClick={nextSlide}
@@ -181,19 +184,21 @@ const Hero = () => {
           <div
             className="relative bg-black rounded-lg overflow-hidden max-w-5xl w-full max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
-          >            <button
+          >
+            {" "}
+            <button
               onClick={() => setShowVideo(false)}
               className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-foreground rounded-full p-2 transition-colors"
             >
               ✕
             </button>
-
             {/* Video Demo Selector */}
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
               {videoDemos.map((demo, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentVideoIndex(index)}                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  onClick={() => setCurrentVideoIndex(index)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     index === currentVideoIndex
                       ? "bg-teal-500 text-white"
                       : "bg-white/20 text-foreground hover:bg-white/30"
@@ -202,7 +207,8 @@ const Hero = () => {
                   {demo.title}
                 </button>
               ))}
-            </div>            {/* Video Title and Description */}
+            </div>{" "}
+            {/* Video Title and Description */}
             <div className="absolute bottom-4 left-4 right-4 z-10 bg-black/60 rounded-lg p-4">
               <h3 className="text-foreground text-lg font-semibold mb-1">
                 {videoDemos[currentVideoIndex].title}
@@ -211,7 +217,6 @@ const Hero = () => {
                 {videoDemos[currentVideoIndex].description}
               </p>{" "}
             </div>
-
             <CloudinaryVideo
               publicId={videoDemos[currentVideoIndex].cloudinaryId}
               fallbackPath={videoDemos[currentVideoIndex].fallbackPath}

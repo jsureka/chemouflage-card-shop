@@ -8,10 +8,10 @@ interface ThemeToggleProps {
   variant?: "default" | "outline" | "ghost" | "secondary";
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className = "",
   size = "icon",
-  variant = "ghost"
+  variant = "ghost",
 }) => {
   const { theme, toggleTheme } = useTheme();
 

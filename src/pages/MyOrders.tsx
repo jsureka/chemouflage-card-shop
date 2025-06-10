@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ordersService } from "@/services";
@@ -180,7 +180,9 @@ const MyOrders = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
-      <div className="container mx-auto px-4 py-8">        {/* Header */}
+      <div className="container mx-auto px-4 py-8">
+        {" "}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
@@ -190,7 +192,8 @@ const MyOrders = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
-          </div>          <div className="flex items-center space-x-4">
+          </div>{" "}
+          <div className="flex items-center space-x-4">
             <ThemeToggle />
             <Button
               onClick={handleRefresh}
@@ -204,13 +207,15 @@ const MyOrders = () => {
               Refresh
             </Button>
           </div>
-        </div>{/* Page Title */}
+        </div>
+        {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">My Orders</h1>
           <p className="text-muted-foreground text-lg">
             Track and manage your Chemouflage orders
           </p>
-        </div>        {/* Orders List */}
+        </div>{" "}
+        {/* Orders List */}
         {orders.length === 0 ? (
           <Card className="bg-background/80 backdrop-blur-lg border border-border max-w-2xl mx-auto">
             <CardContent className="p-12 text-center">
@@ -234,7 +239,9 @@ const MyOrders = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="max-w-4xl mx-auto space-y-6">            {orders.map((order) => (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {" "}
+            {orders.map((order) => (
               <Card
                 key={order.id}
                 className="bg-background/80 backdrop-blur-lg border border-border"
@@ -264,7 +271,9 @@ const MyOrders = () => {
                 <CardContent className="space-y-4">
                   {" "}
                   {/* Order Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {" "}
+                    <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <CreditCard className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">Payment:</span>
@@ -274,7 +283,9 @@ const MyOrders = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Order Date:</span>
+                        <span className="text-muted-foreground">
+                          Order Date:
+                        </span>
                         <span className="text-foreground">
                           {new Date(order.created_at).toLocaleDateString()}
                         </span>
@@ -283,20 +294,25 @@ const MyOrders = () => {
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <Package className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Total Amount:</span>
+                        <span className="text-muted-foreground">
+                          Total Amount:
+                        </span>
                         <span className="text-foreground font-bold text-lg">
                           ৳{order.total_amount}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Truck className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Delivery Charge:</span>
+                        <span className="text-muted-foreground">
+                          Delivery Charge:
+                        </span>
                         <span className="text-foreground">
                           ৳{order.delivery_charge}
                         </span>
                       </div>
                     </div>
-                  </div>                  {/* Order Items */}
+                  </div>{" "}
+                  {/* Order Items */}
                   {order.items && order.items.length > 0 && (
                     <div className="p-4 bg-background/40 rounded-lg border border-border">
                       <div className="flex items-center space-x-2 mb-3">
@@ -326,7 +342,8 @@ const MyOrders = () => {
                         ))}
                       </div>
                     </div>
-                  )}                  {/* Shipping Address */}
+                  )}{" "}
+                  {/* Shipping Address */}
                   {order.shipping_address && (
                     <div className="p-4 bg-background/40 rounded-lg border border-border">
                       <div className="flex items-center space-x-2 mb-2">
@@ -352,7 +369,8 @@ const MyOrders = () => {
                         </p>
                       </div>
                     </div>
-                  )}{" "}                  {/* Action Buttons */}
+                  )}{" "}
+                  {/* Action Buttons */}
                   <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
                     <Button
                       asChild
@@ -369,7 +387,8 @@ const MyOrders = () => {
               </Card>
             ))}
           </div>
-        )}        {/* Footer */}
+        )}{" "}
+        {/* Footer */}
         <div className="text-center mt-12 pt-8 border-t border-border">
           <p className="text-muted-foreground">
             Need help with your order?{" "}
@@ -378,7 +397,8 @@ const MyOrders = () => {
               className="text-primary hover:text-primary/80 underline"
             >
               Contact Support
-            </Link>          </p>
+            </Link>{" "}
+          </p>
         </div>
       </div>
     </div>

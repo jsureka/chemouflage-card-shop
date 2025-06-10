@@ -70,7 +70,8 @@ const PaymentSuccess = () => {
     } finally {
       setLoading(false);
     }
-  };  if (loading) {
+  };
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900 flex items-center justify-center">
         <div className="text-foreground text-lg">
@@ -83,7 +84,9 @@ const PaymentSuccess = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">          {/* Success Header */}
+        <div className="max-w-3xl mx-auto">
+          {" "}
+          {/* Success Header */}
           <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -95,7 +98,8 @@ const PaymentSuccess = () => {
                 </h1>
                 <p className="text-muted-foreground text-lg mb-4">
                   Thank you for your purchase. Your order has been confirmed.
-                </p>                <div className="flex items-center justify-center space-x-4">
+                </p>{" "}
+                <div className="flex items-center justify-center space-x-4">
                   <Badge className="bg-green-600 hover:bg-green-700 text-white">
                     Order #{orderId?.slice(-8).toUpperCase()}
                   </Badge>
@@ -107,7 +111,8 @@ const PaymentSuccess = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>          {/* Order Details */}
+          </Card>{" "}
+          {/* Order Details */}
           {orderDetails && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Order Summary */}
@@ -143,7 +148,8 @@ const PaymentSuccess = () => {
                       {orderDetails.payment_status || "Paid"}
                     </Badge>
                   </div>
-                  <Separator className="bg-border" />                  <div className="flex justify-between text-lg font-semibold">
+                  <Separator className="bg-border" />{" "}
+                  <div className="flex justify-between text-lg font-semibold">
                     <span className="text-foreground">Total Amount:</span>
                     <span className="text-emerald-500 dark:text-emerald-400">
                       ৳{orderDetails.total_amount}
@@ -187,7 +193,8 @@ const PaymentSuccess = () => {
                 </CardContent>
               </Card>
             </div>
-          )}          {/* Delivery Information */}
+          )}{" "}
+          {/* Delivery Information */}
           {orderDetails?.shipping_address && (
             <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
               <CardHeader>
@@ -222,7 +229,8 @@ const PaymentSuccess = () => {
                 </div>
               </CardContent>
             </Card>
-          )}          {/* Next Steps */}
+          )}{" "}
+          {/* Next Steps */}
           <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
             <CardHeader>
               <CardTitle className="text-foreground">What's Next?</CardTitle>
@@ -236,7 +244,9 @@ const PaymentSuccess = () => {
                   1
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">Order Processing</h4>
+                  <h4 className="font-semibold text-foreground">
+                    Order Processing
+                  </h4>
                   <p className="text-muted-foreground text-sm">
                     We're preparing your Chemistry AR Cards for shipment
                   </p>
@@ -269,7 +279,8 @@ const PaymentSuccess = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>{" "}          {/* Action Buttons */}
+          </Card>{" "}
+          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               asChild

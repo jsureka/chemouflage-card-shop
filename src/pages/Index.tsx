@@ -69,7 +69,8 @@ const Index = () => {
       description:
         "Comprehensive learning resources for students and educators",
     },
-  ];  return (
+  ];
+  return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       {" "}
       {/* Navigation */}
@@ -84,8 +85,11 @@ const Index = () => {
               width={40}
               height={40}
             />
-            <span className="text-xl font-bold text-foreground">Chemouflage</span>
-          </div>          {/* Desktop Menu */}
+            <span className="text-xl font-bold text-foreground">
+              Chemouflage
+            </span>
+          </div>{" "}
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
@@ -119,7 +123,8 @@ const Index = () => {
             >
               Contact
             </Link>
-          </div>          {/* Desktop Auth Section */}
+          </div>{" "}
+          {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle className="text-foreground" />
             {user ? (
@@ -153,7 +158,8 @@ const Index = () => {
                 </Button>
               </Link>
             )}
-          </div>          {/* Mobile Menu Button */}
+          </div>{" "}
+          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-foreground p-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -165,7 +171,8 @@ const Index = () => {
               <Menu className="w-6 h-6" />
             )}
           </button>
-        </div>        {/* Mobile Menu */}
+        </div>{" "}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 bg-background/95 backdrop-blur-lg rounded-lg border border-teal-500/30 p-4">
             <div className="flex flex-col space-y-4">
@@ -256,7 +263,7 @@ const Index = () => {
         )}
       </nav>
       {/* Hero Section */}
-      <Hero />      {/* Features Section */}
+      <Hero /> {/* Features Section */}
       <section className="py-20 bg-slate-100/50 dark:bg-slate-900/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -278,7 +285,9 @@ const Index = () => {
               >
                 <CardHeader>
                   <feature.icon className="w-12 h-12 text-teal-400 mb-4" />
-                  <CardTitle className="text-foreground">{feature.title}</CardTitle>
+                  <CardTitle className="text-foreground">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-muted-foreground">
@@ -293,7 +302,9 @@ const Index = () => {
       {/* Premium AR Cards Product Section */}
       {premiumARCards && (
         <section className="py-20">
-          <div className="container mx-auto px-4">            <div className="text-center mb-16">
+          <div className="container mx-auto px-4">
+            {" "}
+            <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-foreground mb-4">
                 Our Premium Product
               </h2>
@@ -301,7 +312,6 @@ const Index = () => {
                 Discover our flagship AR chemistry educational product
               </p>
             </div>
-
             <div className="flex justify-center">
               <div className="max-w-md">
                 <Card className="bg-teal-50/80 dark:bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-100/60 dark:hover:bg-teal-900/30 transition-all duration-300">
@@ -316,7 +326,9 @@ const Index = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
                     </div>
-                    <div className="flex items-center justify-between">                      <CardTitle className="text-foreground text-lg">
+                    <div className="flex items-center justify-between">
+                      {" "}
+                      <CardTitle className="text-foreground text-lg">
                         {premiumARCards.name}
                       </CardTitle>
                       {premiumARCards.discount_percentage > 0 && (
@@ -331,7 +343,9 @@ const Index = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div>                        <span className="text-2xl font-bold text-foreground">
+                      <div>
+                        {" "}
+                        <span className="text-2xl font-bold text-foreground">
                           ৳{premiumARCards.price}
                         </span>
                         {premiumARCards.original_price >
@@ -373,7 +387,9 @@ const Index = () => {
       <footer className="bg-background/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">              <div className="flex items-center space-x-2">
+            <div className="space-y-4">
+              {" "}
+              <div className="flex items-center space-x-2">
                 <span className="text-xl font-bold text-foreground">
                   Chemouflage
                 </span>
@@ -382,7 +398,8 @@ const Index = () => {
                 Revolutionary AR chemistry education platform for the next
                 generation of scientists.
               </p>
-            </div>            <div>
+            </div>{" "}
+            <div>
               <h3 className="text-foreground font-semibold mb-4">Products</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
@@ -415,7 +432,8 @@ const Index = () => {
                   </Link>
                 </li>
               </ul>
-            </div>{" "}            <div>
+            </div>{" "}
+            <div>
               <h3 className="text-foreground font-semibold mb-4">Connect</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>

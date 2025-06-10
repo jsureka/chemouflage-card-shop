@@ -54,16 +54,16 @@ const Checkout = () => {
     expiryDate: "",
     cvv: "",
     cardName: "",
-  });  // Default delivery charge if product doesn't have one
+  }); // Default delivery charge if product doesn't have one
   const defaultDeliveryCharge = 60;
 
   // Quantity control functions
   const incrementQuantity = () => {
-    setQuantity(prev => Math.min(prev + 1, 10)); // Max 10 items
+    setQuantity((prev) => Math.min(prev + 1, 10)); // Max 10 items
   };
 
   const decrementQuantity = () => {
-    setQuantity(prev => Math.max(prev - 1, 1)); // Min 1 item
+    setQuantity((prev) => Math.max(prev - 1, 1)); // Min 1 item
   };
 
   // Calculate delivery charge based on city
@@ -471,11 +471,15 @@ const Checkout = () => {
                   </h3>
                   {paymentMethodsLoading ? (
                     <div className="flex items-center justify-center p-4">
-                      <div className="text-muted-foreground">Loading payment methods...</div>
+                      <div className="text-muted-foreground">
+                        Loading payment methods...
+                      </div>
                     </div>
                   ) : availablePaymentMethods.length === 0 ? (
                     <div className="p-4 bg-destructive/20 rounded-lg border border-destructive/50">
-                      <p className="text-destructive">No payment methods available</p>
+                      <p className="text-destructive">
+                        No payment methods available
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -553,14 +557,18 @@ const Checkout = () => {
             <CardContent className="space-y-4">
               {productLoading ? (
                 <div className="flex items-center justify-center p-8">
-                  <div className="text-muted-foreground">Loading product...</div>
+                  <div className="text-muted-foreground">
+                    Loading product...
+                  </div>
                 </div>
               ) : !product ? (
                 <div className="p-4 bg-destructive/20 rounded-lg border border-destructive/50">
                   <p className="text-destructive">Product not available</p>
                 </div>
               ) : (
-                <>                  <div className="flex items-center space-x-4 p-4 bg-background/40 border border-border rounded-lg">
+                <>
+                  {" "}
+                  <div className="flex items-center space-x-4 p-4 bg-background/40 border border-border rounded-lg">
                     <div className="text-4xl">
                       <CloudinaryImage
                         fileName={product.image_url}
@@ -608,9 +616,13 @@ const Checkout = () => {
                         </div>
                       </div>
                     </div>
-                  </div>                  <div className="space-y-2 pt-4">
+                  </div>{" "}
+                  <div className="space-y-2 pt-4">
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Subtotal ({quantity} {quantity === 1 ? 'item' : 'items'})</span>
+                      <span>
+                        Subtotal ({quantity} {quantity === 1 ? "item" : "items"}
+                        )
+                      </span>
                       <span>৳{product.price * quantity}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
@@ -633,7 +645,8 @@ const Checkout = () => {
                   <div className="flex justify-between text-xl font-bold text-foreground">
                     <span>Total</span>
                     <span>৳{totalAmount}</span>
-                  </div>                  <div className="mt-4">
+                  </div>{" "}
+                  <div className="mt-4">
                     <Badge className="bg-emerald-600 text-white mb-2">
                       Limited Time Offer - {product.discount_percentage}% OFF
                     </Badge>

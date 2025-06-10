@@ -37,7 +37,7 @@ const OrderTracking = () => {
       handleTrackOrder(routeOrderId);
     }
   }, [routeOrderId]);
-  
+
   const handleTrackOrder = async (orderIdToTrack?: string) => {
     const idToUse = orderIdToTrack || trackingId;
     if (!idToUse.trim()) return;
@@ -225,25 +225,33 @@ const OrderTracking = () => {
               {/* Order Summary */}
               <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Order Summary</CardTitle>
+                  <CardTitle className="text-foreground">
+                    Order Summary
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <Label className="text-muted-foreground">Order ID</Label>
+                        <Label className="text-muted-foreground">
+                          Order ID
+                        </Label>
                         <p className="text-foreground font-semibold">
                           #{orderData.id.slice(-8).toUpperCase()}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Tracking ID</Label>
+                        <Label className="text-muted-foreground">
+                          Tracking ID
+                        </Label>
                         <p className="text-foreground font-semibold">
                           #{orderData.trackingId}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Order Date</Label>
+                        <Label className="text-muted-foreground">
+                          Order Date
+                        </Label>
                         <p className="text-foreground">{orderData.orderDate}</p>
                       </div>
                       <div>
@@ -258,15 +266,21 @@ const OrderTracking = () => {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
                         <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground">{orderData.customer}</span>
+                        <span className="text-foreground">
+                          {orderData.customer}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground">{orderData.phone}</span>
+                        <span className="text-foreground">
+                          {orderData.phone}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <MapPin className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground">{orderData.address}</span>
+                        <span className="text-foreground">
+                          {orderData.address}
+                        </span>
                       </div>
                       <div>
                         <Badge
@@ -285,7 +299,9 @@ const OrderTracking = () => {
               {/* Order Timeline */}
               <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Order Timeline</CardTitle>
+                  <CardTitle className="text-foreground">
+                    Order Timeline
+                  </CardTitle>
                   <CardDescription className="text-muted-foreground">
                     Track the progress of your order
                   </CardDescription>
@@ -308,14 +324,18 @@ const OrderTracking = () => {
                         <div className="flex-1">
                           <p
                             className={`font-semibold ${
-                              step.completed ? "text-foreground" : "text-muted-foreground"
+                              step.completed
+                                ? "text-foreground"
+                                : "text-muted-foreground"
                             }`}
                           >
                             {step.status}
                           </p>
                           <p
                             className={`text-sm ${
-                              step.completed ? "text-muted-foreground" : "text-muted-foreground/60"
+                              step.completed
+                                ? "text-muted-foreground"
+                                : "text-muted-foreground/60"
                             }`}
                           >
                             {step.date}
@@ -329,7 +349,9 @@ const OrderTracking = () => {
               {/* Product Details */}
               <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Order Details</CardTitle>
+                  <CardTitle className="text-foreground">
+                    Order Details
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Order Items */}

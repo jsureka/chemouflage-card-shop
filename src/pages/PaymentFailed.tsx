@@ -141,7 +141,9 @@ const PaymentFailed = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900 flex items-center justify-center">
-        <div className="text-foreground text-lg">Loading payment details...</div>
+        <div className="text-foreground text-lg">
+          Loading payment details...
+        </div>
       </div>
     );
   }
@@ -149,7 +151,9 @@ const PaymentFailed = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">          {/* Back Button */}
+        <div className="max-w-3xl mx-auto">
+          {" "}
+          {/* Back Button */}
           <Button
             variant="ghost"
             className="text-foreground hover:text-accent-foreground mb-6"
@@ -158,7 +162,6 @@ const PaymentFailed = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-
           {/* Failed Header */}
           <Card className="bg-background/80 backdrop-blur-lg border-red-500/30 mb-6">
             <CardContent className="pt-6">
@@ -188,18 +191,20 @@ const PaymentFailed = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Error Details */}
           <Alert className="bg-red-500/10 dark:bg-red-900/20 border-red-500/30 mb-6">
             <AlertTriangle className="h-4 w-4 text-red-500 dark:text-red-400" />
             <AlertDescription className="text-red-600 dark:text-red-400">
               <strong>Error:</strong> {getErrorMessage(error, reason)}
             </AlertDescription>
-          </Alert>          {/* Order Details (if available) */}
+          </Alert>{" "}
+          {/* Order Details (if available) */}
           {orderDetails && (
             <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
               <CardHeader>
-                <CardTitle className="text-foreground">Order Information</CardTitle>
+                <CardTitle className="text-foreground">
+                  Order Information
+                </CardTitle>
                 <CardDescription className="text-muted-foreground">
                   Your order has been created but payment is pending
                 </CardDescription>
@@ -231,7 +236,8 @@ const PaymentFailed = () => {
                 </div>
               </CardContent>
             </Card>
-          )}          {/* Recommended Actions */}
+          )}{" "}
+          {/* Recommended Actions */}
           <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
             <CardHeader>
               <CardTitle className="text-foreground flex items-center">
@@ -250,7 +256,6 @@ const PaymentFailed = () => {
               </ul>
             </CardContent>
           </Card>
-
           {/* Payment Options */}
           <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
             <CardHeader>
@@ -310,7 +315,6 @@ const PaymentFailed = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button
@@ -330,7 +334,6 @@ const PaymentFailed = () => {
               <Link to="/track-order">Track Your Orders</Link>
             </Button>
           </div>
-
           {/* Support Information */}
           <div className="text-center">
             <p className="text-gray-400 text-sm">

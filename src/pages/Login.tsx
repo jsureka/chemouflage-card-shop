@@ -46,19 +46,18 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Link
           to="/"
-          className="inline-flex items-center text-white hover:text-teal-300 mb-8 transition-colors"
+          className="inline-flex items-center text-foreground hover:text-primary mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
 
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border border-border">
           <CardHeader className="text-center">
-            {" "}
             <div className="flex items-center justify-center space-x-2 mb-4">
               <CloudinaryImage
                 fileName="logoRound_1_yn0smh.png"
@@ -68,17 +67,17 @@ const Login = () => {
                 height={48}
               />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">
+            <CardTitle className="text-2xl font-bold text-foreground">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-gray-300">
+            <CardDescription className="text-muted-foreground">
               Sign in to your Chemouflage AR Chemistry account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">
+                <Label htmlFor="email" className="text-foreground">
                   Email
                 </Label>
                 <Input
@@ -88,11 +87,11 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
+                  className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">
+                <Label htmlFor="password" className="text-foreground">
                   Password
                 </Label>
                 <Input
@@ -102,12 +101,12 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
+                  className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
@@ -115,16 +114,16 @@ const Login = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-300">
+              <p className="text-muted-foreground">
                 Don't have an account?{" "}
                 <Link
                   to="/register"
-                  className="text-teal-400 hover:text-teal-300 transition-colors"
+                  className="text-primary hover:text-primary/80 transition-colors"
                 >
                   Sign up
                 </Link>
               </p>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-sm text-muted-foreground/80 mt-2">
                 Demo: Use any email with "admin" for admin access
               </p>
             </div>

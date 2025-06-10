@@ -1,5 +1,6 @@
 import CloudinaryImage from "@/components/CloudinaryImage";
 import Hero from "@/components/Hero";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,10 +69,8 @@ const Index = () => {
       description:
         "Comprehensive learning resources for students and educators",
     },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
+  ];  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       {" "}
       {/* Navigation */}
       <nav className="container mx-auto px-4 py-6">
@@ -85,42 +84,47 @@ const Index = () => {
               width={40}
               height={40}
             />
-            <span className="text-xl font-bold text-white">Chemouflage</span>
-          </div>
-
-          {/* Desktop Menu */}
+            <span className="text-xl font-bold text-foreground">Chemouflage</span>
+          </div>          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className="text-white hover:text-teal-300 transition-colors"
+              className="text-foreground hover:text-teal-500 transition-colors"
             >
               Home
-            </Link>
+            </Link>{" "}
             <Link
               to="/checkout"
-              className="text-white hover:text-teal-300 transition-colors"
+              className="text-foreground hover:text-teal-500 transition-colors"
             >
               Buy Cards
             </Link>
+            {user && (
+              <Link
+                to="/my-orders"
+                className="text-foreground hover:text-teal-500 transition-colors"
+              >
+                My Orders
+              </Link>
+            )}
             <Link
               to="/track-order"
-              className="text-white hover:text-teal-300 transition-colors"
+              className="text-foreground hover:text-teal-500 transition-colors"
             >
               Track Order
             </Link>
             <Link
               to="/contact"
-              className="text-white hover:text-teal-300 transition-colors"
+              className="text-foreground hover:text-teal-500 transition-colors"
             >
               Contact
             </Link>
-          </div>
-
-          {/* Desktop Auth Section */}
+          </div>          {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle className="text-foreground" />
             {user ? (
               <>
-                <span className="text-white hidden lg:inline">
+                <span className="text-foreground hidden lg:inline">
                   Welcome, {user.email}
                 </span>
                 {isAdmin && (
@@ -135,7 +139,7 @@ const Index = () => {
                   onClick={logout}
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:bg-teal-900/50"
+                  className="text-foreground hover:bg-teal-100/50 dark:hover:bg-teal-900/50"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
@@ -149,11 +153,9 @@ const Index = () => {
                 </Button>
               </Link>
             )}
-          </div>
-
-          {/* Mobile Menu Button */}
+          </div>          {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white p-2"
+            className="md:hidden text-foreground p-2"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -163,47 +165,57 @@ const Index = () => {
               <Menu className="w-6 h-6" />
             )}
           </button>
-        </div>
-
-        {/* Mobile Menu */}
+        </div>        {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 bg-slate-900/95 backdrop-blur-lg rounded-lg border border-teal-500/30 p-4">
+          <div className="md:hidden mt-4 bg-background/95 backdrop-blur-lg rounded-lg border border-teal-500/30 p-4">
             <div className="flex flex-col space-y-4">
               {/* Mobile Navigation Links */}
               <Link
                 to="/"
-                className="text-white hover:text-teal-300 transition-colors py-2"
+                className="text-foreground hover:text-teal-500 transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
-              </Link>
+              </Link>{" "}
               <Link
                 to="/checkout"
-                className="text-white hover:text-teal-300 transition-colors py-2"
+                className="text-foreground hover:text-teal-500 transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Products
               </Link>
+              {user && (
+                <Link
+                  to="/my-orders"
+                  className="text-foreground hover:text-teal-500 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Orders
+                </Link>
+              )}
               <Link
                 to="/track-order"
-                className="text-white hover:text-teal-300 transition-colors py-2"
+                className="text-foreground hover:text-teal-500 transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Track Order
               </Link>
               <Link
                 to="/contact"
-                className="text-white hover:text-teal-300 transition-colors py-2"
+                className="text-foreground hover:text-teal-500 transition-colors py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
               </Link>
-
               {/* Mobile Auth Section */}
               <div className="border-t border-teal-500/30 pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-foreground text-sm">Theme</span>
+                  <ThemeToggle />
+                </div>
                 {user ? (
                   <div className="space-y-3">
-                    <div className="text-white text-sm">
+                    <div className="text-foreground text-sm">
                       Welcome, {user.email}
                     </div>
                     {isAdmin && (
@@ -224,7 +236,7 @@ const Index = () => {
                       }}
                       variant="ghost"
                       size="sm"
-                      className="w-full text-white hover:bg-teal-900/50"
+                      className="w-full text-foreground hover:bg-teal-100/50 dark:hover:bg-teal-900/50"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
@@ -244,15 +256,14 @@ const Index = () => {
         )}
       </nav>
       {/* Hero Section */}
-      <Hero />
-      {/* Features Section */}
-      <section className="py-20 bg-slate-900/50">
+      <Hero />      {/* Features Section */}
+      <section className="py-20 bg-slate-100/50 dark:bg-slate-900/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Revolutionary Chemistry Education
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Experience the future of chemistry learning with our cutting-edge
               AR technology, interactive simulations, and comprehensive
               educational platform.
@@ -263,14 +274,14 @@ const Index = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300"
+                className="bg-teal-50/80 dark:bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-100/60 dark:hover:bg-teal-900/30 transition-all duration-300"
               >
                 <CardHeader>
                   <feature.icon className="w-12 h-12 text-teal-400 mb-4" />
-                  <CardTitle className="text-white">{feature.title}</CardTitle>
+                  <CardTitle className="text-foreground">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-300">
+                  <CardDescription className="text-muted-foreground">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -282,19 +293,18 @@ const Index = () => {
       {/* Premium AR Cards Product Section */}
       {premiumARCards && (
         <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="container mx-auto px-4">            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-foreground mb-4">
                 Our Premium Product
               </h2>
-              <p className="text-xl text-gray-300">
+              <p className="text-xl text-muted-foreground">
                 Discover our flagship AR chemistry educational product
               </p>
             </div>
 
             <div className="flex justify-center">
               <div className="max-w-md">
-                <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-900/30 transition-all duration-300">
+                <Card className="bg-teal-50/80 dark:bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-100/60 dark:hover:bg-teal-900/30 transition-all duration-300">
                   <CardHeader>
                     <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
                       <CloudinaryImage
@@ -304,10 +314,9 @@ const Index = () => {
                         width={400}
                         height={600}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-white text-lg">
+                    <div className="flex items-center justify-between">                      <CardTitle className="text-foreground text-lg">
                         {premiumARCards.name}
                       </CardTitle>
                       {premiumARCards.discount_percentage > 0 && (
@@ -316,30 +325,29 @@ const Index = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardDescription className="text-gray-300 line-clamp-3">
+                    <CardDescription className="text-muted-foreground line-clamp-3">
                       {premiumARCards.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-white">
+                      <div>                        <span className="text-2xl font-bold text-foreground">
                           ৳{premiumARCards.price}
                         </span>
                         {premiumARCards.original_price >
                           premiumARCards.price && (
-                          <span className="text-gray-400 line-through ml-2">
+                          <span className="text-muted-foreground line-through ml-2">
                             ৳{premiumARCards.original_price}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-gray-300">4.8</span>
+                        <span className="text-muted-foreground">4.8</span>
                       </div>
                     </div>
 
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       <Badge
                         variant="outline"
                         className="text-teal-400 border-teal-400"
@@ -362,24 +370,21 @@ const Index = () => {
         </section>
       )}
       {/* Footer */}
-      <footer className="bg-slate-900/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
+      <footer className="bg-background/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <FlaskConical className="w-6 h-6 text-teal-400" />
-                <span className="text-xl font-bold text-white">
+            <div className="space-y-4">              <div className="flex items-center space-x-2">
+                <span className="text-xl font-bold text-foreground">
                   Chemouflage
                 </span>
               </div>
-              <p className="text-gray-300">
+              <p className="text-muted-foreground">
                 Revolutionary AR chemistry education platform for the next
                 generation of scientists.
               </p>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">Products</h3>
-              <ul className="space-y-2 text-gray-300">
+            </div>            <div>
+              <h3 className="text-foreground font-semibold mb-4">Products</h3>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
                     to="/checkout"
@@ -391,8 +396,8 @@ const Index = () => {
               </ul>
             </div>{" "}
             <div>
-              <h3 className="text-white font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-300">
+              <h3 className="text-foreground font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
                     to="/track-order"
@@ -400,11 +405,6 @@ const Index = () => {
                   >
                     Track Order
                   </Link>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-teal-400 transition-colors">
-                    Help Center
-                  </a>
                 </li>
                 <li>
                   <Link
@@ -415,10 +415,9 @@ const Index = () => {
                   </Link>
                 </li>
               </ul>
-            </div>{" "}
-            <div>
-              <h3 className="text-white font-semibold mb-4">Connect</h3>
-              <ul className="space-y-2 text-gray-300">
+            </div>{" "}            <div>
+              <h3 className="text-foreground font-semibold mb-4">Connect</h3>
+              <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <a
                     href="https://www.facebook.com/chemouflage"
@@ -432,7 +431,7 @@ const Index = () => {
               </ul>
             </div>
           </div>{" "}
-          <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-muted-foreground">
             <div className="flex items-center justify-center">
               {" "}
               <CloudinaryImage

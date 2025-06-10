@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional
 from app.db.mongodb import get_database
 from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
                                 OrderInDB, OrderItem, OrderItemCreate,
-                                OrderItemInDB, OrderItemResponse, OrderUpdate,
-                                OrderWithItems)
+                                OrderItemInDB, OrderItemResponse,
+                                OrderItemUpdate, OrderUpdate, OrderWithItems)
 from app.repositories.premium_code import PremiumCodeRepository
 from bson import ObjectId
 
@@ -24,41 +24,80 @@ class OrderRepository:
     @staticmethod
     async def get_by_id(order_id: str) -> Optional[Order]:
         db = await get_database()
-        order = await db.orders.find_one({"_id": ObjectId(order_id)})
-        if order:
-            order["user_id"] = str(order["user_id"])
-            return Order(**order, id=str(order["_id"]))
+        try:
+            order = await db.orders.find_one({"_id": ObjectId(order_id)})
+            if order:
+                order["user_id"] = str(order["user_id"])
+                return Order(**order, id=str(order["_id"]))
+        except Exception:
+            # Invalid ObjectId format
+            pass
         return None
     
     @staticmethod
     async def get_with_items(order_id: str) -> Optional[OrderWithItems]:
         db = await get_database()
-        order = await db.orders.find_one({"_id": ObjectId(order_id)})
-        if not order:
-            return None
-        
-        # Fetch related order items
-        cursor = db.order_items.find({"order_id": ObjectId(order_id)})
-        items = []
-        
-        async for item in cursor:
-            # Get product information for each item
-            product = await db.products.find_one({"_id": ObjectId(item["product_id"])})
-            product_name = product["name"] if product else "Unknown Product"
+        try:
+            order = await db.orders.find_one({"_id": ObjectId(order_id)})
+            if not order:
+                return None
             
-            items.append(OrderItemResponse(
-                id=str(item["_id"]),
-                product_id=str(item["product_id"]),
-                product_name=product_name,
-                quantity=item["quantity"],
-                price=item["price"]
-            ))
+            # Fetch related order items
+            cursor = db.order_items.find({"order_id": ObjectId(order_id)})
+            items = []
+            
+            async for item in cursor:
+                # Get product information for each item
+                product = await db.products.find_one({"_id": ObjectId(item["product_id"])})
+                product_name = product["name"] if product else "Unknown Product"
+                
+                items.append(OrderItemResponse(
+                    id=str(item["_id"]),
+                    product_id=str(item["product_id"]),
+                    product_name=product_name,
+                    quantity=item["quantity"],
+                    price=item["price"]
+                ))
+
+            # Convert ObjectId to string
+            order["user_id"] = str(order["user_id"])
+            
+            # Remove items field if it exists in the order dict to avoid conflict
+            order_data = {k: v for k, v in order.items() if k != "items"}
+            
+            # Return complete order with items
+            return OrderWithItems(**order_data, id=str(order["_id"]), items=items)
+        except Exception:
+            # Invalid ObjectId format
+            return None
+
+    @staticmethod
+    async def find_by_partial_id(partial_id: str) -> Optional[OrderWithItems]:
+        """Find an order by partial ID (last 8 characters) and return with items"""
+        db = await get_database()
         
-        # Convert ObjectId to string
-        order["user_id"] = str(order["user_id"])
+        # Remove any case and whitespace variations
+        partial_id_clean = partial_id.strip().lower()
         
-        # Return complete order with items
-        return OrderWithItems(**order, id=str(order["_id"]), items=items)
+        # If it's a full ObjectId (24 characters), use the regular method
+        if len(partial_id_clean) == 24:
+            try:
+                return await OrderRepository.get_with_items(partial_id_clean)
+            except:
+                pass
+        
+        # For partial IDs, search through all orders to find a match
+        # This is not the most efficient but will work for the use case
+        cursor = db.orders.find({})
+        async for order_doc in cursor:
+            order_id_str = str(order_doc["_id"]).lower()
+            
+            # Check if the partial ID matches the end of the order ID
+            if order_id_str.endswith(partial_id_clean) or order_id_str[-8:] == partial_id_clean:
+                # Found a match, get the full order with items
+                return await OrderRepository.get_with_items(str(order_doc["_id"]))
+        
+        return None
     
     @staticmethod
     async def get_by_user(user_id: str) -> List[Order]:
@@ -258,7 +297,6 @@ class OrderItemRepository:
             item["product_id"] = str(item["product_id"])
             return OrderItem(**item, id=str(item["_id"]))
         return None
-    
     @staticmethod
     async def get_by_order(order_id: str) -> List[OrderItem]:
         db = await get_database()
@@ -269,6 +307,20 @@ class OrderItemRepository:
             doc["product_id"] = str(doc["product_id"])
             items.append(OrderItem(**doc, id=str(doc["_id"])))
         return items
+    
+    @staticmethod
+    async def update(item_id: str, item_update: OrderItemUpdate) -> Optional[OrderItem]:
+        db = await get_database()
+        update_data = {k: v for k, v in item_update.model_dump(exclude_unset=True).items() if v is not None}
+        
+        if update_data:
+            update_data["updated_at"] = datetime.utcnow()
+            await db.order_items.update_one(
+                {"_id": ObjectId(item_id)},
+                {"$set": update_data}
+            )
+        
+        return await OrderItemRepository.get_by_id(item_id)
     
     @staticmethod
     async def delete(item_id: str) -> bool:

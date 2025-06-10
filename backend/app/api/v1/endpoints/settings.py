@@ -2,7 +2,8 @@ from typing import List
 
 from app.api.dependencies import get_current_admin, get_current_user
 from app.db.mongodb import get_database
-from app.models.settings import (EnabledPaymentMethods, PaymentSettings,
+from app.models.settings import (DeliveryChargesResponse,
+                                 EnabledPaymentMethods, PaymentSettings,
                                  PaymentSettingsUpdate)
 from app.models.user import User
 from app.repositories.payment_settings import PaymentSettingsRepository
@@ -14,7 +15,7 @@ router = APIRouter()
 
 @router.get("/payment-methods", response_model=EnabledPaymentMethods)
 async def get_enabled_payment_methods(
-    db: AsyncIOMotorDatabase = Depends(get_database)
+    db = Depends(get_database)
 ):
     """
     Get enabled payment methods for public use (checkout page)
@@ -26,7 +27,7 @@ async def get_enabled_payment_methods(
 @router.get("/payment-settings", response_model=PaymentSettings)
 async def get_payment_settings(
     current_user: User = Depends(get_current_admin),
-    db: AsyncIOMotorDatabase = Depends(get_database)
+    db = Depends(get_database)
 ):
     """
     Get payment settings (admin only)
@@ -47,7 +48,7 @@ async def get_payment_settings(
 async def update_payment_settings(
     settings_update: PaymentSettingsUpdate,
     current_user: User = Depends(get_current_admin),
-    db: AsyncIOMotorDatabase = Depends(get_database)
+    db = Depends(get_database)
 ):
     """
     Update payment settings (admin only)
@@ -78,7 +79,7 @@ async def toggle_payment_method(
     method_name: str,
     enabled: bool,
     current_user: User = Depends(get_current_admin),
-    db: AsyncIOMotorDatabase = Depends(get_database)
+    db = Depends(get_database)
 ):
     """
     Toggle a specific payment method on/off (admin only)
@@ -117,3 +118,42 @@ async def toggle_payment_method(
         )
     
     return {"message": f"Payment method {method_name} {'enabled' if enabled else 'disabled'} successfully"}
+
+
+@router.get("/delivery-charges", response_model=DeliveryChargesResponse)
+async def get_delivery_charges(
+    db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    """
+    Get delivery charges for inside and outside Dhaka (public endpoint)
+    """
+    payment_settings_repo = PaymentSettingsRepository(db)
+    return await payment_settings_repo.get_delivery_charges()
+
+
+@router.put("/delivery-charges")
+async def update_delivery_charges(
+    inside_dhaka: float,
+    outside_dhaka: float,
+    current_user: User = Depends(get_current_admin),
+    db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    """
+    Update delivery charges (admin only)
+    """
+    if inside_dhaka < 0 or outside_dhaka < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Delivery charges cannot be negative"
+        )
+    
+    payment_settings_repo = PaymentSettingsRepository(db)
+    updated_settings = await payment_settings_repo.update_delivery_charges(inside_dhaka, outside_dhaka)
+    
+    if not updated_settings:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Failed to update delivery charges"
+        )
+    
+    return {"message": "Delivery charges updated successfully"}

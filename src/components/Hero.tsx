@@ -79,9 +79,8 @@ const Hero = () => {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
-
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 overflow-hidden">
+    <section className="relative min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-teal-500/10 rounded-full blur-xl animate-pulse" />
@@ -100,11 +99,10 @@ const Hero = () => {
                 {slides[currentSlide].subtitle}
               </span>
               <Sparkles className="w-4 h-4" />
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight transition-opacity duration-500">
+            </div>            <h1 className="text-5xl lg:text-7xl font-bold text-foreground leading-tight transition-opacity duration-500">
               {slides[currentSlide].title}
             </h1>
-            <p className="text-xl text-gray-300 max-w-lg leading-relaxed transition-opacity duration-500">
+            <p className="text-xl text-muted-foreground max-w-lg leading-relaxed transition-opacity duration-500">
               {slides[currentSlide].description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -118,7 +116,7 @@ const Hero = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => setShowVideo(true)}
-                className="border-2 border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-slate-900 px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all duration-300"
+                className="border-2 border-teal-400 text-teal-400 hover:bg-teal-400 hover:text-background px-8 py-6 text-lg font-semibold rounded-xl backdrop-blur-sm transition-all duration-300"
               >
                 <Play className="w-5 h-5 mr-2" />
                 Watch Demos
@@ -144,12 +142,11 @@ const Hero = () => {
         </div>
       </div>{" "}
       {/* Navigation Controls */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">
-        <Button
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">        <Button
           variant="ghost"
           size="icon"
           onClick={prevSlide}
-          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-foreground hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
@@ -166,13 +163,11 @@ const Hero = () => {
               }`}
             />
           ))}
-        </div>
-
-        <Button
+        </div>        <Button
           variant="ghost"
           size="icon"
           onClick={nextSlide}
-          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-foreground hover:bg-white/20 hover:scale-110 transition-all duration-300 shadow-lg"
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
@@ -186,10 +181,9 @@ const Hero = () => {
           <div
             className="relative bg-black rounded-lg overflow-hidden max-w-5xl w-full max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
-          >
-            <button
+          >            <button
               onClick={() => setShowVideo(false)}
-              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors"
+              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-foreground rounded-full p-2 transition-colors"
             >
               ✕
             </button>
@@ -199,24 +193,21 @@ const Hero = () => {
               {videoDemos.map((demo, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentVideoIndex(index)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  onClick={() => setCurrentVideoIndex(index)}                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     index === currentVideoIndex
                       ? "bg-teal-500 text-white"
-                      : "bg-white/20 text-white hover:bg-white/30"
+                      : "bg-white/20 text-foreground hover:bg-white/30"
                   }`}
                 >
                   {demo.title}
                 </button>
               ))}
-            </div>
-
-            {/* Video Title and Description */}
+            </div>            {/* Video Title and Description */}
             <div className="absolute bottom-4 left-4 right-4 z-10 bg-black/60 rounded-lg p-4">
-              <h3 className="text-white text-lg font-semibold mb-1">
+              <h3 className="text-foreground text-lg font-semibold mb-1">
                 {videoDemos[currentVideoIndex].title}
               </h3>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {videoDemos[currentVideoIndex].description}
               </p>{" "}
             </div>

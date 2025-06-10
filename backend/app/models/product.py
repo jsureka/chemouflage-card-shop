@@ -66,6 +66,7 @@ class ShippingAddress(BaseModel):
 class OrderBase(BaseModel):
     user_id: str
     total_amount: float
+    delivery_charge: float = 0.0  # Delivery charge for this order
     payment_method: Optional[str] = None
     shipping_address: ShippingAddress
     status: str = "pending"  # pending, processing, shipped, delivered, cancelled
@@ -83,6 +84,7 @@ class OrderUpdate(BaseModel):
     payment_status: Optional[str] = None
     delivery_status: Optional[str] = None
     total_amount: Optional[float] = None
+    delivery_charge: Optional[float] = None
     premium_code_id: Optional[str] = None
 
 class AdminOrderUpdate(BaseModel):
@@ -93,6 +95,8 @@ class AdminOrderUpdate(BaseModel):
     payment_method: Optional[str] = None
     shipping_address: Optional[ShippingAddress] = None
     total_amount: Optional[float] = None
+    delivery_charge: Optional[float] = None
+    delivery_charge: Optional[float] = None
 
 class OrderInDB(OrderBase):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")

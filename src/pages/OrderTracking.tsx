@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { ordersService } from "@/services";
 import {
   ArrowLeft,
@@ -19,47 +20,82 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 const OrderTracking = () => {
-  const [trackingId, setTrackingId] = useState("");
+  const { orderId: routeOrderId } = useParams();
+  const { toast } = useToast();
+  const [trackingId, setTrackingId] = useState(routeOrderId || "");
   const [orderData, setOrderData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const handleTrackOrder = async () => {
-    if (!trackingId.trim()) return;
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Auto-track if order ID is provided via route
+  useEffect(() => {
+    if (routeOrderId) {
+      handleTrackOrder(routeOrderId);
+    }
+  }, [routeOrderId]);
+  
+  const handleTrackOrder = async (orderIdToTrack?: string) => {
+    const idToUse = orderIdToTrack || trackingId;
+    if (!idToUse.trim()) return;
 
     setIsLoading(true);
+    setHasSearched(true);
     try {
-      const { data, error } = await ordersService.trackOrder(trackingId.trim());
+      const { data, error } = await ordersService.trackOrder(idToUse.trim());
 
       if (error) {
         console.error("Track order error:", error);
         setOrderData(null);
+        toast({
+          title: "Order Not Found",
+          description: `We couldn't find an order with the ID "${idToUse}". Please check your order ID or tracking number and try again.`,
+          variant: "destructive",
+        });
       } else if (data) {
         // Transform backend data to match the expected format
         const transformedData = {
           id: data.id,
-          trackingId: data.id, // Use order ID as tracking ID
+          trackingId: data.id.slice(-8).toUpperCase(),
           customer: `${data.shipping_address.firstName} ${data.shipping_address.lastName}`,
           phone: data.shipping_address.phone,
           status: data.status || "pending",
           amount: data.total_amount,
+          deliveryCharge: data.delivery_charge,
+          items: data.items || [],
           paymentMethod: data.payment_method || "N/A",
           address: `${data.shipping_address.address}, ${data.shipping_address.area}, ${data.shipping_address.city}`,
           orderDate: new Date(data.created_at).toLocaleDateString(),
           estimatedDelivery: new Date(
             Date.now() + 3 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString(), // 3 days from now
+          ).toLocaleDateString(),
           timeline: generateTimeline(data.status || "pending", data.created_at),
         };
         setOrderData(transformedData);
+        toast({
+          title: "Order Found!",
+          description: `Successfully loaded order #${transformedData.trackingId}`,
+        });
       } else {
         setOrderData(null);
+        toast({
+          title: "Order Not Found",
+          description: `We couldn't find an order with the ID "${idToUse}". Please check your order ID or tracking number and try again.`,
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Network error:", error);
       setOrderData(null);
+      toast({
+        title: "Network Error",
+        description:
+          "There was an error connecting to the server. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -126,24 +162,24 @@ const OrderTracking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8">
         <Link
           to="/"
-          className="inline-flex items-center text-white hover:text-purple-300 mb-8 transition-colors"
+          className="inline-flex items-center text-foreground hover:text-primary mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
 
         <div className="max-w-4xl mx-auto">
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 mb-8">
+          <Card className="bg-background/80 backdrop-blur-lg border border-border mb-8">
             <CardHeader>
-              <CardTitle className="text-white flex items-center">
+              <CardTitle className="text-foreground flex items-center">
                 <Package className="w-6 h-6 mr-2" />
                 Track Your Order
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-muted-foreground">
                 Enter your order ID or tracking number to track your Chemouflage
                 AR Chemistry Cards
               </CardDescription>
@@ -151,75 +187,86 @@ const OrderTracking = () => {
             <CardContent>
               <div className="flex space-x-4">
                 <div className="flex-1">
-                  <Label htmlFor="trackingId" className="text-white">
+                  <Label htmlFor="trackingId" className="text-foreground">
                     Order ID or Tracking Number
                   </Label>
                   <Input
                     id="trackingId"
-                    placeholder="CHM-001 or DHL123456789"
+                    placeholder="e.g., 12345678 or full order ID"
                     value={trackingId}
-                    onChange={(e) => setTrackingId(e.target.value)}
-                    className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 mt-2"
+                    onChange={(e) => {
+                      setTrackingId(e.target.value);
+                      // Reset search state when user types
+                      if (hasSearched) {
+                        setHasSearched(false);
+                        setOrderData(null);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && trackingId && !isLoading) {
+                        handleTrackOrder();
+                      }
+                    }}
+                    className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground mt-2"
                   />
                 </div>
                 <Button
-                  onClick={handleTrackOrder}
+                  onClick={() => handleTrackOrder()}
                   disabled={!trackingId || isLoading}
-                  className="bg-purple-600 hover:bg-purple-700 mt-8"
+                  className="bg-primary hover:bg-primary/90 mt-8"
                 >
                   {isLoading ? "Tracking..." : "Track Order"}
                 </Button>
               </div>
             </CardContent>
           </Card>
-
           {orderData && (
             <div className="space-y-6">
               {/* Order Summary */}
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-white">Order Summary</CardTitle>
+                  <CardTitle className="text-foreground">Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <Label className="text-gray-300">Order ID</Label>
-                        <p className="text-white font-semibold">
-                          {orderData.id}
+                        <Label className="text-muted-foreground">Order ID</Label>
+                        <p className="text-foreground font-semibold">
+                          #{orderData.id.slice(-8).toUpperCase()}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-gray-300">Tracking ID</Label>
-                        <p className="text-white font-semibold">
-                          {orderData.trackingId}
+                        <Label className="text-muted-foreground">Tracking ID</Label>
+                        <p className="text-foreground font-semibold">
+                          #{orderData.trackingId}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-gray-300">Order Date</Label>
-                        <p className="text-white">{orderData.orderDate}</p>
+                        <Label className="text-muted-foreground">Order Date</Label>
+                        <p className="text-foreground">{orderData.orderDate}</p>
                       </div>
                       <div>
-                        <Label className="text-gray-300">
+                        <Label className="text-muted-foreground">
                           Estimated Delivery
                         </Label>
-                        <p className="text-white">
+                        <p className="text-foreground">
                           {orderData.estimatedDelivery}
                         </p>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="text-white">{orderData.customer}</span>
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-foreground">{orderData.customer}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        <span className="text-white">{orderData.phone}</span>
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-foreground">{orderData.phone}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span className="text-white">{orderData.address}</span>
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-foreground">{orderData.address}</span>
                       </div>
                       <div>
                         <Badge
@@ -235,12 +282,11 @@ const OrderTracking = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Order Timeline */}
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-white">Order Timeline</CardTitle>
-                  <CardDescription className="text-gray-300">
+                  <CardTitle className="text-foreground">Order Timeline</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     Track the progress of your order
                   </CardDescription>
                 </CardHeader>
@@ -262,14 +308,14 @@ const OrderTracking = () => {
                         <div className="flex-1">
                           <p
                             className={`font-semibold ${
-                              step.completed ? "text-white" : "text-gray-400"
+                              step.completed ? "text-foreground" : "text-muted-foreground"
                             }`}
                           >
                             {step.status}
                           </p>
                           <p
                             className={`text-sm ${
-                              step.completed ? "text-gray-300" : "text-gray-500"
+                              step.completed ? "text-muted-foreground" : "text-muted-foreground/60"
                             }`}
                           >
                             {step.date}
@@ -280,32 +326,84 @@ const OrderTracking = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Product Details */}
-              <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <Card className="bg-background/80 backdrop-blur-lg border border-border">
                 <CardHeader>
-                  <CardTitle className="text-white">Product Details</CardTitle>
+                  <CardTitle className="text-foreground">Order Details</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
-                    <div className="text-4xl">🧪</div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white">
-                        Chemouflage AR Chemistry Cards
-                      </h3>
-                      <p className="text-gray-300 text-sm">
-                        AR-Based Chemistry Learning Cards
-                      </p>
-                      <p className="text-gray-300 text-sm">
-                        Interactive 3D Molecular Visualization
-                      </p>
+                <CardContent className="space-y-4">
+                  {/* Order Items */}
+                  {orderData.items && orderData.items.length > 0 ? (
+                    <div className="space-y-3">
+                      {orderData.items.map((item: any, index: number) => (
+                        <div
+                          key={item.id || index}
+                          className="flex items-center justify-between p-4 bg-background/40 border border-border rounded-lg"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="text-3xl">🧪</div>
+                            <div>
+                              <h3 className="font-semibold text-foreground">
+                                {item.product_name}
+                              </h3>
+                              <p className="text-muted-foreground text-sm">
+                                Quantity: {item.quantity} × ৳{item.price}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-foreground font-semibold">
+                              ৳{item.quantity * item.price}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-right">
-                      <div className="text-white font-semibold">
-                        ৳{orderData.amount}
+                  ) : (
+                    <div className="flex items-center space-x-4 p-4 bg-background/40 border border-border rounded-lg">
+                      <div className="text-4xl">🧪</div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">
+                          Chemouflage AR Chemistry Cards
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          AR-Based Chemistry Learning Cards
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          Interactive 3D Molecular Visualization
+                        </p>
                       </div>
-                      <div className="text-gray-400 text-sm">
-                        {orderData.paymentMethod}
+                      <div className="text-right">
+                        <div className="text-foreground font-semibold">
+                          ৳{orderData.amount}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          {orderData.paymentMethod}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Order Summary */}
+                  <div className="border-t border-border pt-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal:</span>
+                        <span>
+                          ৳{orderData.amount - (orderData.deliveryCharge || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Delivery Charge:</span>
+                        <span>৳{orderData.deliveryCharge || 0}</span>
+                      </div>
+                      <div className="flex justify-between text-foreground font-semibold text-lg border-t border-border pt-2">
+                        <span>Total:</span>
+                        <span>৳{orderData.amount}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground text-sm">
+                        <span>Payment Method:</span>
+                        <span>{orderData.paymentMethod}</span>
                       </div>
                     </div>
                   </div>
@@ -313,15 +411,14 @@ const OrderTracking = () => {
               </Card>
             </div>
           )}
-
-          {trackingId && !orderData && !isLoading && (
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          {hasSearched && trackingId && !orderData && !isLoading && (
+            <Card className="bg-background/80 backdrop-blur-lg border border-border">
               <CardContent className="p-8 text-center">
-                <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-white text-lg font-semibold mb-2">
+                <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-foreground text-lg font-semibold mb-2">
                   Order Not Found
                 </h3>
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   We couldn't find an order with the tracking ID "{trackingId}".
                   Please check your order ID or tracking number and try again.
                 </p>

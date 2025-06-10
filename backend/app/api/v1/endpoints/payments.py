@@ -169,7 +169,7 @@ async def initiate_aamarpay_payment(
         payment_result = aamarpay_service.create_payment(
             order_id=order_id,
             amount=order.total_amount,
-            customer_name=customer_name or current_user.username or "Customer",
+            customer_name=customer_name or current_user.full_name or "Customer",
             customer_email=customer_email,
             customer_phone=customer_phone,
             customer_address=customer_address,

@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.core.config import settings
-from app.models.settings import (EnabledPaymentMethods, PaymentMethodSettings,
+from app.models.settings import (DeliveryChargesResponse,
+                                 EnabledPaymentMethods, PaymentMethodSettings,
                                  PaymentSettings, PaymentSettingsCreate,
                                  PaymentSettingsInDB, PaymentSettingsUpdate)
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -36,8 +37,7 @@ class PaymentSettingsRepository:
         
         result = await self.collection.insert_one(settings_dict)
         created_settings = await self.collection.find_one({"_id": result.inserted_id})
-        
-        # Convert MongoDB document to PaymentSettings model
+          # Convert MongoDB document to PaymentSettings model
         created_settings["id"] = str(created_settings["_id"])
         del created_settings["_id"]
         return PaymentSettings(**created_settings)
@@ -45,13 +45,15 @@ class PaymentSettingsRepository:
     async def update_settings(self, settings_update: PaymentSettingsUpdate) -> Optional[PaymentSettings]:
         """Update payment settings"""
         update_data = {}
-        
-        # Build update document
+          # Build update document
         if settings_update.aamarpay is not None:
             update_data["aamarpay"] = settings_update.aamarpay.model_dump()
         
         if settings_update.cash_on_delivery is not None:
             update_data["cash_on_delivery"] = settings_update.cash_on_delivery.model_dump()
+        
+        if settings_update.delivery_charges is not None:
+            update_data["delivery_charges"] = settings_update.delivery_charges.model_dump()
         
         if not update_data:
             # If no updates, return current settings
@@ -126,3 +128,33 @@ class PaymentSettingsRepository:
             cod_enabled = settings_update.cash_on_delivery.is_enabled
         
         return aamarpay_enabled or cod_enabled
+
+    async def get_delivery_charges(self) -> DeliveryChargesResponse:
+        """Get delivery charges for inside and outside Dhaka"""
+        settings = await self.get_settings()
+        return DeliveryChargesResponse(
+            inside_dhaka=settings.delivery_charges.inside_dhaka,
+            outside_dhaka=settings.delivery_charges.outside_dhaka
+        )
+
+    async def update_delivery_charges(self, inside_dhaka: float, outside_dhaka: float) -> Optional[PaymentSettings]:
+        """Update delivery charges"""
+        update_data = {
+            "delivery_charges.inside_dhaka": inside_dhaka,
+            "delivery_charges.outside_dhaka": outside_dhaka,
+            "updated_at": datetime.utcnow()
+        }
+        
+        updated_doc = await self.collection.find_one_and_update(
+            {},
+            {"$set": update_data},
+            return_document=ReturnDocument.AFTER
+        )
+        
+        if updated_doc:
+            # Convert MongoDB document to PaymentSettings model
+            updated_doc["id"] = str(updated_doc["_id"])
+            del updated_doc["_id"]
+            return PaymentSettings(**updated_doc)
+        
+        return None

@@ -273,13 +273,13 @@ const PaymentCancelled = () => {
                 <Home className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-            </Button>
+            </Button>{" "}
             <Button
               asChild
               variant="outline"
               className="border-teal-500/50 text-teal-300 hover:bg-teal-900/20"
             >
-              <Link to="/track-order">Track Your Orders</Link>
+              <Link to="/my-orders">View My Orders</Link>
             </Button>
           </div>
 

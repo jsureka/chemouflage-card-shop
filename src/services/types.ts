@@ -25,6 +25,7 @@ export interface Order {
   id: string;
   user_id: string;
   total_amount: number;
+  delivery_charge: number;
   status: string;
   payment_status: string;
   delivery_status: string;
@@ -33,6 +34,18 @@ export interface Order {
   premium_code_id?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderWithItems extends Order {
+  items: OrderItem[];
 }
 
 export interface OrderCreationResponse {

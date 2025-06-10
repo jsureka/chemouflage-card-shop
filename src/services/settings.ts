@@ -15,6 +15,10 @@ interface PaymentSettings {
   id: string;
   aamarpay: PaymentMethodSettings;
   cash_on_delivery: PaymentMethodSettings;
+  delivery_charges: {
+    inside_dhaka: number;
+    outside_dhaka: number;
+  };
   created_at: string;
   updated_at?: string;
 }
@@ -26,6 +30,15 @@ interface EnabledPaymentMethods {
 interface PaymentSettingsUpdate {
   aamarpay?: PaymentMethodSettings;
   cash_on_delivery?: PaymentMethodSettings;
+  delivery_charges?: {
+    inside_dhaka: number;
+    outside_dhaka: number;
+  };
+}
+
+interface DeliveryCharges {
+  inside_dhaka: number;
+  outside_dhaka: number;
 }
 
 class SettingsService {
@@ -114,6 +127,34 @@ class SettingsService {
         headers: this.setAuthHeader(),
       }
     );
+    return this.handleResponse<{ message: string }>(response);
+  }
+
+  async getDeliveryCharges(): Promise<ApiResponse<DeliveryCharges>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/settings/delivery-charges`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return this.handleResponse<DeliveryCharges>(response);
+  }
+
+  async updateDeliveryCharges(
+    insideDhaka: number,
+    outsideDhaka: number
+  ): Promise<ApiResponse<{ message: string }>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/settings/delivery-charges?inside_dhaka=${insideDhaka}&outside_dhaka=${outsideDhaka}`,
+      {
+        method: "PUT",
+        headers: this.setAuthHeader(),
+      }
+    );
 
     return this.handleResponse<{ message: string }>(response);
   }
@@ -121,8 +162,9 @@ class SettingsService {
 
 export const settingsService = new SettingsService();
 export type {
+  DeliveryCharges,
+  EnabledPaymentMethods,
   PaymentMethodSettings,
   PaymentSettings,
-  EnabledPaymentMethods,
   PaymentSettingsUpdate,
 };

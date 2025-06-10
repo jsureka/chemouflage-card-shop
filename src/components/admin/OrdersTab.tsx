@@ -136,9 +136,14 @@ const OrdersTab = ({
       key: "total_amount",
       label: "Amount",
       render: (order) => (
-        <p className="text-white font-semibold text-lg">
-          ৳{order.total_amount}
-        </p>
+        <div>
+          <p className="text-white font-semibold text-lg">
+            ৳{order.total_amount}
+          </p>
+          <p className="text-gray-400 text-sm">
+            + ৳{order.delivery_charge || 0} delivery
+          </p>
+        </div>
       ),
     },
     {

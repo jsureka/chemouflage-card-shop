@@ -44,6 +44,7 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
     delivery_status: "",
     payment_method: "",
     total_amount: 0,
+    delivery_charge: 0,
   });
 
   // Status options
@@ -68,7 +69,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
     { value: "shipped", label: "Shipped", color: "bg-purple-500" },
     { value: "delivered", label: "Delivered", color: "bg-green-500" },
   ];
-
   useEffect(() => {
     if (order && isOpen) {
       setFormData({
@@ -77,6 +77,7 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
         delivery_status: order.delivery_status,
         payment_method: order.payment_method,
         total_amount: order.total_amount,
+        delivery_charge: order.delivery_charge || 0,
       });
 
       // Fetch detailed order information
@@ -102,9 +103,7 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
 
     setLoading(true);
     try {
-      const updates: any = {};
-
-      // Only include changed fields
+      const updates: any = {}; // Only include changed fields
       if (formData.status !== order.status) updates.status = formData.status;
       if (formData.payment_status !== order.payment_status)
         updates.payment_status = formData.payment_status;
@@ -114,6 +113,8 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
         updates.payment_method = formData.payment_method;
       if (formData.total_amount !== order.total_amount)
         updates.total_amount = formData.total_amount;
+      if (formData.delivery_charge !== (order.delivery_charge || 0))
+        updates.delivery_charge = formData.delivery_charge;
 
       const response = await adminService.updateOrderStatus(order.id, updates);
 
@@ -174,11 +175,18 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {" "}
           {/* Order Summary */}
-          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
             <div>
               <p className="text-sm text-gray-600">Total Amount</p>
-              <p className="font-semibold">${order.total_amount.toFixed(2)}</p>
+              <p className="font-semibold">৳{order.total_amount.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Delivery Charge</p>
+              <p className="font-semibold">
+                ৳{(order.delivery_charge || 0).toFixed(2)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Created</p>
@@ -187,7 +195,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </p>
             </div>
           </div>
-
           {/* Current Status Display */}
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -209,7 +216,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </div>
             </div>
           </div>
-
           {/* Premium Code Information */}
           {orderDetails?.premium_code && (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -239,7 +245,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               )}
             </div>
           )}
-
           {/* Edit Form */}
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
@@ -305,9 +310,8 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            </div>{" "}
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="payment_method">Payment Method</Label>
                 <Input
@@ -324,7 +328,23 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="total_amount">Total Amount</Label>
+                <Label htmlFor="delivery_charge">Delivery Charge (৳)</Label>
+                <Input
+                  id="delivery_charge"
+                  type="number"
+                  step="0.01"
+                  value={formData.delivery_charge}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      delivery_charge: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="total_amount">Total Amount (৳)</Label>
                 <Input
                   id="total_amount"
                   type="number"
@@ -340,7 +360,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </div>
             </div>
           </div>
-
           {/* Auto-binding note */}
           {formData.payment_status === "paid" &&
             order.payment_status !== "paid" &&

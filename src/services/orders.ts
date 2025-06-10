@@ -3,6 +3,7 @@ import {
   ApiResponse,
   Order,
   OrderCreationResponse,
+  OrderWithItems,
   PaginatedResponse,
 } from "./types";
 
@@ -73,12 +74,12 @@ class OrdersService {
 
     return this.handleResponse<Order>(response);
   }
-  async getUserOrders(): Promise<ApiResponse<Order[]>> {
+  async getUserOrders(): Promise<ApiResponse<OrderWithItems[]>> {
     const response = await fetch(`${API_BASE_URL}/api/v1/orders/my-orders`, {
       headers: this.setAuthHeader(),
     });
 
-    return this.handleResponse<Order[]>(response);
+    return this.handleResponse<OrderWithItems[]>(response);
   }
   async createOrder(orderData: {
     total_amount: number;
@@ -118,7 +119,6 @@ class OrdersService {
     // Items are now created as part of the order creation, so no need for separate calls
     return result;
   }
-
   async createOrderItem(itemData: {
     order_id: string;
     product_id: string;
@@ -134,6 +134,34 @@ class OrdersService {
     return this.handleResponse<any>(response);
   }
 
+  async updateOrderItem(
+    itemId: string,
+    itemData: { quantity?: number; price?: number }
+  ): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/orders/items/${itemId}`,
+      {
+        method: "PUT",
+        headers: this.setAuthHeader(),
+        body: JSON.stringify(itemData),
+      }
+    );
+
+    return this.handleResponse<any>(response);
+  }
+
+  async deleteOrderItem(itemId: string): Promise<ApiResponse<void>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/orders/items/${itemId}`,
+      {
+        method: "DELETE",
+        headers: this.setAuthHeader(),
+      }
+    );
+
+    return this.handleResponse<void>(response);
+  }
+
   async updateOrderStatus(
     id: string,
     status: string
@@ -146,8 +174,7 @@ class OrdersService {
 
     return this.handleResponse<Order>(response);
   }
-
-  async trackOrder(orderId: string): Promise<ApiResponse<Order>> {
+  async trackOrder(orderId: string): Promise<ApiResponse<OrderWithItems>> {
     const response = await fetch(
       `${API_BASE_URL}/api/v1/orders/track/${orderId}`,
       {
@@ -158,7 +185,7 @@ class OrdersService {
       }
     );
 
-    return this.handleResponse<Order>(response);
+    return this.handleResponse<OrderWithItems>(response);
   }
 }
 

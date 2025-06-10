@@ -15,6 +15,12 @@ class PaymentMethodSettings(BaseModel):
     icon: Optional[str] = None
 
 
+class DeliveryChargeSettings(BaseModel):
+    """Delivery charge configuration"""
+    inside_dhaka: float = 60.0
+    outside_dhaka: float = 120.0
+
+
 class PaymentSettingsBase(BaseModel):
     """Payment settings configuration"""
     aamarpay: PaymentMethodSettings = PaymentMethodSettings(
@@ -31,6 +37,7 @@ class PaymentSettingsBase(BaseModel):
         description="Pay when you receive your order",
         icon="banknote"
     )
+    delivery_charges: DeliveryChargeSettings = DeliveryChargeSettings()
 
 
 class PaymentSettingsCreate(PaymentSettingsBase):
@@ -41,6 +48,7 @@ class PaymentSettingsUpdate(BaseModel):
     """Update payment settings - all fields optional"""
     aamarpay: Optional[PaymentMethodSettings] = None
     cash_on_delivery: Optional[PaymentMethodSettings] = None
+    delivery_charges: Optional[DeliveryChargeSettings] = None
 
 
 class PaymentSettingsInDB(PaymentSettingsBase):
@@ -69,6 +77,16 @@ class PaymentSettings(PaymentSettingsBase):
 class EnabledPaymentMethods(BaseModel):
     """Response model for enabled payment methods"""
     methods: list[PaymentMethodSettings]
+    
+    model_config = {
+        "populate_by_name": True
+    }
+
+
+class DeliveryChargesResponse(BaseModel):
+    """Response model for delivery charges"""
+    inside_dhaka: float
+    outside_dhaka: float
     
     model_config = {
         "populate_by_name": True

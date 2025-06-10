@@ -138,23 +138,21 @@ const PaymentFailed = () => {
         ];
     }
   };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading payment details...</div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900 flex items-center justify-center">
+        <div className="text-foreground text-lg">Loading payment details...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Back Button */}
+        <div className="max-w-3xl mx-auto">          {/* Back Button */}
           <Button
             variant="ghost"
-            className="text-white hover:text-teal-300 mb-6"
+            className="text-foreground hover:text-accent-foreground mb-6"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -162,27 +160,27 @@ const PaymentFailed = () => {
           </Button>
 
           {/* Failed Header */}
-          <Card className="bg-teal-900/20 backdrop-blur-lg border-red-500/30 mb-6">
+          <Card className="bg-background/80 backdrop-blur-lg border-red-500/30 mb-6">
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-                  <XCircle className="w-8 h-8 text-red-600" />
+                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                  <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-2">
+                <h1 className="text-3xl font-bold text-foreground mb-2">
                   Payment Failed
                 </h1>
-                <p className="text-gray-300 text-lg mb-4">
+                <p className="text-muted-foreground text-lg mb-4">
                   We couldn't process your payment. Don't worry, your order can
                   still be completed.
                 </p>
                 <div className="flex items-center justify-center space-x-4">
                   {orderId && (
-                    <Badge className="bg-orange-600 text-white">
+                    <Badge className="bg-orange-600 hover:bg-orange-700 text-white">
                       Order #{orderId.slice(-8).toUpperCase()}
                     </Badge>
                   )}
                   {transactionId && (
-                    <Badge className="bg-gray-600 text-white">
+                    <Badge className="bg-gray-600 hover:bg-gray-700 text-white">
                       Transaction: {transactionId}
                     </Badge>
                   )}
@@ -192,55 +190,51 @@ const PaymentFailed = () => {
           </Card>
 
           {/* Error Details */}
-          <Alert className="bg-red-900/20 border-red-500/30 mb-6">
-            <AlertTriangle className="h-4 w-4 text-red-400" />
-            <AlertDescription className="text-red-300">
+          <Alert className="bg-red-500/10 dark:bg-red-900/20 border-red-500/30 mb-6">
+            <AlertTriangle className="h-4 w-4 text-red-500 dark:text-red-400" />
+            <AlertDescription className="text-red-600 dark:text-red-400">
               <strong>Error:</strong> {getErrorMessage(error, reason)}
             </AlertDescription>
-          </Alert>
-
-          {/* Order Details (if available) */}
+          </Alert>          {/* Order Details (if available) */}
           {orderDetails && (
-            <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
+            <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
               <CardHeader>
-                <CardTitle className="text-white">Order Information</CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardTitle className="text-foreground">Order Information</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Your order has been created but payment is pending
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between text-gray-300">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Order ID:</span>
-                  <span className="font-mono text-white">
+                  <span className="font-mono text-foreground">
                     #{orderDetails.id?.slice(-8).toUpperCase()}
                   </span>
                 </div>
-                <div className="flex justify-between text-gray-300">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Order Date:</span>
-                  <span className="text-white">
+                  <span className="text-foreground">
                     {new Date(orderDetails.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-gray-300">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Payment Status:</span>
-                  <Badge className="bg-red-600 text-white">
+                  <Badge className="bg-red-600 hover:bg-red-700 text-white">
                     {orderDetails.payment_status || "Failed"}
                   </Badge>
                 </div>
                 <div className="flex justify-between text-lg font-semibold">
-                  <span className="text-white">Amount:</span>
-                  <span className="text-orange-400">
+                  <span className="text-foreground">Amount:</span>
+                  <span className="text-orange-500 dark:text-orange-400">
                     ৳{orderDetails.total_amount}
                   </span>
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Recommended Actions */}
-          <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
+          )}          {/* Recommended Actions */}
+          <Card className="bg-background/80 backdrop-blur-lg border-border mb-6">
             <CardHeader>
-              <CardTitle className="text-white flex items-center">
+              <CardTitle className="text-foreground flex items-center">
                 <HelpCircle className="w-5 h-5 mr-2" />
                 What can you do?
               </CardTitle>
@@ -249,8 +243,8 @@ const PaymentFailed = () => {
               <ul className="space-y-2">
                 {getRecommendedActions(reason).map((action, index) => (
                   <li key={index} className="flex items-start space-x-2">
-                    <div className="flex-shrink-0 w-2 h-2 rounded-full bg-teal-400 mt-2"></div>
-                    <span className="text-gray-300">{action}</span>
+                    <div className="flex-shrink-0 w-2 h-2 rounded-full bg-teal-500 dark:bg-teal-400 mt-2"></div>
+                    <span className="text-muted-foreground">{action}</span>
                   </li>
                 ))}
               </ul>

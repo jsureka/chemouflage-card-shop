@@ -5,8 +5,8 @@ from app.api.dependencies import get_current_admin, get_current_user
 from app.core.config import settings
 from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
-                                OrderItem, OrderItemCreate, OrderUpdate,
-                                OrderWithItems)
+                                OrderItem, OrderItemCreate, OrderItemUpdate,
+                                OrderUpdate, OrderWithItems)
 from app.models.user import User
 from app.repositories.order import OrderItemRepository, OrderRepository
 from app.repositories.user import UserRepository, UserRoleRepository
@@ -51,7 +51,26 @@ async def create_order(
             if not method_enabled:                raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Payment method '{order_in.payment_method}' is not available"
-                )
+                )    # Validate total amount matches sum of items plus delivery charge
+    if order_in.items and len(order_in.items) > 0:        # Get delivery charges to validate the total
+        from app.repositories.payment_settings import PaymentSettingsRepository
+        payment_settings_repo = PaymentSettingsRepository(db)
+        delivery_charges = await payment_settings_repo.get_delivery_charges()
+        
+        # Determine delivery charge based on shipping address city
+        city = order_in.shipping_address.city.lower() if order_in.shipping_address.city else ''
+        is_dhaka = 'dhaka' in city
+        delivery_charge = delivery_charges.inside_dhaka if is_dhaka else delivery_charges.outside_dhaka
+        
+        # Set the delivery charge in the order
+        order_in.delivery_charge = delivery_charge
+        
+        calculated_total = sum(item["price"] * item["quantity"] for item in order_in.items) + delivery_charge
+        if abs(calculated_total - order_in.total_amount) > 0.01:  # Allow small floating point differences
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Total amount mismatch. Expected: {calculated_total} (items: {calculated_total - delivery_charge}, delivery: {delivery_charge}), Provided: {order_in.total_amount}"
+            )
     
     order_id = await OrderRepository.create(order_in)
     order = await OrderRepository.get_by_id(order_id)
@@ -80,12 +99,11 @@ async def create_order(
             customer_phone = order_in.shipping_address.phone
             customer_address = order_in.shipping_address.address
             customer_city = order_in.shipping_address.city
-            
-            # Create payment request
+              # Create payment request
             payment_result = aamarpay_service.create_payment(
                 order_id=order_id,
                 amount=order_in.total_amount,
-                customer_name=customer_name or current_user.username or "Customer",
+                customer_name=customer_name or current_user.full_name or "Customer",
                 customer_email=customer_email,
                 customer_phone=customer_phone,
                 customer_address=customer_address,
@@ -145,7 +163,7 @@ async def create_order(
         background_tasks.add_task(
             EmailService.send_order_confirmation,
             recipient_email=current_user.email,
-            customer_name=current_user.username or current_user.email,
+            customer_name=current_user.full_name or current_user.email,
             order_id=order_id,
             order_items=order_items,
             total_amount=total_amount,
@@ -181,9 +199,90 @@ async def create_order_item(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only modify your own orders"
         )
-    
     item_id = await OrderItemRepository.create(item_in)
     return await OrderItemRepository.get_by_id(item_id)
+
+@router.put("/items/{item_id}", response_model=OrderItem)
+async def update_order_item(
+    item_id: str,
+    item_update: OrderItemUpdate,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Update an order item (quantity, price).
+    """
+    # Get the order item to check permissions
+    item = await OrderItemRepository.get_by_id(item_id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order item not found"
+        )
+    
+    # Get the order to check permissions
+    order = await OrderRepository.get_by_id(item.order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+    
+    # Check that the order belongs to the current user or user is admin
+    is_admin = await UserRoleRepository.is_admin(current_user.id)
+    if order.user_id != current_user.id and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only modify your own orders"
+        )
+    
+    updated_item = await OrderItemRepository.update(item_id, item_update)
+    if not updated_item:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update order item"
+        )
+    
+    return updated_item
+
+@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order_item(
+    item_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete an order item.
+    """
+    # Get the order item to check permissions
+    item = await OrderItemRepository.get_by_id(item_id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order item not found"
+        )
+    
+    # Get the order to check permissions
+    order = await OrderRepository.get_by_id(item.order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+    
+    # Check that the order belongs to the current user or user is admin
+    is_admin = await UserRoleRepository.is_admin(current_user.id)
+    if order.user_id != current_user.id and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only modify your own orders"
+        )
+    
+    success = await OrderItemRepository.delete(item_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete order item"
+        )
+    # No return for 204 status code
 
 @router.get("/", response_model=PaginatedResponse[Order])
 async def read_orders(
@@ -197,15 +296,22 @@ async def read_orders(
     total_count = await OrderRepository.count()
     return await create_paginated_response(orders, pagination.page, pagination.limit, total_count)
 
-@router.get("/my-orders", response_model=List[Order])
+@router.get("/my-orders", response_model=List[OrderWithItems])
 async def read_my_orders(
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Retrieve orders for the current user.
+    Retrieve orders with items for the current user.
     """
     orders = await OrderRepository.get_by_user(current_user.id)
-    return orders
+    orders_with_items = []
+    
+    for order in orders:
+        order_with_items = await OrderRepository.get_with_items(order.id)
+        if order_with_items:
+            orders_with_items.append(order_with_items)
+    
+    return orders_with_items
 
 @router.get("/{order_id}", response_model=OrderWithItems)
 async def read_order(
@@ -423,8 +529,14 @@ async def track_order(
     """
     Track an order by ID. No authentication required.
     This endpoint is designed for public tracking pages.
+    Supports both full order IDs and partial IDs (last 8 characters).
     """
+    # First try full ID, then try partial ID search
     order = await OrderRepository.get_with_items(order_id)
+    if not order:
+        # Try finding by partial ID (last 8 characters)
+        order = await OrderRepository.find_by_partial_id(order_id)
+    
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

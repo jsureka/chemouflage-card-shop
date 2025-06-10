@@ -48,55 +48,54 @@ const OverviewTab = ({ stats, orders }: OverviewTabProps) => {
     <div className="space-y-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {" "}
         {dashboardStats.map((stat, index) => (
-          <Card
-            key={index}
-            className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30"
-          >
+          <Card key={index} className="backdrop-blur-lg border-primary/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-300 text-sm">{stat.title}</p>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-sm text-emerald-400">
+                  <p className="text-muted-foreground text-sm">{stat.title}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-green-500 dark:text-green-400">
                     {stat.change} from last month
                   </p>
                 </div>
-                <stat.icon className="h-8 w-8 text-teal-400" />
+                <stat.icon className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
         ))}
-      </div>
-
+      </div>{" "}
       {/* Recent Orders */}
-      <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+      <Card className="backdrop-blur-lg border-primary/30">
         <CardHeader>
-          <CardTitle className="text-white">Recent Orders</CardTitle>
+          <CardTitle className="text-foreground">Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {orders.slice(0, 5).map((order: any) => (
               <div
                 key={order.id}
-                className="flex items-center justify-between p-4 bg-teal-900/20 rounded-lg"
+                className="flex items-center justify-between p-4 bg-accent/20 rounded-lg"
               >
                 <div className="flex items-center space-x-4">
-                  <ShoppingCart className="w-5 h-5 text-teal-400" />
+                  <ShoppingCart className="w-5 h-5 text-primary" />
                   <div>
-                    <p className="text-white font-semibold">
+                    <p className="text-foreground font-semibold">
                       Order #{order.id.substring(0, 8)}
                     </p>
-                    <p className="text-gray-400 text-sm">Customer Order</p>
+                    <p className="text-muted-foreground text-sm">
+                      Customer Order
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className="text-white font-semibold">
+                  <span className="text-foreground font-semibold">
                     ৳{order.total_amount}
                   </span>
-                  <Badge className="bg-teal-600 text-white">
-                    {order.status}
-                  </Badge>
+                  <Badge variant="secondary">{order.status}</Badge>
                 </div>
               </div>
             ))}

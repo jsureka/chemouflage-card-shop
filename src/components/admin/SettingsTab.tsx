@@ -15,41 +15,47 @@ const SettingsTab = () => {
       <PaymentSettingsManagement />
 
       {/* System Information */}
-      <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+      <Card className="bg-background/80 backdrop-blur-lg border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
+          <CardTitle className="text-foreground flex items-center">
             <Settings className="w-5 h-5 mr-2" />
             System Information
           </CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardDescription className="text-muted-foreground">
             System configuration and status
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div className="p-4 bg-teal-900/20 rounded-lg border border-teal-500/30">
-              <h3 className="text-white font-semibold mb-2">Authentication</h3>
+            <div className="p-4 bg-background/80 rounded-lg border border-border">
+              <h3 className="text-foreground font-semibold mb-2">
+                Authentication
+              </h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Google OAuth</span>
-                  <span className="text-emerald-400 text-sm">Configured</span>
+                  <span className="text-muted-foreground">Google OAuth</span>
+                  <span className="text-primary text-sm">Configured</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">JWT Authentication</span>
-                  <span className="text-emerald-400 text-sm">Active</span>
+                  <span className="text-muted-foreground">
+                    JWT Authentication
+                  </span>
+                  <span className="text-primary text-sm">Active</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-teal-900/20 rounded-lg border border-teal-500/30">
-              <h3 className="text-white font-semibold mb-2">Database</h3>
+            <div className="p-4 bg-background/80 rounded-lg border border-border">
+              <h3 className="text-foreground font-semibold mb-2">Database</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">MongoDB Connection</span>
-                  <span className="text-emerald-400 text-sm">Connected</span>
+                  <span className="text-muted-foreground">
+                    MongoDB Connection
+                  </span>
+                  <span className="text-primary text-sm">Connected</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Data Backup</span>
+                  <span className="text-muted-foreground">Data Backup</span>
                   <span className="text-amber-400 text-sm">Manual</span>
                 </div>
               </div>

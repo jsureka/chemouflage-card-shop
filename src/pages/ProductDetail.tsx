@@ -71,8 +71,11 @@ const ProductDetail = () => {
               <p className="text-gray-500 mb-6">
                 The product you're looking for doesn't exist or has been
                 removed.
-              </p>
-              <Button onClick={() => navigate("/products")}>
+              </p>{" "}
+              <Button
+                onClick={() => navigate("/products")}
+                className="dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Products
               </Button>
@@ -89,7 +92,12 @@ const ProductDetail = () => {
         <div className="max-w-6xl mx-auto">
           {/* Navigation */}
           <div className="mb-6">
-            <Button variant="ghost" onClick={() => navigate("/products")}>
+            {" "}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/products")}
+              className="dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
@@ -138,7 +146,6 @@ const ProductDetail = () => {
                   </p>
                 </CardContent>
               </Card>
-
               {/* Pricing */}
               <Card>
                 <CardHeader>
@@ -177,7 +184,6 @@ const ProductDetail = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {/* Stock Information */}
               <Card>
                 <CardHeader>
@@ -205,11 +211,10 @@ const ProductDetail = () => {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Action Buttons */}
+              {/* Action Buttons */}{" "}
               <div className="space-y-3">
                 <Button
-                  className="w-full"
+                  className="w-full dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                   disabled={product.stock_quantity === 0 || !product.is_active}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
@@ -224,7 +229,6 @@ const ProductDetail = () => {
                   </p>
                 )}
               </div>
-
               {/* Product Metadata */}
               <Card>
                 <CardHeader>

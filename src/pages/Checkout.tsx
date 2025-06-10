@@ -1,4 +1,5 @@
 import CloudinaryImage from "@/components/CloudinaryImage";
+import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ordersService, productsService, settingsService } from "@/services";
 import { Product } from "@/services/types";
 import {
-  ArrowLeft,
   Banknote,
   CreditCard,
   FlaskConical,
@@ -21,7 +21,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -305,15 +305,8 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
+      <Header />
       <div className="container mx-auto px-4 py-8">
-        <Link
-          to="/"
-          className="inline-flex items-center text-foreground hover:text-primary mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Link>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Checkout Form */}
           <Card className="bg-background/80 backdrop-blur-lg border border-border">
@@ -520,10 +513,10 @@ const Checkout = () => {
                       </RadioGroup>
                     </div>
                   )}
-                </div>
+                </div>{" "}
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                   disabled={
                     isLoading ||
                     paymentMethodsLoading ||
@@ -590,26 +583,27 @@ const Checkout = () => {
                           ৳{product.price}
                         </p>
                         <div className="flex items-center space-x-2">
+                          {" "}
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={decrementQuantity}
                             disabled={quantity <= 1}
-                            className="h-8 w-8 p-0 border-border hover:bg-muted"
+                            className="h-8 w-8 p-0 border-border hover:bg-muted bg-background dark:bg-white dark:text-gray-800"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
                           <span className="text-foreground font-medium min-w-[2rem] text-center">
                             {quantity}
-                          </span>
+                          </span>{" "}
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={incrementQuantity}
                             disabled={quantity >= 10}
-                            className="h-8 w-8 p-0 border-border hover:bg-muted"
+                            className="h-8 w-8 p-0 border-border hover:bg-muted bg-background dark:bg-white dark:text-gray-800"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -682,7 +676,7 @@ const Checkout = () => {
                 alt="AamarPay - Secure Payment Gateway"
                 className="h-6 opacity-80 hover:opacity-100 transition-opacity"
                 height={24}
-                width={120}
+                width={400}
               />
             </div>
             <p className="text-center text-muted-foreground text-sm">

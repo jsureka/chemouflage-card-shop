@@ -141,13 +141,12 @@ const PaymentSettingsManagement = () => {
   useEffect(() => {
     fetchSettings();
   }, []);
-
   if (loading) {
     return (
-      <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+      <Card className="bg-background/80 backdrop-blur-lg border-border">
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
-            <div className="text-white">Loading payment settings...</div>
+            <div className="text-foreground">Loading payment settings...</div>
           </div>
         </CardContent>
       </Card>
@@ -156,16 +155,13 @@ const PaymentSettingsManagement = () => {
 
   if (!settings) {
     return (
-      <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+      <Card className="bg-background/80 backdrop-blur-lg border-border">
         <CardContent className="p-6">
           <div className="text-center">
-            <p className="text-white mb-4">Failed to load payment settings</p>
-            <Button
-              onClick={fetchSettings}
-              className="bg-teal-600 hover:bg-teal-700"
-            >
-              Retry
-            </Button>
+            <p className="text-foreground mb-4">
+              Failed to load payment settings
+            </p>
+            <Button onClick={fetchSettings}>Retry</Button>
           </div>
         </CardContent>
       </Card>
@@ -182,15 +178,14 @@ const PaymentSettingsManagement = () => {
       settings: settings.cash_on_delivery,
     },
   ];
-
   return (
-    <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+    <Card className="bg-background/80 backdrop-blur-lg border-border">
       <CardHeader>
-        <CardTitle className="text-white flex items-center">
+        <CardTitle className="text-foreground flex items-center">
           <Settings className="w-5 h-5 mr-2" />
           Payment Methods Management
         </CardTitle>
-        <CardDescription className="text-gray-300">
+        <CardDescription className="text-muted-foreground">
           Enable or disable payment methods for customers. At least one method
           must remain enabled.
         </CardDescription>
@@ -200,25 +195,24 @@ const PaymentSettingsManagement = () => {
           {paymentMethods.map(({ key, settings: methodSettings }) => (
             <div
               key={key}
-              className="flex items-center justify-between p-4 bg-teal-900/20 rounded-lg border border-teal-500/30"
+              className="flex items-center justify-between p-4 bg-background/80 rounded-lg border border-border"
             >
+              {" "}
               <div className="flex-1">
                 <div className="flex items-center space-x-3">
-                  <h3 className="text-white font-semibold">
+                  <h3 className="text-foreground font-semibold">
                     {methodSettings.display_name}
                   </h3>
                   <Badge
                     className={
-                      methodSettings.is_enabled
-                        ? "bg-emerald-600"
-                        : "bg-gray-600"
+                      methodSettings.is_enabled ? "bg-primary" : "bg-muted"
                     }
                   >
                     {methodSettings.is_enabled ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 {methodSettings.description && (
-                  <p className="text-gray-300 text-sm mt-1">
+                  <p className="text-muted-foreground text-sm mt-1">
                     {methodSettings.description}
                   </p>
                 )}
@@ -227,21 +221,20 @@ const PaymentSettingsManagement = () => {
                 checked={methodSettings.is_enabled}
                 onCheckedChange={(enabled) => togglePaymentMethod(key, enabled)}
                 disabled={updating}
-                className="data-[state=checked]:bg-emerald-600"
+                className="data-[state=checked]:bg-primary"
               />
             </div>
           ))}{" "}
-        </div>
-
+        </div>{" "}
         {/* Delivery Charges Section */}
         <div className="mt-8">
-          <h3 className="text-white font-semibold text-lg mb-4 flex items-center">
+          <h3 className="text-foreground font-semibold text-lg mb-4 flex items-center">
             <Truck className="w-5 h-5 mr-2" />
             Delivery Charges
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="inside_dhaka" className="text-white">
+              <Label htmlFor="inside_dhaka" className="text-foreground">
                 Inside Dhaka (৳)
               </Label>
               <Input
@@ -256,12 +249,12 @@ const PaymentSettingsManagement = () => {
                     inside_dhaka: parseFloat(e.target.value) || 0,
                   }))
                 }
-                className="bg-white/10 border-teal-500/30 text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="60"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="outside_dhaka" className="text-white">
+              <Label htmlFor="outside_dhaka" className="text-foreground">
                 Outside Dhaka (৳)
               </Label>
               <Input
@@ -276,22 +269,21 @@ const PaymentSettingsManagement = () => {
                     outside_dhaka: parseFloat(e.target.value) || 0,
                   }))
                 }
-                className="bg-white/10 border-teal-500/30 text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="120"
               />
             </div>
-          </div>
+          </div>{" "}
           <Button
             onClick={updateDeliveryCharges}
             disabled={updating}
-            className="mt-4 bg-teal-600 hover:bg-teal-700"
+            className="mt-4"
           >
             {updating ? "Updating..." : "Update Delivery Charges"}
           </Button>
         </div>
-
-        <div className="mt-6 p-4 bg-amber-900/20 rounded-lg border border-amber-500/30">
-          <p className="text-amber-300 text-sm">
+        <div className="mt-6 p-4 bg-background/80 rounded-lg border border-amber-500/30">
+          <p className="text-amber-400 text-sm">
             <strong>Note:</strong> At least one payment method must remain
             enabled to allow customers to place orders. The system will prevent
             you from disabling all payment methods.

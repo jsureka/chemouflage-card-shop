@@ -107,7 +107,6 @@ const Auth = () => {
                   </div>
                 </div>
               )}
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">
                   Email
@@ -125,7 +124,6 @@ const Auth = () => {
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-white">
                   Password
@@ -142,11 +140,10 @@ const Auth = () => {
                     className="pl-10 bg-white/10 border-teal-500/30 text-white placeholder:text-gray-400 focus:border-teal-400"
                   />
                 </div>
-              </div>
-
+              </div>{" "}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
+                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                 disabled={isLoading}
               >
                 {isLoading

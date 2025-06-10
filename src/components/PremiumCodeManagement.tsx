@@ -306,7 +306,7 @@ const PremiumCodeManagement = () => {
   };
 
   if (loading) {
-    return <div className="text-white">Loading premium codes...</div>;
+    return <div className="text-foreground">Loading premium codes...</div>;
   }
 
   return (
@@ -314,10 +314,10 @@ const PremiumCodeManagement = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-foreground">
             Premium Code Management
           </h2>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             Create, manage, and track premium access codes
           </p>
         </div>{" "}
@@ -348,85 +348,85 @@ const PremiumCodeManagement = () => {
           </Button>
         </div>
       </div>
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-300 text-sm">Total Codes</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-muted-foreground text-sm">Total Codes</p>
+                <p className="text-2xl font-bold text-foreground">
                   {stats.total_codes}
                 </p>
               </div>
-              <Gift className="h-8 w-8 text-teal-400" />
+              <Gift className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-300 text-sm">Active Codes</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-muted-foreground text-sm">Active Codes</p>
+                <p className="text-2xl font-bold text-foreground">
                   {stats.active_codes}
                 </p>
               </div>
-              <Activity className="h-8 w-8 text-emerald-400" />
+              <Activity className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-300 text-sm">Bound Codes</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-muted-foreground text-sm">Bound Codes</p>
+                <p className="text-2xl font-bold text-foreground">
                   {stats.bound_codes}
                 </p>
               </div>
-              <UserCheck className="h-8 w-8 text-blue-400" />
+              <UserCheck className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-300 text-sm">Available Codes</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-muted-foreground text-sm">Available Codes</p>
+                <p className="text-2xl font-bold text-foreground">
                   {stats.unbound_codes}
                 </p>
               </div>
-              <Users className="h-8 w-8 text-purple-400" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
       </div>
-
       {/* Action Buttons */}
       <div className="flex space-x-4">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700">
+            <Button>
               <Plus className="w-4 h-4 mr-2" />
               Create Single Code
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-slate-800 border-teal-500/30 text-white max-w-md">
+          <DialogContent className="bg-background border-border text-foreground max-w-md">
             <DialogHeader>
               <DialogTitle>Create Premium Code</DialogTitle>
-              <DialogDescription className="text-gray-300">
+              <DialogDescription className="text-muted-foreground">
                 Create a single premium access code
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-white">Description (Optional)</Label>
+                <Label className="text-foreground">
+                  Description (Optional)
+                </Label>
                 <Textarea
                   value={createForm.description}
                   onChange={(e) =>
@@ -435,14 +435,15 @@ const PremiumCodeManagement = () => {
                       description: e.target.value,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                   placeholder="Enter code description..."
                   rows={3}
                 />
               </div>
-
               <div className="space-y-2">
-                <Label className="text-white">Usage Limit (Optional)</Label>
+                <Label className="text-foreground">
+                  Usage Limit (Optional)
+                </Label>
                 <Input
                   type="number"
                   value={createForm.usage_limit || ""}
@@ -454,24 +455,24 @@ const PremiumCodeManagement = () => {
                         : undefined,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                   placeholder="Unlimited"
                   min="1"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label className="text-white">Expiry Date (Optional)</Label>
+                <Label className="text-foreground">
+                  Expiry Date (Optional)
+                </Label>
                 <Input
                   type="datetime-local"
                   value={createForm.expires_at}
                   onChange={(e) =>
                     setCreateForm({ ...createForm, expires_at: e.target.value })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                 />
-              </div>
-
+              </div>{" "}
               <div className="flex justify-end space-x-2">
                 <Button
                   onClick={() => {
@@ -479,16 +480,11 @@ const PremiumCodeManagement = () => {
                     resetCreateForm();
                   }}
                   variant="outline"
-                  className="text-white border-teal-500/30"
+                  className="border-border"
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleCreate}
-                  className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
-                >
-                  Create Code
-                </Button>
+                <Button onClick={handleCreate}>Create Code</Button>
               </div>
             </div>
           </DialogContent>
@@ -503,17 +499,17 @@ const PremiumCodeManagement = () => {
               <BarChart3 className="w-4 h-4 mr-2" />
               Generate Bulk Codes
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-slate-800 border-teal-500/30 text-white max-w-md">
+          </DialogTrigger>{" "}
+          <DialogContent className="bg-background border-border text-foreground max-w-md">
             <DialogHeader>
               <DialogTitle>Generate Premium Codes</DialogTitle>
-              <DialogDescription className="text-gray-300">
+              <DialogDescription className="text-muted-foreground">
                 Generate multiple premium codes at once (max 100)
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-white">Number of Codes</Label>
+                <Label className="text-foreground">Number of Codes</Label>
                 <Input
                   type="number"
                   value={generateForm.count}
@@ -523,7 +519,7 @@ const PremiumCodeManagement = () => {
                       count: parseInt(e.target.value) || 1,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                   min="1"
                   max="100"
                   required
@@ -531,7 +527,9 @@ const PremiumCodeManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">Description (Optional)</Label>
+                <Label className="text-foreground">
+                  Description (Optional)
+                </Label>
                 <Textarea
                   value={generateForm.description}
                   onChange={(e) =>
@@ -540,14 +538,16 @@ const PremiumCodeManagement = () => {
                       description: e.target.value,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                   placeholder="Enter description for all codes..."
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">Usage Limit (Optional)</Label>
+                <Label className="text-foreground">
+                  Usage Limit (Optional)
+                </Label>
                 <Input
                   type="number"
                   value={generateForm.usage_limit || ""}
@@ -559,14 +559,16 @@ const PremiumCodeManagement = () => {
                         : undefined,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                   placeholder="Unlimited"
                   min="1"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white">Expiry Date (Optional)</Label>
+                <Label className="text-foreground">
+                  Expiry Date (Optional)
+                </Label>
                 <Input
                   type="datetime-local"
                   value={generateForm.expires_at}
@@ -576,7 +578,7 @@ const PremiumCodeManagement = () => {
                       expires_at: e.target.value,
                     })
                   }
-                  className="bg-slate-700 border-teal-500/30 text-white"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
 
@@ -590,24 +592,18 @@ const PremiumCodeManagement = () => {
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleGenerate}
-                  className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
-                >
-                  Generate Codes
-                </Button>
+                <Button onClick={handleGenerate}>Generate Codes</Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-
+      </div>{" "}
       {/* Premium Codes List */}
       <div className="grid gap-4">
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30">
+        <Card className="bg-background/80 backdrop-blur-lg border-border">
           <CardHeader>
-            <CardTitle className="text-white">Premium Codes</CardTitle>
-            <CardDescription className="text-gray-300">
+            <CardTitle className="text-foreground">Premium Codes</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Manage all premium access codes and their bindings
             </CardDescription>
           </CardHeader>
@@ -615,9 +611,11 @@ const PremiumCodeManagement = () => {
             <div className="space-y-4">
               {codes.length === 0 ? (
                 <div className="text-center py-8">
-                  <Gift className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400">No premium codes found</p>
-                  <p className="text-gray-500 text-sm">
+                  <Gift className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    No premium codes found
+                  </p>
+                  <p className="text-muted-foreground text-sm">
                     Create your first premium code to get started
                   </p>
                 </div>
@@ -625,58 +623,62 @@ const PremiumCodeManagement = () => {
                 codes.map((code) => (
                   <div
                     key={code.id}
-                    className="flex items-center justify-between p-4 bg-teal-900/20 rounded-lg border border-teal-500/30"
+                    className="flex items-center justify-between p-4 bg-background/80 rounded-lg border border-border"
                   >
+                    {" "}
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <code className="text-lg font-mono font-bold text-white bg-slate-700 px-3 py-1 rounded">
+                        <code className="text-lg font-mono font-bold text-foreground bg-background/80 px-3 py-1 rounded">
                           {code.code}
                         </code>
                         <Badge
-                          className={
-                            code.is_active ? "bg-emerald-600" : "bg-gray-600"
-                          }
+                          className={code.is_active ? "bg-primary" : "bg-muted"}
                         >
                           {code.is_active ? "Active" : "Inactive"}
                         </Badge>
                         {code.bound_user_email && (
-                          <Badge className="bg-blue-600">
+                          <Badge className="bg-primary">
                             Bound to {code.bound_user_email}
                           </Badge>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                         <div>
-                          <span className="text-gray-400">Usage:</span>{" "}
+                          <span className="text-muted-foreground">Usage:</span>{" "}
                           {code.used_count}/{code.usage_limit || "∞"}
                         </div>
                         <div>
-                          <span className="text-gray-400">Created:</span>{" "}
+                          <span className="text-muted-foreground">
+                            Created:
+                          </span>{" "}
                           {formatDate(code.created_at)}
                         </div>
                         {code.expires_at && (
                           <div>
-                            <span className="text-gray-400">Expires:</span>{" "}
+                            <span className="text-muted-foreground">
+                              Expires:
+                            </span>{" "}
                             {formatDate(code.expires_at)}
                           </div>
                         )}
                         {code.description && (
                           <div className="col-span-2 md:col-span-1">
-                            <span className="text-gray-400">Description:</span>{" "}
+                            <span className="text-muted-foreground">
+                              Description:
+                            </span>{" "}
                             {code.description}
                           </div>
                         )}
                       </div>
-                    </div>
-
+                    </div>{" "}
                     <div className="flex space-x-2">
                       {code.bound_user_email ? (
                         <Button
                           onClick={() => handleUnbind(code)}
                           variant="outline"
                           size="sm"
-                          className="text-orange-400 border-orange-500/30 hover:bg-orange-900/50"
+                          className="border-border"
                         >
                           <UserX className="w-4 h-4 mr-1" />
                           Unbind
@@ -686,7 +688,7 @@ const PremiumCodeManagement = () => {
                           onClick={() => openBindDialog(code)}
                           variant="outline"
                           size="sm"
-                          className="text-blue-400 border-blue-500/30 hover:bg-blue-900/50"
+                          className="border-border"
                         >
                           <User className="w-4 h-4 mr-1" />
                           Bind
@@ -696,7 +698,7 @@ const PremiumCodeManagement = () => {
                         onClick={() => handleDelete(code.id)}
                         variant="outline"
                         size="sm"
-                        className="text-red-400 border-red-500/30 hover:bg-red-900/50"
+                        className="text-destructive border-destructive/20 hover:bg-destructive/10"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
                         Delete
@@ -720,27 +722,26 @@ const PremiumCodeManagement = () => {
             onPageChange={handlePageChange}
           />
         )}
-      </div>
-
+      </div>{" "}
       {/* Bind Code Dialog */}
       <Dialog open={isBindDialogOpen} onOpenChange={setIsBindDialogOpen}>
-        <DialogContent className="bg-slate-800 border-teal-500/30 text-white max-w-md">
+        <DialogContent className="bg-background border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle>Bind Premium Code</DialogTitle>
-            <DialogDescription className="text-gray-300">
+            <DialogDescription className="text-muted-foreground">
               Bind code "{selectedCode?.code}" to a specific user
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-white">User Email</Label>
+              <Label className="text-foreground">User Email</Label>
               <Input
                 type="email"
                 value={bindForm.user_email}
                 onChange={(e) =>
                   setBindForm({ ...bindForm, user_email: e.target.value })
                 }
-                className="bg-slate-700 border-teal-500/30 text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="Enter user email..."
                 required
               />
@@ -757,11 +758,7 @@ const PremiumCodeManagement = () => {
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleBind}
-                className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
-                disabled={!bindForm.user_email}
-              >
+              <Button onClick={handleBind} disabled={!bindForm.user_email}>
                 Bind Code
               </Button>
             </div>

@@ -2,6 +2,7 @@ import CloudinaryImage from "@/components/CloudinaryImage";
 import { OrderEditModal } from "@/components/OrderEditModal";
 import PremiumCodeManagement from "@/components/PremiumCodeManagement";
 import ProductManagement from "@/components/ProductManagement";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   CustomersTab,
   OrdersTab,
@@ -191,45 +192,40 @@ const AdminDashboard = () => {
     setIsOrderEditModalOpen(false);
     setSelectedOrder(null);
   };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-foreground">Loading...</div>
       </div>
     );
   }
-
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900 flex items-center justify-center">
-        <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 max-w-md">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="backdrop-blur-lg border-primary/30 max-w-md">
           <CardHeader>
-            <CardTitle className="text-white">Access Denied</CardTitle>
-            <CardDescription className="text-gray-300">
+            <CardTitle className="text-foreground">Access Denied</CardTitle>
+            <CardDescription className="text-muted-foreground">
               You don't have permission to access the admin panel.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link to="/">
-              <Button className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700">
-                Go Home
-              </Button>
+              <Button className="w-full">Go Home</Button>
             </Link>
           </CardContent>
         </Card>
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
               to="/"
-              className="text-white hover:text-teal-300 transition-colors"
+              className="text-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
             </Link>{" "}
@@ -241,10 +237,15 @@ const AdminDashboard = () => {
                 width={32}
                 height={32}
               />
-              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-foreground">
+                Admin Dashboard
+              </h1>
             </div>
           </div>
-          <div className="text-white">Welcome back, {user?.email}</div>
+          <div className="flex items-center space-x-4">
+            <div className="text-foreground">Welcome back, {user?.email}</div>
+            <ThemeToggle />
+          </div>
         </div>{" "}
         {/* Navigation Tabs */}
         <div className="flex space-x-4 mb-8 overflow-x-auto">
@@ -260,11 +261,7 @@ const AdminDashboard = () => {
               key={tab}
               variant={activeTab === tab ? "default" : "ghost"}
               onClick={() => setActiveTab(tab)}
-              className={
-                activeTab === tab
-                  ? "bg-teal-600 hover:bg-teal-700"
-                  : "text-white hover:bg-teal-900/50"
-              }
+              className={activeTab === tab ? "" : "hover:bg-accent"}
             >
               {tab === "premium-codes"
                 ? "Premium Codes"

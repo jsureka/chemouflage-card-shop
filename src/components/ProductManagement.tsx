@@ -149,21 +149,20 @@ const ProductManagement = () => {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-white">Product Name</Label>
+          <Label>Product Name</Label>
           <Input
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
-            className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="Enter product name"
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-white">Category</Label>
+          <Label>Category</Label>
           <Select
             value={formData.category}
             onValueChange={(value) => handleInputChange("category", value)}
           >
-            <SelectTrigger className="bg-slate-700 border-teal-500/30 text-white">
+            <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -177,11 +176,10 @@ const ProductManagement = () => {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-white">Description</Label>
+        <Label>Description</Label>
         <Textarea
           value={formData.description}
           onChange={(e) => handleInputChange("description", e.target.value)}
-          className="bg-slate-700 border-teal-500/30 text-white"
           placeholder="Enter product description"
           rows={3}
         />
@@ -189,36 +187,33 @@ const ProductManagement = () => {
 
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label className="text-white">Current Price (৳)</Label>
+          <Label>Current Price (৳)</Label>
           <Input
             type="number"
             value={formData.price}
             onChange={(e) => handleInputChange("price", e.target.value)}
-            className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="199.00"
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-white">Original Price (৳)</Label>
+          <Label>Original Price (৳)</Label>
           <Input
             type="number"
             value={formData.original_price}
             onChange={(e) =>
               handleInputChange("original_price", e.target.value)
             }
-            className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="299.00"
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-white">Discount (%)</Label>
+          <Label>Discount (%)</Label>
           <Input
             type="number"
             value={formData.discount_percentage}
             onChange={(e) =>
               handleInputChange("discount_percentage", e.target.value)
             }
-            className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="33"
           />
         </div>
@@ -226,26 +221,25 @@ const ProductManagement = () => {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-white">Stock Quantity</Label>
+          <Label>Stock Quantity</Label>
           <Input
             type="number"
             value={formData.stock_quantity}
             onChange={(e) =>
               handleInputChange("stock_quantity", e.target.value)
             }
-            className="bg-slate-700 border-teal-500/30 text-white"
             placeholder="100"
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-white">Status</Label>
+          <Label>Status</Label>
           <Select
             value={formData.is_active.toString()}
             onValueChange={(value) =>
               handleInputChange("is_active", value === "true")
             }
           >
-            <SelectTrigger className="bg-slate-700 border-teal-500/30 text-white">
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -257,11 +251,10 @@ const ProductManagement = () => {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-white">Image URL (Optional)</Label>
+        <Label>Image URL (Optional)</Label>
         <Input
           value={formData.image_url}
           onChange={(e) => handleInputChange("image_url", e.target.value)}
-          className="bg-slate-700 border-teal-500/30 text-white"
           placeholder="https://example.com/image.jpg"
         />
       </div>
@@ -277,14 +270,10 @@ const ProductManagement = () => {
             }
             resetForm();
           }}
-          className="text-white border-teal-500/30"
         >
           Cancel
         </Button>
-        <Button
-          onClick={isEdit ? handleUpdate : handleCreate}
-          className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
-        >
+        <Button onClick={isEdit ? handleUpdate : handleCreate}>
           {isEdit ? "Update Product" : "Create Product"}
         </Button>
       </div>
@@ -299,22 +288,24 @@ const ProductManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Product Management</h2>
-          <p className="text-gray-300">
+          <h2 className="text-2xl font-bold text-foreground">
+            Product Management
+          </h2>
+          <p className="text-muted-foreground">
             Manage your product catalog, pricing, and inventory
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700">
+            <Button>
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-slate-800 border-teal-500/30 text-white max-w-2xl">
+          <DialogContent className="border-primary/30 max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Product</DialogTitle>
-              <DialogDescription className="text-gray-300">
+              <DialogDescription>
                 Add a new product to your catalog
               </DialogDescription>
             </DialogHeader>
@@ -322,44 +313,34 @@ const ProductManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <Card
-            key={product.id}
-            className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30"
-          >
+          <Card key={product.id} className="backdrop-blur-lg border-primary/30">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white text-lg">
-                  {product.name}
-                </CardTitle>
-                <Badge
-                  className={
-                    product.is_active ? "bg-emerald-600" : "bg-gray-600"
-                  }
-                >
+                <CardTitle className="text-lg">{product.name}</CardTitle>
+                <Badge variant={product.is_active ? "default" : "secondary"}>
                   {product.is_active ? "Active" : "Inactive"}
                 </Badge>
               </div>
-              <CardDescription className="text-gray-300 line-clamp-2">
+              <CardDescription className="line-clamp-2">
                 {product.description}
               </CardDescription>
-            </CardHeader>
+            </CardHeader>{" "}
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center text-gray-300">
+                <div className="flex items-center text-muted-foreground">
                   <DollarSign className="w-4 h-4 mr-1" />৳{product.price}
                 </div>
-                <div className="flex items-center text-gray-300">
+                <div className="flex items-center text-muted-foreground">
                   <Tag className="w-4 h-4 mr-1" />
                   {product.discount_percentage}% OFF
                 </div>
-                <div className="flex items-center text-gray-300">
+                <div className="flex items-center text-muted-foreground">
                   <Package className="w-4 h-4 mr-1" />
                   Stock: {product.stock_quantity}
                 </div>
-                <div className="flex items-center text-gray-300">
+                <div className="flex items-center text-muted-foreground">
                   <Archive className="w-4 h-4 mr-1" />
                   {product.category}
                 </div>
@@ -391,10 +372,10 @@ const ProductManagement = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="bg-slate-800 border-teal-500/30 text-white max-w-2xl">
+        <DialogContent className="border-primary/30 max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
-            <DialogDescription className="text-gray-300">
+            <DialogDescription>
               Update product information and pricing
             </DialogDescription>
           </DialogHeader>

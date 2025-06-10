@@ -86,16 +86,15 @@ const PaymentCancelled = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-emerald-900">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          {/* Back Button */}
+          {/* Back Button */}{" "}
           <Button
             variant="ghost"
-            className="text-white hover:text-teal-300 mb-6"
+            className="text-white hover:text-teal-300 mb-6 dark:bg-white dark:text-gray-800"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-
           {/* Cancelled Header */}
           <Card className="bg-teal-900/20 backdrop-blur-lg border-orange-500/30 mb-6">
             <CardContent className="pt-6">
@@ -125,7 +124,6 @@ const PaymentCancelled = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Information Alert */}
           <Alert className="bg-blue-900/20 border-blue-500/30 mb-6">
             <Info className="h-4 w-4 text-blue-400" />
@@ -134,7 +132,6 @@ const PaymentCancelled = () => {
               payment, your payment method was not charged.
             </AlertDescription>
           </Alert>
-
           {/* Order Details (if available) */}
           {orderDetails && (
             <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
@@ -181,7 +178,6 @@ const PaymentCancelled = () => {
               </CardContent>
             </Card>
           )}
-
           {/* What happened */}
           <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
             <CardHeader>
@@ -216,7 +212,6 @@ const PaymentCancelled = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Action Options */}
           <Card className="bg-teal-900/20 backdrop-blur-lg border-teal-500/30 mb-6">
             <CardHeader>
@@ -233,10 +228,10 @@ const PaymentCancelled = () => {
                 <p className="text-gray-300 text-sm mb-3">
                   Continue with your Chemistry AR Cards order. You can use any
                   available payment method.
-                </p>
+                </p>{" "}
                 <Button
                   onClick={handleRetryPayment}
-                  className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+                  className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Complete Payment
@@ -250,11 +245,11 @@ const PaymentCancelled = () => {
                 <p className="text-gray-300 text-sm mb-3">
                   Explore our other educational products and chemistry learning
                   materials.
-                </p>
+                </p>{" "}
                 <Button
                   onClick={handleContinueShopping}
                   variant="outline"
-                  className="border-blue-500/50 text-blue-300 hover:bg-blue-900/20 w-full sm:w-auto"
+                  className="border-blue-500/50 text-blue-300 hover:bg-blue-900/20 w-full sm:w-auto dark:bg-white dark:text-gray-800"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Continue Shopping
@@ -262,12 +257,12 @@ const PaymentCancelled = () => {
               </div>
             </CardContent>
           </Card>
-
           {/* Quick Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            {" "}
             <Button
               asChild
-              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
             >
               <Link to="/">
                 <Home className="w-4 h-4 mr-2" />
@@ -277,12 +272,11 @@ const PaymentCancelled = () => {
             <Button
               asChild
               variant="outline"
-              className="border-teal-500/50 text-teal-300 hover:bg-teal-900/20"
+              className="border-teal-500/50 text-teal-300 hover:bg-teal-900/20 dark:bg-white dark:text-gray-800"
             >
               <Link to="/my-orders">View My Orders</Link>
             </Button>
           </div>
-
           {/* Help Information */}
           <div className="text-center">
             <p className="text-gray-400 text-sm">

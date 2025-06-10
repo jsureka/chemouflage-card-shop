@@ -117,12 +117,10 @@ const AdminTable = <T extends Record<string, any>>({
 
     if (column.render) {
       return column.render(item, value);
-    }
-
-    // Default rendering based on value type
+    } // Default rendering based on value type
     if (typeof value === "boolean") {
       return (
-        <Badge className={value ? "bg-emerald-600" : "bg-red-600"}>
+        <Badge className={value ? "bg-primary" : "bg-destructive"}>
           {value ? "Yes" : "No"}
         </Badge>
       );
@@ -131,31 +129,28 @@ const AdminTable = <T extends Record<string, any>>({
     if (Array.isArray(value)) {
       return value.join(", ");
     }
-
     if (value === null || value === undefined) {
-      return <span className="text-gray-500">-</span>;
+      return <span className="text-muted-foreground">-</span>;
     }
 
     return String(value);
   };
-
   const defaultRenderLoadingState = () => (
     <div className="flex items-center justify-center py-8">
-      <div className="text-white">{loadingText}</div>
+      <div className="text-foreground">{loadingText}</div>
     </div>
   );
 
   const defaultRenderEmptyState = () => (
     <div className="text-center py-8">
       {emptyIcon && <div className="mx-auto mb-4">{emptyIcon}</div>}
-      <p className="text-gray-400">{emptyText}</p>
+      <p className="text-muted-foreground">{emptyText}</p>
     </div>
   );
-
   const defaultRenderRow = (item: T, index: number) => (
     <div
       key={getValue(item, keyField) || index}
-      className="p-4 bg-teal-900/20 rounded-lg border border-teal-500/30"
+      className="p-4 bg-background/80 backdrop-blur-lg rounded-lg border border-border"
     >
       <div className="flex items-center justify-between">
         <div
@@ -164,10 +159,10 @@ const AdminTable = <T extends Record<string, any>>({
         >
           {columns.map((column) => (
             <div key={column.key} className={column.width}>
-              <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                 {column.label}
               </div>
-              <div className="text-white">{renderCell(item, column)}</div>
+              <div className="text-foreground">{renderCell(item, column)}</div>
             </div>
           ))}
         </div>
@@ -181,7 +176,7 @@ const AdminTable = <T extends Record<string, any>>({
                 size={action.size || "sm"}
                 onClick={() => action.onClick(item)}
                 disabled={action.disabled?.(item)}
-                className={`text-teal-400 border-teal-400 hover:bg-teal-900/50 ${
+                className={`border-primary/30 text-primary hover:bg-primary/10 ${
                   action.className || ""
                 }`}
               >
@@ -196,19 +191,18 @@ const AdminTable = <T extends Record<string, any>>({
       </div>
     </div>
   );
-
   return (
     <Card
-      className={`bg-teal-900/20 backdrop-blur-lg border-teal-500/30 ${cardClassName}`}
+      className={`bg-background/80 backdrop-blur-lg border-border ${cardClassName}`}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {icon && <span className="text-teal-400">{icon}</span>}
+            {icon && <span className="text-primary">{icon}</span>}
             <div>
-              <CardTitle className="text-white">{title}</CardTitle>
+              <CardTitle className="text-foreground">{title}</CardTitle>
               {description && (
-                <CardDescription className="text-gray-300">
+                <CardDescription className="text-muted-foreground">
                   {description}
                 </CardDescription>
               )}
@@ -218,7 +212,6 @@ const AdminTable = <T extends Record<string, any>>({
             <Button
               onClick={onRefresh}
               variant="outline"
-              className="text-teal-400 border-teal-400 hover:bg-teal-900/50"
               disabled={loading || refreshDisabled}
             >
               <RefreshCw
@@ -265,41 +258,19 @@ const AdminTable = <T extends Record<string, any>>({
                       disabled={loading}
                       className="order-2 sm:order-1"
                     />
-                  )}
-
-                  {/* Pagination Info for mobile */}
-                  {pagination.totalItems && (
-                    <div className="text-sm text-gray-300 order-1 sm:order-2">
-                      Showing{" "}
-                      <span className="font-medium">
-                        {(pagination.currentPage - 1) * pagination.pageSize + 1}
-                      </span>{" "}
-                      to{" "}
-                      <span className="font-medium">
-                        {Math.min(
-                          pagination.currentPage * pagination.pageSize,
-                          pagination.totalItems
-                        )}
-                      </span>{" "}
-                      of{" "}
-                      <span className="font-medium">
-                        {pagination.totalItems}
-                      </span>{" "}
-                      results
-                    </div>
-                  )}
-                </div>
-
+                  )}{" "}
+                  {/* Spacer for balanced layout */}
+                  <div className="order-1 sm:order-2"></div>
+                </div>{" "}
                 <ModernPagination
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages || 1}
                   onPageChange={onPageChange}
                   hasNext={pagination.hasNextPage}
                   hasPrevious={pagination.hasPreviousPage}
-                  showInfo={false} // We show custom info above
+                  showInfo={true}
                   totalItems={pagination.totalItems}
                   pageSize={pagination.pageSize}
-                  className="text-gray-300"
                 />
               </div>
             )}

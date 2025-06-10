@@ -103,10 +103,10 @@ const Login = () => {
                   required
                   className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                 />
-              </div>
+              </div>{" "}
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary/90"
+                className="w-full bg-primary hover:bg-primary/90 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Sign In"}

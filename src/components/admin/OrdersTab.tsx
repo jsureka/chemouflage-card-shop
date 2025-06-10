@@ -104,12 +104,12 @@ const OrdersTab = ({
       label: "Order",
       render: (order) => (
         <div className="flex items-center space-x-3">
-          <ShoppingCart className="w-5 h-5 text-teal-400" />
+          <ShoppingCart className="w-5 h-5 text-primary" />
           <div>
-            <p className="text-white font-semibold">
-              #{order.id.substring(0, 8)}
+            <p className="text-foreground font-semibold">
+              #{order.id.slice(-8).toUpperCase()}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               {new Date(order.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -121,14 +121,16 @@ const OrdersTab = ({
       label: "Customer",
       render: (order) => (
         <div>
-          <p className="text-white font-medium">
+          <p className="text-foreground font-medium">
             {order.shipping_address?.firstName}{" "}
             {order.shipping_address?.lastName}
           </p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             {order.shipping_address?.phone}
           </p>
-          <p className="text-gray-400 text-sm">{order.payment_method}</p>
+          <p className="text-muted-foreground text-sm">
+            {order.payment_method}
+          </p>
         </div>
       ),
     },
@@ -137,10 +139,10 @@ const OrdersTab = ({
       label: "Amount",
       render: (order) => (
         <div>
-          <p className="text-white font-semibold text-lg">
+          <p className="text-foreground font-semibold text-lg">
             ৳{order.total_amount}
           </p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             + ৳{order.delivery_charge || 0} delivery
           </p>
         </div>
@@ -169,7 +171,9 @@ const OrdersTab = ({
   ];
   const pagination: PaginationInfo = {
     currentPage: ordersPagination?.current_page || 1,
+    totalPages: ordersPagination?.total_pages || 1,
     pageSize: ordersPagination?.page_size || ordersLimit,
+    totalItems: ordersPagination?.total_items || 0,
     hasNextPage: ordersPagination?.has_next || false,
     hasPreviousPage: ordersPagination?.has_previous || false,
   };
@@ -177,31 +181,31 @@ const OrdersTab = ({
   const renderCustomRow = (order: any, index: number) => (
     <div
       key={order.id}
-      className="p-4 bg-teal-900/20 rounded-lg border border-teal-500/30"
+      className="p-4 bg-background/80 backdrop-blur-lg rounded-lg border border-border"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <ShoppingCart className="w-5 h-5 text-teal-400" />
+          <ShoppingCart className="w-5 h-5 text-primary" />
           <div>
-            <p className="text-white font-semibold">
+            <p className="text-foreground font-semibold">
               Order #{order.id.substring(0, 8)}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Customer: {order.shipping_address?.firstName}{" "}
               {order.shipping_address?.lastName}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               {new Date(order.created_at).toLocaleDateString()} •{" "}
               {order.payment_method}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Phone: {order.shipping_address?.phone}
             </p>
           </div>
         </div>
         <div className="text-right flex items-center space-x-4">
           <div>
-            <p className="text-white font-semibold text-lg mb-2">
+            <p className="text-foreground font-semibold text-lg mb-2">
               ৳{order.total_amount}
             </p>
             <div className="flex flex-col space-y-1">
@@ -215,7 +219,7 @@ const OrdersTab = ({
               <button
                 key={actionIndex}
                 onClick={() => action.onClick(order)}
-                className="px-3 py-1.5 text-sm border border-teal-400 text-teal-400 rounded hover:bg-teal-900/50 transition-colors flex items-center space-x-1"
+                className="px-3 py-1.5 text-sm border border-primary/30 text-primary rounded hover:bg-primary/10 transition-colors flex items-center space-x-1"
               >
                 {action.icon}
                 <span>{action.label}</span>
@@ -225,8 +229,8 @@ const OrdersTab = ({
         </div>
       </div>
       {order.shipping_address && (
-        <div className="mt-3 pt-3 border-t border-teal-500/30">
-          <p className="text-gray-300 text-sm">
+        <div className="mt-3 pt-3 border-t border-border">
+          <p className="text-muted-foreground text-sm">
             <strong>Address:</strong> {order.shipping_address.address},{" "}
             {order.shipping_address.area}, {order.shipping_address.city}
             {order.shipping_address.zipCode &&

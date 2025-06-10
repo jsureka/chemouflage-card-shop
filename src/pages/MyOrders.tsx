@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +13,11 @@ import { useToast } from "@/hooks/use-toast";
 import { ordersService } from "@/services";
 import { OrderWithItems } from "@/services/types";
 import {
-  ArrowLeft,
   Calendar,
   CreditCard,
   Eye,
   MapPin,
   Package,
-  RefreshCw,
   ShoppingCart,
   Truck,
 } from "lucide-react";
@@ -180,35 +178,8 @@ const MyOrders = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
+      <Header />
       <div className="container mx-auto px-4 py-8">
-        {" "}
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/"
-              className="inline-flex items-center text-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Link>
-          </div>{" "}
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <Button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              variant="outline"
-              className="border-border hover:bg-muted"
-            >
-              <RefreshCw
-                className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </Button>
-          </div>
-        </div>
-        {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">My Orders</h1>
           <p className="text-muted-foreground text-lg">
@@ -229,7 +200,7 @@ const MyOrders = () => {
               </p>
               <Button
                 asChild
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground dark:bg-white dark:text-gray-800"
               >
                 <Link to="/">
                   <ShoppingCart className="w-4 h-4 mr-2" />
@@ -372,11 +343,7 @@ const MyOrders = () => {
                   )}{" "}
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="border-border hover:bg-muted"
-                    >
+                    <Button asChild variant="outline">
                       <Link to={`/track/${order.id}`}>
                         <Eye className="w-4 h-4 mr-2" />
                         Track Order

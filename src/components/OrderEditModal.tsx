@@ -166,72 +166,91 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl dark:bg-gray-900 dark:text-white">
         <DialogHeader>
-          <DialogTitle>Edit Order #{order.id.slice(-6)}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="dark:text-white">
+            Edit Order #{order.id.slice(-6)}
+          </DialogTitle>
+          <DialogDescription className="dark:text-gray-400">
             Update order status, payment details, and delivery information
           </DialogDescription>
         </DialogHeader>
-
         <div className="space-y-6">
           {" "}
-          {/* Order Summary */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+          {/* Order Summary */}{" "}
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div>
-              <p className="text-sm text-gray-600">Total Amount</p>
-              <p className="font-semibold">৳{order.total_amount.toFixed(2)}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Total Amount
+              </p>
+              <p className="font-semibold text-black dark:text-white">
+                ৳{order.total_amount.toFixed(2)}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Delivery Charge</p>
-              <p className="font-semibold">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Delivery Charge
+              </p>
+              <p className="font-semibold text-black dark:text-white">
                 ৳{(order.delivery_charge || 0).toFixed(2)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Created</p>
-              <p className="font-semibold">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Created
+              </p>
+              <p className="font-semibold text-black dark:text-white">
                 {new Date(order.created_at).toLocaleDateString()}
               </p>
             </div>
           </div>
-          {/* Current Status Display */}
+          {/* Current Status Display */}{" "}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label className="text-sm text-gray-600">Current Status</Label>
+              <Label className="text-sm text-gray-600 dark:text-gray-400">
+                Current Status
+              </Label>
               <div className="mt-1">
                 {getStatusBadge(order.status, "status")}
               </div>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Payment Status</Label>
+              <Label className="text-sm text-gray-600 dark:text-gray-400">
+                Payment Status
+              </Label>
               <div className="mt-1">
                 {getStatusBadge(order.payment_status, "payment")}
               </div>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Delivery Status</Label>
+              <Label className="text-sm text-gray-600 dark:text-gray-400">
+                Delivery Status
+              </Label>
               <div className="mt-1">
                 {getStatusBadge(order.delivery_status, "delivery")}
               </div>
             </div>
-          </div>
+          </div>{" "}
           {/* Premium Code Information */}
           {orderDetails?.premium_code && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="font-semibold text-green-800 mb-2">
+            <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+              <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">
                 Premium Code Assigned
               </h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-green-600">Code:</span>
-                  <span className="font-mono ml-2">
+                  <span className="text-green-600 dark:text-green-400">
+                    Code:
+                  </span>
+                  <span className="font-mono ml-2 dark:text-gray-200">
                     {orderDetails.premium_code.code}
                   </span>
                 </div>
                 <div>
-                  <span className="text-green-600">Status:</span>
-                  <span className="ml-2">
+                  <span className="text-green-600 dark:text-green-400">
+                    Status:
+                  </span>
+                  <span className="ml-2 dark:text-gray-200">
                     {orderDetails.premium_code.is_active
                       ? "Active"
                       : "Inactive"}
@@ -239,27 +258,29 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
                 </div>
               </div>
               {orderDetails.premium_code.description && (
-                <p className="text-sm text-green-700 mt-2">
+                <p className="text-sm text-green-700 dark:text-green-400 mt-2">
                   {orderDetails.premium_code.description}
                 </p>
               )}
             </div>
           )}
-          {/* Edit Form */}
+          {/* Edit Form */}{" "}
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="status">Order Status</Label>
+                <Label htmlFor="status" className="dark:text-gray-300">
+                  Order Status
+                </Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) =>
                     setFormData((prev) => ({ ...prev, status: value }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                     {statusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -270,17 +291,19 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="payment_status">Payment Status</Label>
+                <Label htmlFor="payment_status" className="dark:text-gray-300">
+                  Payment Status
+                </Label>
                 <Select
                   value={formData.payment_status}
                   onValueChange={(value) =>
                     setFormData((prev) => ({ ...prev, payment_status: value }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                     {paymentStatusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -291,7 +314,9 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="delivery_status">Delivery Status</Label>
+                <Label htmlFor="delivery_status" className="dark:text-gray-300">
+                  Delivery Status
+                </Label>
                 <Select
                   value={formData.delivery_status}
                   onValueChange={(value) =>
@@ -359,25 +384,28 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
                 />
               </div>
             </div>
-          </div>
+          </div>{" "}
           {/* Auto-binding note */}
           {formData.payment_status === "paid" &&
             order.payment_status !== "paid" &&
             !orderDetails?.premium_code && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
                   <strong>Note:</strong> Setting payment status to "Paid" will
                   automatically bind an available premium code to this order.
                 </p>
               </div>
             )}
-        </div>
-
+        </div>{" "}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button variant="secondary" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button
+            onClick={handleSave}
+            disabled={loading}
+            className="dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
+          >
             {loading ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>

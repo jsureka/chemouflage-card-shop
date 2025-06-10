@@ -29,7 +29,7 @@ const CustomersTab = ({
       label: "Avatar",
       width: "w-16",
       render: (customer) => (
-        <div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
+        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
           {customer.full_name?.charAt(0) ||
             customer.email?.charAt(0).toUpperCase() ||
             customer.id.charAt(0).toUpperCase()}
@@ -41,11 +41,11 @@ const CustomersTab = ({
       label: "Name",
       render: (customer) => (
         <div>
-          <p className="text-white font-semibold">
+          <p className="text-foreground font-semibold">
             {customer.full_name || customer.email}
           </p>
-          <p className="text-gray-400 text-sm">{customer.email}</p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">{customer.email}</p>
+          <p className="text-muted-foreground text-sm">
             {customer.phone || "No phone"}
           </p>
         </div>
@@ -55,7 +55,7 @@ const CustomersTab = ({
       key: "role",
       label: "Role",
       render: (customer) => (
-        <Badge className="bg-emerald-600 text-white">
+        <Badge className="bg-primary hover:bg-primary/90">
           {customer.role || "customer"}
         </Badge>
       ),
@@ -63,7 +63,9 @@ const CustomersTab = ({
   ];
   const pagination: PaginationInfo = {
     currentPage: customersPagination?.current_page || 1,
+    totalPages: customersPagination?.total_pages || 1,
     pageSize: customersPagination?.page_size || customersLimit,
+    totalItems: customersPagination?.total_items || 0,
     hasNextPage: customersPagination?.has_next || false,
     hasPreviousPage: customersPagination?.has_previous || false,
   };

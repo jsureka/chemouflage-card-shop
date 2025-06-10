@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,17 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ordersService } from "@/services";
-import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
-  MapPin,
-  Package,
-  Phone,
-  User,
-} from "lucide-react";
+import { CheckCircle, Clock, MapPin, Package, Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const OrderTracking = () => {
   const { orderId: routeOrderId } = useParams();
@@ -163,15 +156,8 @@ const OrderTracking = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
+      <Header />
       <div className="container mx-auto px-4 py-8">
-        <Link
-          to="/"
-          className="inline-flex items-center text-foreground hover:text-primary mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Link>
-
         <div className="max-w-4xl mx-auto">
           <Card className="bg-background/80 backdrop-blur-lg border border-border mb-8">
             <CardHeader>
@@ -209,11 +195,11 @@ const OrderTracking = () => {
                     }}
                     className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground mt-2"
                   />
-                </div>
+                </div>{" "}
                 <Button
                   onClick={() => handleTrackOrder()}
                   disabled={!trackingId || isLoading}
-                  className="bg-primary hover:bg-primary/90 mt-8"
+                  className="bg-primary hover:bg-primary/90 mt-8 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                 >
                   {isLoading ? "Tracking..." : "Track Order"}
                 </Button>

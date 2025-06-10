@@ -153,10 +153,10 @@ const PaymentFailed = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           {" "}
-          {/* Back Button */}
+          {/* Back Button */}{" "}
           <Button
             variant="ghost"
-            className="text-foreground hover:text-accent-foreground mb-6"
+            className="text-foreground hover:text-accent-foreground mb-6 dark:bg-white dark:text-gray-800"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -317,19 +317,20 @@ const PaymentFailed = () => {
           </Card>
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            {" "}
             <Button
               asChild
-              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
             >
               <Link to="/">
                 <Home className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-            </Button>
+            </Button>{" "}
             <Button
               asChild
               variant="outline"
-              className="border-teal-500/50 text-teal-300 hover:bg-teal-900/20"
+              className="border-teal-500/50 text-teal-300 hover:bg-teal-900/20 dark:bg-white dark:text-gray-800"
             >
               <Link to="/track-order">Track Your Orders</Link>
             </Button>

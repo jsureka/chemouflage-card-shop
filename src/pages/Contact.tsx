@@ -1,5 +1,5 @@
 import CloudinaryImage from "@/components/CloudinaryImage";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { contactService } from "@/services/contact";
 import {
-  ArrowLeft,
   Clock,
   Facebook,
   FlaskConical,
@@ -105,19 +104,9 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-teal-900 dark:to-emerald-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <div className="flex justify-between items-center mb-8">
-          <Link
-            to="/"
-            className="inline-flex items-center text-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          <ThemeToggle />
-        </div>
+      <Header />
 
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center space-x-3 mb-6">
@@ -214,10 +203,10 @@ const Contact = () => {
                     rows={6}
                     className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary resize-none"
                   />
-                </div>
+                </div>{" "}
                 <Button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                   disabled={isLoading}
                 >
                   {isLoading ? "Sending..." : "Send Message"}
@@ -319,18 +308,19 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex space-x-4">
+                  {" "}
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-border text-foreground hover:bg-background/40"
+                    className="border-border text-foreground hover:bg-background/40 bg-background dark:bg-white dark:text-gray-800"
                   >
                     <Facebook className="w-4 h-4 mr-2" />
                     Facebook
-                  </Button>
+                  </Button>{" "}
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-border text-foreground hover:bg-background/40"
+                    className="border-border text-foreground hover:bg-background/40 bg-background dark:bg-white dark:text-gray-800"
                   >
                     <Globe className="w-4 h-4 mr-2" />
                     Website
@@ -430,21 +420,22 @@ const Contact = () => {
                 Get your set today and discover molecules like never before!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {" "}
                 <Button
                   asChild
                   size="lg"
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100"
                 >
                   <Link to="/checkout">
                     <FlaskConical className="w-5 h-5 mr-2" />
                     Order Now
                   </Link>
-                </Button>
+                </Button>{" "}
                 <Button
                   asChild
                   variant="outline"
                   size="lg"
-                  className="border-border text-foreground hover:bg-background/40"
+                  className="border-border text-foreground hover:bg-background/40 bg-background dark:bg-white dark:text-gray-800"
                 >
                   <Link to="/">Learn More</Link>
                 </Button>

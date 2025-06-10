@@ -42,8 +42,8 @@ class Settings(BaseSettings):
     AAMARPAY_STORE_ID: str = os.getenv("AAMARPAY_STORE_ID", "aamarpaytest")
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
     
-    # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:8080", "http://localhost:8000"]
+    # CORS"http://localhost:5173",
+    BACKEND_CORS_ORIGINS: List[str] = [ "http://localhost:8080", "http://localhost:8000"]
     
     class Config:
         env_file = ".env"

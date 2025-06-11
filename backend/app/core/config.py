@@ -14,10 +14,13 @@ class Settings(BaseSettings):
     # MongoDB Configuration
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "chemouflagedb")
-      # Authentication
+    
+    # Authentication
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your_very_secure_secret_key_here_change_for_production")
+    REFRESH_TOKEN_SECRET_KEY: str = os.getenv("REFRESH_TOKEN_SECRET_KEY", "your_refresh_token_secret_key_change_for_production")
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
     
     # Email Configuration
     MAIL_USERNAME: str = os.getenv("MAIL_USERNAME", "")
@@ -32,7 +35,7 @@ class Settings(BaseSettings):
     VALIDATE_CERTS: bool = os.getenv("VALIDATE_CERTS", "true").lower() == "true"
     
     # Frontend URL for email links
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:8080")
     
     # Backend URL for callbacks
     BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")

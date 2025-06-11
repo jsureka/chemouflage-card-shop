@@ -62,7 +62,6 @@ const PaymentFailed = () => {
       setLoading(false);
     }
   };
-
   const handleRetryPayment = async () => {
     if (!orderId) {
       toast({
@@ -75,20 +74,35 @@ const PaymentFailed = () => {
 
     try {
       setRetrying(true);
-      // Navigate back to checkout with order details or trigger payment retry
       toast({
-        title: "Redirecting",
-        description: "Taking you to retry payment...",
+        title: "Initializing Payment",
+        description: "Preparing payment gateway...",
       });
 
-      // You could implement a retry payment endpoint here
-      // For now, redirect to checkout
-      navigate("/checkout");
-    } catch (error) {
+      // Call the backend API to initiate payment for the existing order
+      const { data, error } = await ordersService.retryPayment(orderId);
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      if (data && data.payment_url) {
+        toast({
+          title: "Payment Gateway Ready",
+          description: "Redirecting to payment portal...",
+        });
+
+        // Redirect to AamarPay payment page
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+    } catch (error: any) {
       console.error("Error retrying payment:", error);
       toast({
         title: "Retry Failed",
-        description: "Unable to retry payment. Please try again later.",
+        description:
+          error.message || "Unable to retry payment. Please try again later.",
         variant: "destructive",
       });
     } finally {

@@ -4,16 +4,24 @@ from typing import Any, List
 from app.api.dependencies import (get_current_admin, get_current_user,
                                   get_current_user_profile)
 from app.core.config import settings
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_refresh_token
 from app.models.pagination import PaginatedResponse, PaginationParams
-from app.models.user import Token, User, UserCreate, UserProfile, UserUpdate
+from app.models.user import (Token, TokenPayload, User, UserCreate,
+                             UserProfile, UserUpdate)
+from app.repositories.token import RefreshTokenRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
 from app.utils.pagination import create_paginated_response
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from pydantic import BaseModel, ValidationError
 
 router = APIRouter()
+
+# Define model for refresh token request
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
 async def register(
@@ -45,8 +53,8 @@ async def register(
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests.
-    Returns access token with user profile information including role.
+    OAuth2 compatible token login, get an access token and refresh token for future requests.
+    Returns access token, refresh token with user profile information including role.
     """
     user = await UserRepository.authenticate(form_data.username, form_data.password)
     if not user:
@@ -64,14 +72,91 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
             detail="Failed to retrieve user profile"
         )
     
+    # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=user.id, expires_delta=access_token_expires
+    )
+    
+    # Create refresh token
+    refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token = create_refresh_token(
+        subject=user.id, expires_delta=refresh_token_expires
+    )
+    
+    # Store refresh token in database
+    await RefreshTokenRepository.create(
+        user_id=user.id,
+        token=refresh_token,
+        expires_delta=refresh_token_expires
+    )
+    
     return {
-        "access_token": create_access_token(
-            subject=user.id, expires_delta=access_token_expires
-        ),
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": user_profile
     }
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(refresh_request: RefreshTokenRequest) -> Any:
+    """
+    Get a new access token using a refresh token.
+    """
+    # Verify refresh token validity
+    is_valid = await RefreshTokenRepository.is_token_valid(refresh_request.refresh_token)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    try:
+        # Decode the refresh token
+        payload = jwt.decode(
+            refresh_request.refresh_token, 
+            settings.REFRESH_TOKEN_SECRET_KEY, 
+            algorithms=[settings.ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+        
+        # Verify token type
+        if token_data.token_type != "refresh_token":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Get user from token data
+        user_id = token_data.sub
+        user_profile = await UserRepository.get_profile(user_id)
+        if not user_profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        
+        # Create a new access token
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            subject=user_id, expires_delta=access_token_expires
+        )
+        
+        # Return the new access token
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_request.refresh_token,  # Return the same refresh token
+            "token_type": "bearer",
+            "user": user_profile
+        }
+    except (JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 @router.get("/me", response_model=UserProfile)
 async def read_users_me(current_user_profile: UserProfile = Depends(get_current_user_profile)) -> Any:
@@ -136,3 +221,21 @@ async def make_admin(
     await UserRoleRepository.update(user_id, "admin")
     profile = await UserRepository.get_profile(user_id)
     return profile
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(refresh_request: RefreshTokenRequest) -> None:
+    """
+    Logout user by revoking the refresh token.
+    """
+    # Revoke the refresh token
+    await RefreshTokenRepository.revoke(refresh_request.refresh_token)
+    return None
+
+
+@router.post("/logout-all", status_code=status.HTTP_204_NO_CONTENT)
+async def logout_all(current_user: User = Depends(get_current_user)) -> None:
+    """
+    Logout from all devices by revoking all refresh tokens for the user.
+    """
+    await RefreshTokenRepository.revoke_all_for_user(current_user.id)
+    return None

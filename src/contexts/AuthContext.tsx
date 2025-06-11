@@ -13,6 +13,7 @@ interface AuthContextType {
     fullName: string
   ) => Promise<void>;
   logout: () => Promise<void>;
+  logoutAllDevices: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 }
 
@@ -36,8 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isAdmin = user?.role === "admin";
   const checkAuthStatus = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
+      // Get access token from auth service instead of directly from localStorage
+      const accessToken = localStorage.getItem("auth_access_token");
+      const refreshToken = localStorage.getItem("auth_refresh_token");
+
+      if (!accessToken && !refreshToken) {
         setIsLoading(false);
         return;
       }
@@ -45,12 +49,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const { data, error } = await authService.getCurrentUser();
       if (error) {
         console.error("Auth check failed:", error);
-        // Only remove token if it's a 401 (unauthorized) error
-        // Keep token for network errors to retry later
-        if (error.includes("401") || error.includes("Unauthorized")) {
-          localStorage.removeItem("auth_token");
+        // If we get a specific authentication error and not a network error,
+        // we should clear the user from state
+        if (
+          error.includes("401") ||
+          error.includes("Unauthorized") ||
+          error.includes("Failed to refresh authentication")
+        ) {
+          // The auth service already handles token removal internally
+          setUser(null);
         }
-        setUser(null);
       } else if (data) {
         setUser(data);
       }
@@ -66,7 +74,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     checkAuthStatus();
   }, []);
-
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -124,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const logout = async () => {
     try {
-      authService.logout();
+      await authService.logout(); // Now returns a Promise
       setUser(null);
       toast({
         title: "Logged out",
@@ -135,6 +142,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       toast({
         title: "Logout Error",
         description: "There was an error logging out.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add a method to logout from all devices
+  const logoutAllDevices = async () => {
+    try {
+      await authService.logout(true); // true = logout from all devices
+      setUser(null);
+      toast({
+        title: "Logged out from all devices",
+        description: "You have been successfully logged out from all devices.",
+      });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast({
+        title: "Logout Error",
+        description: "There was an error logging out from all devices.",
         variant: "destructive",
       });
     }
@@ -152,6 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         register,
         logout,
+        logoutAllDevices,
         refreshAuth,
       }}
     >

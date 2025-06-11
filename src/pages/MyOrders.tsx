@@ -31,6 +31,7 @@ const MyOrders = () => {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [retryingPayment, setRetryingPayment] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -84,6 +85,54 @@ const MyOrders = () => {
       console.error("Error refreshing orders:", error);
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleRetryPayment = async (orderId: string) => {
+    if (!orderId) {
+      toast({
+        title: "Cannot Retry",
+        description: "No order ID available for payment retry",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setRetryingPayment(orderId);
+      toast({
+        title: "Initializing Payment",
+        description: "Preparing payment gateway...",
+      });
+
+      // Call the backend API to initiate payment for the existing order
+      const { data, error } = await ordersService.retryPayment(orderId);
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      if (data && data.payment_url) {
+        toast({
+          title: "Payment Gateway Ready",
+          description: "Redirecting to payment portal...",
+        });
+
+        // Redirect to AamarPay payment page
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error("Payment URL not received");
+      }
+    } catch (error: any) {
+      console.error("Error retrying payment:", error);
+      toast({
+        title: "Retry Failed",
+        description:
+          error.message || "Unable to retry payment. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setRetryingPayment(null);
     }
   };
 
@@ -159,10 +208,8 @@ const MyOrders = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
-      month: "short",
+      month: "long",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
   if (authLoading || loading) {
@@ -349,6 +396,23 @@ const MyOrders = () => {
                         Track Order
                       </Link>
                     </Button>
+                    {order.payment_status === "failed" && (
+                      <Button
+                        asChild
+                        variant="destructive"
+                        onClick={() => handleRetryPayment(order.id)}
+                        disabled={retryingPayment === order.id}
+                      >
+                        <Link to="#">
+                          {retryingPayment === order.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mx-auto"></div>
+                          ) : (
+                            <CreditCard className="w-4 h-4 mr-2" />
+                          )}
+                          Retry Payment
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

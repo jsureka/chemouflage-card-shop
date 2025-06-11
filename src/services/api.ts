@@ -44,7 +44,7 @@ class ApiService {
 
   constructor() {
     // Load token from localStorage on initialization
-    this.token = localStorage.getItem("auth_token");
+    this.token = localStorage.getItem("auth_access_token");
   }
 
   private setAuthHeader(): HeadersInit {
@@ -95,10 +95,9 @@ class ApiService {
       user: User;
       access_token: string;
     }>(response);
-
     if (result.data?.access_token) {
       this.token = result.data.access_token;
-      localStorage.setItem("auth_token", this.token);
+      localStorage.setItem("auth_access_token", this.token);
     }
 
     return result;
@@ -133,10 +132,10 @@ class ApiService {
 
     return this.handleResponse<User>(response);
   }
-
   logout(): void {
     this.token = null;
-    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_access_token");
+    localStorage.removeItem("auth_refresh_token");
   }
 
   // Product methods

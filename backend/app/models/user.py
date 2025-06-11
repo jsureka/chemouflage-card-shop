@@ -93,11 +93,26 @@ class UserRole(UserRoleBase):
 # Token models
 class Token(BaseModel):
     access_token: str
+    refresh_token: str  # Added refresh token
     token_type: str = "bearer"
     user: Optional["UserProfile"] = None
     
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
+    exp: Optional[datetime] = None
+    token_type: Optional[str] = None  # To distinguish between access and refresh tokens
+
+# Add RefreshToken model for database storage
+class RefreshToken(BaseModel):
+    user_id: str
+    token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_revoked: bool = False
+    
+    model_config = {
+        "from_attributes": True
+    }
 
 # Profile models - Consolidated user profile
 class UserProfile(BaseModel):

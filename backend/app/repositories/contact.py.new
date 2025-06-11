@@ -1,0 +1,114 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\repositories\contact.py.new
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+
+from app.db.firebase import get_firestore_db
+from app.models.contact import ContactMessage, ContactMessageCreate
+from app.models.pagination import PaginatedResponse, PaginationParams
+from google.cloud.firestore import FieldFilter
+import uuid
+
+
+class ContactRepository:
+    COLLECTION = "contact_messages"
+    
+    @staticmethod
+    def _convert_to_message(doc_dict: Dict[str, Any]) -> ContactMessage:
+        """Convert Firestore document to ContactMessage model"""
+        message_dict = doc_dict.copy()
+        message_dict["id"] = message_dict.pop("doc_id")
+        return ContactMessage(**message_dict)
+    
+    async def create_message(self, message_data: ContactMessageCreate) -> str:
+        """Create a new contact message in Firestore"""
+        db = get_firestore_db()
+        
+        message_dict = message_data.model_dump()
+        message_dict["created_at"] = datetime.utcnow()
+        message_dict["status"] = "new"
+        
+        # Generate document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Add the document
+        db.collection(self.COLLECTION).document(doc_id).set(message_dict)
+        
+        return doc_id
+
+    async def get_all_messages(self, pagination: PaginationParams, status_filter: Optional[str] = None) -> PaginatedResponse:
+        """Get all contact messages with pagination"""
+        db = get_firestore_db()
+        collection_ref = db.collection(self.COLLECTION)
+        
+        # Apply status filter if provided
+        if status_filter:
+            query = collection_ref.where(filter=FieldFilter("status", "==", status_filter))
+        else:
+            query = collection_ref
+        
+        # Order by created_at in descending order
+        query = query.order_by("created_at", direction="DESCENDING")
+        
+        # Count total documents
+        # Note: Firestore doesn't have a direct count method, we need to get all matching documents
+        # This could be inefficient for large collections
+        total_query = query
+        total_docs = list(total_query.stream())
+        total_count = len(total_docs)
+        
+        # Apply pagination
+        skip = (pagination.page - 1) * pagination.limit
+        end = skip + pagination.limit
+        
+        # Get paginated documents
+        paginated_docs = total_docs[skip:end]
+        
+        messages = []
+        for doc in paginated_docs:
+            message_dict = doc.to_dict()
+            message_dict["doc_id"] = doc.id
+            messages.append(self._convert_to_message(message_dict))
+        
+        return PaginatedResponse.create(
+            items=messages,
+            current_page=pagination.page,
+            page_size=pagination.limit,
+            total_items=total_count
+        )
+
+    async def update_message_status(self, message_id: str, status: str, admin_notes: Optional[str] = None) -> bool:
+        """Update the status and optional admin notes of a contact message"""
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(message_id)
+        
+        update_data = {
+            "status": status,
+            "updated_at": datetime.utcnow()
+        }
+        
+        if admin_notes is not None:
+            update_data["admin_notes"] = admin_notes
+        
+        # Update the document
+        doc_ref.update(update_data)
+        
+        # Check if document exists after update
+        doc = doc_ref.get()
+        return doc.exists
+
+    async def delete_message(self, message_id: str) -> bool:
+        """Delete a contact message"""
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(message_id)
+        
+        # Check if document exists before deletion
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Delete the document
+        doc_ref.delete()
+        return True
+
+
+contact_repository = ContactRepository()

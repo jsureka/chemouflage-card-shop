@@ -1,0 +1,187 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\repositories\product.py.new
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+
+from app.db.firebase import get_firestore_db
+from app.models.product import (Product, ProductCreate, ProductInDB, ProductUpdate)
+from google.cloud.firestore import FieldFilter
+import uuid
+
+
+class ProductRepository:
+    COLLECTION = "products"
+    
+    @staticmethod
+    def _convert_to_product(doc_dict: Dict[str, Any]) -> Product:
+        """Convert Firestore document to Product model"""
+        product_dict = doc_dict.copy()
+        product_dict["id"] = product_dict.pop("doc_id")
+        return Product(**product_dict)
+    
+    @staticmethod
+    async def create(product: ProductCreate) -> str:
+        """Create a new product in Firestore"""
+        db = get_firestore_db()
+        
+        # Create the product
+        product_dict = product.model_dump()
+        product_dict["created_at"] = datetime.utcnow()
+        
+        # Generate document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Add the document
+        db.collection(ProductRepository.COLLECTION).document(doc_id).set(product_dict)
+        
+        return doc_id
+    
+    @staticmethod
+    async def get_by_id(product_id: str) -> Optional[Product]:
+        """Get product by ID"""
+        db = get_firestore_db()
+        doc_ref = db.collection(ProductRepository.COLLECTION).document(product_id)
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            product_dict = doc.to_dict()
+            product_dict["doc_id"] = doc.id
+            return ProductRepository._convert_to_product(product_dict)
+        
+        return None
+    
+    @staticmethod
+    async def get_all(skip: int = 0, limit: int = 100, active_only: bool = False) -> List[Product]:
+        """Get all products with pagination and optional active filter"""
+        db = get_firestore_db()
+        products_ref = db.collection(ProductRepository.COLLECTION)
+        
+        # Apply active filter if needed
+        if active_only:
+            query = products_ref.where(filter=FieldFilter("is_active", "==", True))
+            all_products = list(query.stream())
+        else:
+            all_products = list(products_ref.stream())
+        
+        total_count = len(all_products)
+        
+        # Apply pagination
+        start = min(skip, total_count)
+        end = min(skip + limit, total_count)
+        
+        result = []
+        for i in range(start, end):
+            if i >= len(all_products):
+                break
+                
+            doc = all_products[i]
+            product_dict = doc.to_dict()
+            product_dict["doc_id"] = doc.id
+            result.append(ProductRepository._convert_to_product(product_dict))
+        
+        return result
+    
+    @staticmethod
+    async def get_by_category(category: str, skip: int = 0, limit: int = 100, active_only: bool = False) -> List[Product]:
+        """Get products by category"""
+        db = get_firestore_db()
+        products_ref = db.collection(ProductRepository.COLLECTION)
+        
+        # Build query with filters
+        query = products_ref.where(filter=FieldFilter("category", "==", category))
+        if active_only:
+            query = query.where(filter=FieldFilter("is_active", "==", True))
+        
+        all_products = list(query.stream())
+        total_count = len(all_products)
+        
+        # Apply pagination
+        start = min(skip, total_count)
+        end = min(skip + limit, total_count)
+        
+        result = []
+        for i in range(start, end):
+            if i >= len(all_products):
+                break
+                
+            doc = all_products[i]
+            product_dict = doc.to_dict()
+            product_dict["doc_id"] = doc.id
+            result.append(ProductRepository._convert_to_product(product_dict))
+        
+        return result
+    
+    @staticmethod
+    async def update(product_id: str, product_update: ProductUpdate) -> bool:
+        """Update product"""
+        db = get_firestore_db()
+        doc_ref = db.collection(ProductRepository.COLLECTION).document(product_id)
+        
+        # Check if product exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Update product
+        update_dict = product_update.model_dump(exclude_unset=True)
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        doc_ref.update(update_dict)
+        return True
+    
+    @staticmethod
+    async def delete(product_id: str) -> bool:
+        """Delete product"""
+        db = get_firestore_db()
+        doc_ref = db.collection(ProductRepository.COLLECTION).document(product_id)
+        
+        # Check if product exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Delete product
+        doc_ref.delete()
+        return True
+    
+    @staticmethod
+    async def search(query: str, skip: int = 0, limit: int = 100, active_only: bool = False) -> List[Product]:
+        """
+        Search products by name or description
+        
+        Note: Firestore doesn't have built-in full-text search.
+        For production, consider using Algolia, Elasticsearch, or Firebase's own search extensions.
+        This is a simple implementation that searches by exact match or contains.
+        """
+        db = get_firestore_db()
+        products_ref = db.collection(ProductRepository.COLLECTION)
+        
+        # Apply active filter if needed
+        if active_only:
+            all_products = list(products_ref.where(filter=FieldFilter("is_active", "==", True)).stream())
+        else:
+            all_products = list(products_ref.stream())
+        
+        # Manually filter results
+        query = query.lower()
+        filtered_products = []
+        
+        for doc in all_products:
+            product = doc.to_dict()
+            product["doc_id"] = doc.id
+            
+            # Check if name or description contains the query
+            if (query in product.get("name", "").lower() or 
+                query in product.get("description", "").lower() or
+                query in product.get("category", "").lower()):
+                filtered_products.append(product)
+        
+        # Apply pagination
+        start = min(skip, len(filtered_products))
+        end = min(skip + limit, len(filtered_products))
+        
+        result = []
+        for i in range(start, end):
+            product_dict = filtered_products[i]
+            result.append(ProductRepository._convert_to_product(product_dict))
+        
+        return result

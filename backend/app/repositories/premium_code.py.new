@@ -1,0 +1,331 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\repositories\premium_code.py.new
+import secrets
+import string
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+
+from app.db.firebase import get_firestore_db
+from app.models.product import (PremiumCode, PremiumCodeBind,
+                                PremiumCodeCreate, PremiumCodeGenerate,
+                                PremiumCodeInDB, PremiumCodeUpdate)
+from app.repositories.user import UserRepository
+from google.cloud.firestore import FieldFilter
+import uuid
+
+
+class PremiumCodeRepository:
+    COLLECTION = "premium_codes"
+    
+    @staticmethod
+    def _convert_to_premium_code(doc_dict: Dict[str, Any]) -> PremiumCode:
+        """Convert Firestore document to PremiumCode model"""
+        code_dict = doc_dict.copy()
+        code_dict["id"] = code_dict.pop("doc_id")
+        return PremiumCode(**code_dict)
+    
+    @staticmethod
+    def _generate_code(length: int = 12) -> str:
+        """Generate a random premium code"""
+        characters = string.ascii_uppercase + string.digits
+        return ''.join(secrets.choice(characters) for _ in range(length))
+    
+    @staticmethod
+    async def create(premium_code: PremiumCodeCreate) -> str:
+        """Create a single premium code"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        
+        # Generate unique code
+        code = PremiumCodeRepository._generate_code()
+        
+        # Check if code exists
+        while list(codes_ref.where(filter=FieldFilter("code", "==", code)).limit(1).stream()):
+            code = PremiumCodeRepository._generate_code()
+        
+        premium_code_dict = premium_code.model_dump()
+        premium_code_dict["code"] = code
+        premium_code_dict["created_at"] = datetime.utcnow()
+        premium_code_dict["used_count"] = 0
+        premium_code_dict["bound_user_id"] = None
+        
+        # Generate document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Add the document
+        codes_ref.document(doc_id).set(premium_code_dict)
+        
+        return doc_id
+    
+    @staticmethod
+    async def generate_bulk(generate_request: PremiumCodeGenerate) -> List[str]:
+        """Generate multiple premium codes"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        created_ids = []
+        
+        for _ in range(generate_request.count):
+            # Generate unique code
+            code = PremiumCodeRepository._generate_code()
+            
+            # Check if code exists
+            while list(codes_ref.where(filter=FieldFilter("code", "==", code)).limit(1).stream()):
+                code = PremiumCodeRepository._generate_code()
+            
+            premium_code_dict = {
+                "code": code,
+                "description": generate_request.description,
+                "is_active": True,
+                "usage_limit": generate_request.usage_limit,
+                "expires_at": generate_request.expires_at,
+                "used_count": 0,
+                "created_at": datetime.utcnow(),
+                "bound_user_id": None
+            }
+            
+            # Generate document ID
+            doc_id = str(uuid.uuid4())
+            
+            # Add the document
+            codes_ref.document(doc_id).set(premium_code_dict)
+            created_ids.append(doc_id)
+        
+        return created_ids
+    
+    @staticmethod
+    async def get_by_id(code_id: str) -> Optional[PremiumCode]:
+        """Get premium code by ID"""
+        db = get_firestore_db()
+        doc_ref = db.collection(PremiumCodeRepository.COLLECTION).document(code_id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            return None
+        
+        code_dict = doc.to_dict()
+        code_dict["doc_id"] = doc.id
+        
+        # Get bound user email if exists
+        bound_user_email = None
+        if code_dict.get("bound_user_id"):
+            user = await UserRepository.get_by_id(code_dict["bound_user_id"])
+            if user:
+                bound_user_email = user.email
+        
+        code_dict["bound_user_email"] = bound_user_email
+        return PremiumCodeRepository._convert_to_premium_code(code_dict)
+    
+    @staticmethod
+    async def get_by_code(code: str) -> Optional[PremiumCode]:
+        """Get premium code by code value"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        query = codes_ref.where(filter=FieldFilter("code", "==", code)).limit(1)
+        
+        docs = query.stream()
+        doc = next(docs, None)
+        
+        if not doc:
+            return None
+        
+        code_dict = doc.to_dict()
+        code_dict["doc_id"] = doc.id
+        
+        # Get bound user email if exists
+        bound_user_email = None
+        if code_dict.get("bound_user_id"):
+            user = await UserRepository.get_by_id(code_dict["bound_user_id"])
+            if user:
+                bound_user_email = user.email
+        
+        code_dict["bound_user_email"] = bound_user_email
+        return PremiumCodeRepository._convert_to_premium_code(code_dict)
+    
+    @staticmethod
+    async def get_all(
+        skip: int = 0, 
+        limit: int = 20, 
+        active_only: bool = False, 
+        bound_only: bool = False
+    ) -> List[PremiumCode]:
+        """Get all premium codes with pagination and filters"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        
+        # Build query based on filters
+        if active_only and bound_only:
+            query = codes_ref.where(filter=FieldFilter("is_active", "==", True)).where(
+                filter=FieldFilter("bound_user_id", "!=", None)
+            )
+        elif active_only:
+            query = codes_ref.where(filter=FieldFilter("is_active", "==", True))
+        elif bound_only:
+            query = codes_ref.where(filter=FieldFilter("bound_user_id", "!=", None))
+        else:
+            query = codes_ref
+        
+        all_codes = list(query.stream())
+        
+        # Apply pagination
+        start = min(skip, len(all_codes))
+        end = min(skip + limit, len(all_codes))
+        
+        result = []
+        for i in range(start, end):
+            if i >= len(all_codes):
+                break
+                
+            doc = all_codes[i]
+            code_dict = doc.to_dict()
+            code_dict["doc_id"] = doc.id
+            
+            # Get bound user email if exists
+            bound_user_email = None
+            if code_dict.get("bound_user_id"):
+                user = await UserRepository.get_by_id(code_dict["bound_user_id"])
+                if user:
+                    bound_user_email = user.email
+            
+            code_dict["bound_user_email"] = bound_user_email
+            result.append(PremiumCodeRepository._convert_to_premium_code(code_dict))
+        
+        return result
+    
+    @staticmethod
+    async def update(code_id: str, update_data: PremiumCodeUpdate) -> Optional[PremiumCode]:
+        """Update premium code"""
+        db = get_firestore_db()
+        doc_ref = db.collection(PremiumCodeRepository.COLLECTION).document(code_id)
+        
+        # Check if code exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        
+        # Update code
+        update_dict = update_data.model_dump(exclude_unset=True)
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        doc_ref.update(update_dict)
+        return await PremiumCodeRepository.get_by_id(code_id)
+    
+    @staticmethod
+    async def delete(code_id: str) -> bool:
+        """Delete premium code"""
+        db = get_firestore_db()
+        doc_ref = db.collection(PremiumCodeRepository.COLLECTION).document(code_id)
+        
+        # Check if code exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Delete code
+        doc_ref.delete()
+        return True
+    
+    @staticmethod
+    async def count_all(active_only: bool = False, bound_only: bool = False) -> int:
+        """Count all premium codes with filters"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        
+        # Build query based on filters
+        if active_only and bound_only:
+            query = codes_ref.where(filter=FieldFilter("is_active", "==", True)).where(
+                filter=FieldFilter("bound_user_id", "!=", None)
+            )
+        elif active_only:
+            query = codes_ref.where(filter=FieldFilter("is_active", "==", True))
+        elif bound_only:
+            query = codes_ref.where(filter=FieldFilter("bound_user_id", "!=", None))
+        else:
+            query = codes_ref
+        
+        return len(list(query.stream()))
+    
+    @staticmethod
+    async def bind_to_user(bind_request: PremiumCodeBind) -> Optional[PremiumCode]:
+        """Bind a premium code to a user"""
+        code = bind_request.code.strip().upper()
+        
+        # Get the premium code
+        premium_code = await PremiumCodeRepository.get_by_code(code)
+        if not premium_code:
+            return None
+        
+        # Check if already bound
+        if premium_code.bound_user_id:
+            return None
+        
+        # Check if code is active
+        if not premium_code.is_active:
+            return None
+        
+        # Check if code has expired
+        if premium_code.expires_at and premium_code.expires_at < datetime.utcnow():
+            return None
+        
+        # Check if code has reached usage limit
+        if premium_code.usage_limit and premium_code.used_count >= premium_code.usage_limit:
+            return None
+        
+        # Bind to user
+        db = get_firestore_db()
+        doc_ref = db.collection(PremiumCodeRepository.COLLECTION).document(premium_code.id)
+        
+        update_dict = {
+            "bound_user_id": bind_request.user_id,
+            "used_count": premium_code.used_count + 1,
+            "updated_at": datetime.utcnow(),
+        }
+        
+        doc_ref.update(update_dict)
+        return await PremiumCodeRepository.get_by_id(premium_code.id)
+    
+    @staticmethod
+    async def get_user_codes(user_id: str) -> List[PremiumCode]:
+        """Get all premium codes bound to a user"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        query = codes_ref.where(filter=FieldFilter("bound_user_id", "==", user_id))
+        
+        result = []
+        for doc in query.stream():
+            code_dict = doc.to_dict()
+            code_dict["doc_id"] = doc.id
+            code_dict["bound_user_email"] = None  # User email isn't needed when getting codes for a specific user
+            
+            result.append(PremiumCodeRepository._convert_to_premium_code(code_dict))
+        
+        return result
+    
+    @staticmethod
+    async def get_stats() -> Dict[str, int]:
+        """Get statistics about premium codes"""
+        db = get_firestore_db()
+        codes_ref = db.collection(PremiumCodeRepository.COLLECTION)
+        
+        all_codes = list(codes_ref.stream())
+        
+        total_codes = len(all_codes)
+        active_codes = 0
+        bound_codes = 0
+        unbound_codes = 0
+        
+        for doc in all_codes:
+            code_dict = doc.to_dict()
+            
+            if code_dict.get("is_active", False):
+                active_codes += 1
+            
+            if code_dict.get("bound_user_id"):
+                bound_codes += 1
+            else:
+                unbound_codes += 1
+        
+        return {
+            "total_codes": total_codes,
+            "active_codes": active_codes,
+            "bound_codes": bound_codes,
+            "unbound_codes": unbound_codes
+        }

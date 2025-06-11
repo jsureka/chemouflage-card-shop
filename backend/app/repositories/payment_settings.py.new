@@ -1,0 +1,172 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\repositories\payment_settings.py.new
+from datetime import datetime
+from typing import Optional, Dict, Any
+
+from app.db.firebase import get_firestore_db
+from app.models.settings import (DeliveryChargesResponse,
+                                EnabledPaymentMethods, PaymentMethodSettings,
+                                PaymentSettings, PaymentSettingsCreate,
+                                PaymentSettingsUpdate)
+
+
+class PaymentSettingsRepository:
+    COLLECTION = "settings"
+    DOCUMENT = "payment_settings"
+    
+    @staticmethod
+    def _convert_to_settings(settings_dict: Dict[str, Any]) -> PaymentSettings:
+        """Convert Firestore document to PaymentSettings model"""
+        return PaymentSettings(**settings_dict)
+
+    async def get_settings(self) -> Optional[PaymentSettings]:
+        """Get payment settings - creates default if none exist"""
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(self.DOCUMENT)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            # Create default settings
+            default_settings = PaymentSettingsCreate()
+            created_settings = await self.create_settings(default_settings)
+            return created_settings
+        
+        # Convert Firestore document to PaymentSettings model
+        settings_dict = doc.to_dict()
+        settings_dict["id"] = doc.id
+        return self._convert_to_settings(settings_dict)
+
+    async def create_settings(self, settings_data: PaymentSettingsCreate) -> PaymentSettings:
+        """Create new payment settings"""
+        db = get_firestore_db()
+        
+        settings_dict = settings_data.model_dump()
+        settings_dict["created_at"] = datetime.utcnow()
+        settings_dict["id"] = self.DOCUMENT
+        
+        # Add the document
+        doc_ref = db.collection(self.COLLECTION).document(self.DOCUMENT)
+        doc_ref.set(settings_dict)
+        
+        return self._convert_to_settings(settings_dict)
+
+    async def update_settings(self, settings_update: PaymentSettingsUpdate) -> Optional[PaymentSettings]:
+        """Update payment settings"""
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(self.DOCUMENT)
+        
+        update_data = {}
+        # Build update document
+        if settings_update.aamarpay is not None:
+            update_data["aamarpay"] = settings_update.aamarpay.model_dump()
+        
+        if settings_update.cash_on_delivery is not None:
+            update_data["cash_on_delivery"] = settings_update.cash_on_delivery.model_dump()
+        
+        if settings_update.delivery_charges is not None:
+            update_data["delivery_charges"] = settings_update.delivery_charges.model_dump()
+        
+        if not update_data:
+            # If no updates, return current settings
+            return await self.get_settings()
+        
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Update the document
+        doc_ref.update(update_data)
+        
+        # Get the updated document
+        updated_doc = doc_ref.get()
+        
+        if updated_doc.exists:
+            settings_dict = updated_doc.to_dict()
+            settings_dict["id"] = updated_doc.id
+            return self._convert_to_settings(settings_dict)
+        
+        return None
+
+    async def get_enabled_payment_methods(self) -> EnabledPaymentMethods:
+        """Get only enabled payment methods for public use"""
+        settings = await self.get_settings()
+        enabled_methods = []
+        
+        if settings.aamarpay.is_enabled:
+            enabled_methods.append(settings.aamarpay)
+        
+        if settings.cash_on_delivery.is_enabled:
+            enabled_methods.append(settings.cash_on_delivery)
+        
+        return EnabledPaymentMethods(methods=enabled_methods)
+
+    async def toggle_payment_method(self, method_name: str, enabled: bool) -> Optional[PaymentSettings]:
+        """Toggle a specific payment method on/off"""
+        if method_name not in ["aamarpay", "cash_on_delivery"]:
+            return None
+        
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(self.DOCUMENT)
+        
+        update_data = {
+            f"{method_name}.is_enabled": enabled,
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Update the document
+        doc_ref.update(update_data)
+        
+        # Get the updated document
+        updated_doc = doc_ref.get()
+        
+        if updated_doc.exists:
+            settings_dict = updated_doc.to_dict()
+            settings_dict["id"] = updated_doc.id
+            return self._convert_to_settings(settings_dict)
+        
+        return None
+
+    async def validate_at_least_one_enabled(self, settings_update: PaymentSettingsUpdate) -> bool:
+        """Validate that at least one payment method will remain enabled after update"""
+        current_settings = await self.get_settings()
+        
+        # Check what the settings would be after update
+        aamarpay_enabled = current_settings.aamarpay.is_enabled
+        cod_enabled = current_settings.cash_on_delivery.is_enabled
+        
+        if settings_update.aamarpay is not None:
+            aamarpay_enabled = settings_update.aamarpay.is_enabled
+        
+        if settings_update.cash_on_delivery is not None:
+            cod_enabled = settings_update.cash_on_delivery.is_enabled
+        
+        return aamarpay_enabled or cod_enabled
+
+    async def get_delivery_charges(self) -> DeliveryChargesResponse:
+        """Get delivery charges for inside and outside Dhaka"""
+        settings = await self.get_settings()
+        return DeliveryChargesResponse(
+            inside_dhaka=settings.delivery_charges.inside_dhaka,
+            outside_dhaka=settings.delivery_charges.outside_dhaka
+        )
+
+    async def update_delivery_charges(self, inside_dhaka: float, outside_dhaka: float) -> Optional[PaymentSettings]:
+        """Update delivery charges"""
+        db = get_firestore_db()
+        doc_ref = db.collection(self.COLLECTION).document(self.DOCUMENT)
+        
+        update_data = {
+            "delivery_charges.inside_dhaka": inside_dhaka,
+            "delivery_charges.outside_dhaka": outside_dhaka,
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Update the document
+        doc_ref.update(update_data)
+        
+        # Get the updated document
+        updated_doc = doc_ref.get()
+        
+        if updated_doc.exists:
+            settings_dict = updated_doc.to_dict()
+            settings_dict["id"] = updated_doc.id
+            return self._convert_to_settings(settings_dict)
+        
+        return None

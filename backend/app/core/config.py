@@ -1,5 +1,6 @@
 import os
-from typing import List
+import os
+from typing import List, Optional
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -11,14 +12,18 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Chemouflage API"
     
-    # MongoDB Configuration
-    MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
-    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "chemouflagedb")
+    # Firebase Configuration
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
+    FIREBASE_CREDENTIALS_PATH: Optional[str] = os.getenv("FIREBASE_CREDENTIALS_PATH")
+    FIREBASE_CREDENTIALS_JSON: Optional[str] = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    FIREBASE_API_KEY: str = os.getenv("FIREBASE_API_KEY", "")
+    FIREBASE_AUTH_DOMAIN: str = os.getenv("FIREBASE_AUTH_DOMAIN", "")
+    FIREBASE_STORAGE_BUCKET: str = os.getenv("FIREBASE_STORAGE_BUCKET", "")
     
     # Authentication
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your_very_secure_secret_key_here_change_for_production")
     REFRESH_TOKEN_SECRET_KEY: str = os.getenv("REFRESH_TOKEN_SECRET_KEY", "your_refresh_token_secret_key_change_for_production")
-    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256") 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
     

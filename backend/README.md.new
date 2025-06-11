@@ -1,0 +1,89 @@
+# Chemouflage Backend - FastAPI with Firebase/Firestore
+
+This directory contains the FastAPI backend server for the Chemouflage Card Shop.
+
+## Migration to Firebase/Firestore
+
+The application has been migrated from MongoDB to Firebase Authentication and Firestore database.
+
+## Features
+
+- Authentication with Firebase
+- User roles (customers and admins)
+- Product management
+- Order and payment processing
+- Admin dashboard statistics
+
+## Requirements
+
+- Python 3.8+
+- Firebase project with Firestore database
+- FastAPI
+
+## Setup
+
+1. Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
+2. Enable Firebase Authentication and Firestore Database
+3. Download your Firebase service account credentials from Project Settings > Service accounts
+4. Set up your environment variables in `.env` file (see `.env.example`)
+
+## Quick Start
+
+For convenience, you can use the provided scripts:
+
+- Windows: `start.bat`
+- macOS/Linux: `./start.sh`
+
+## API Documentation
+
+Once running, access the API documentation at:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## Migration from MongoDB
+
+If you have existing data in MongoDB, use the `migrate_to_firestore.py` script to migrate it to Firestore:
+
+```bash
+python migrate_to_firestore.py
+```
+
+## Default Admin User
+
+Create a default admin user with the following command:
+
+```bash
+python create_admin_user.py
+```
+
+The default admin user is created with these credentials:
+- Email: admin@chemouflage.com
+- Password: adminpassword123
+
+Make sure to change this password in production!
+
+## Environment Variables
+
+Configure these in the `.env` file:
+
+- `FIREBASE_CREDENTIALS_PATH`: Path to Firebase service account credentials JSON file
+- `FIREBASE_CREDENTIALS_JSON`: Firebase service account credentials JSON string (alternative to path)
+- `FIREBASE_PROJECT_ID`: Your Firebase project ID
+- `SECRET_KEY`: Secret key for JWT token generation
+- `ALGORITHM`: Algorithm for JWT (default: HS256)
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time in minutes
+- `BACKEND_CORS_ORIGINS`: List of allowed CORS origins
+
+## Project Structure
+
+- `app/api/`: API endpoints and router definitions
+- `app/core/`: Core configuration and security functions
+- `app/db/`: Database connection and initialization
+- `app/models/`: Pydantic models for data validation
+- `app/repositories/`: Database operations for each entity
+- `main.py`: Application entry point
+
+## Note for Integration with React Frontend
+
+This backend is designed to work with the existing React frontend. The API endpoints maintain compatibility with the existing data structures used in the frontend.

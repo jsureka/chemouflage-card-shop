@@ -1,0 +1,129 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\models\user.py.new
+from datetime import datetime
+from typing import List, Optional
+
+from bson import ObjectId
+from pydantic import BaseModel, EmailStr, Field
+
+
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_pydantic_core_schema__(cls, _source_type, _handler):
+        from pydantic_core import core_schema
+        return core_schema.json_or_python_schema(
+            python_schema=core_schema.union_schema([
+                core_schema.is_instance_schema(ObjectId),
+                core_schema.chain_schema([
+                    core_schema.str_schema(),
+                    core_schema.no_info_plain_validator_function(cls.validate),
+                ]),
+            ]),
+            json_schema=core_schema.str_schema(),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda x: str(x)
+            ),
+        )
+    
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid objectid")
+        return ObjectId(v)
+
+# User models
+class UserBase(BaseModel):
+    email: EmailStr
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    
+class UserCreate(UserBase):
+    password: Optional[str] = None
+    firebase_uid: Optional[str] = None
+    
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+class UserInDB(UserBase):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    firebase_uid: Optional[str] = None
+    hashed_password: Optional[str] = None  # Optional now since Firebase handles auth
+    avatar_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+        arbitrary_types_allowed = True
+        
+class User(UserBase):
+    id: str
+    avatar_url: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+        from_attributes = True
+
+# User Role models
+class UserRoleBase(BaseModel):
+    is_admin: bool = False
+    is_staff: bool = False
+    is_verified: bool = False
+    
+class UserRoleCreate(UserRoleBase):
+    user_id: str
+    
+class UserRoleInDB(UserRoleBase):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+        arbitrary_types_allowed = True
+        
+class UserRole(UserRoleBase):
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        populate_by_name = True
+        from_attributes = True
+
+# User Profile model
+class UserProfile(BaseModel):
+    id: str
+    email: EmailStr
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    role: Optional[UserRole] = None
+    
+    class Config:
+        populate_by_name = True
+        from_attributes = True
+
+# Refresh token model
+class RefreshToken(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId
+    token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_revoked: bool = False
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+        arbitrary_types_allowed = True

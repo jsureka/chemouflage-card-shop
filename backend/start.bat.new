@@ -1,0 +1,22 @@
+@echo off
+echo Starting Chemouflage Backend Setup
+
+REM Check if Python is installed
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Python is not installed or not in PATH. Please install Python 3.8+
+    goto :eof
+)
+
+echo Creating virtual environment...
+python -m venv venv
+call venv\Scripts\activate.bat
+
+echo Installing requirements...
+pip install -r requirements.txt
+
+echo Setting up Firebase...
+python create_admin_user.py
+
+echo Starting the server...
+uvicorn main:app --reload --host 0.0.0.0 --port 8000

@@ -1,0 +1,136 @@
+import os
+from datetime import datetime
+
+import firebase_admin
+from dotenv import load_dotenv
+from firebase_admin import auth, credentials, firestore
+from pydantic import BaseModel
+
+# Script to create a default admin user when the application starts
+# Run this script once to set up your admin account
+
+# Load environment variables
+load_dotenv()
+
+# Firebase Initialization
+FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH")
+FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON")
+
+class AdminSetup(BaseModel):
+    email: str
+    password: str
+    full_name: str
+
+def initialize_firebase():
+    """Initialize Firebase Admin SDK"""
+    if firebase_admin._apps:
+        # Firebase already initialized
+        return
+    
+    if FIREBASE_CREDENTIALS_PATH:
+        # Use service account credentials from file
+        cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+        firebase_admin.initialize_app(cred)
+    elif FIREBASE_CREDENTIALS_JSON:
+        # Use service account credentials from environment variable
+        import json
+        cred_dict = json.loads(FIREBASE_CREDENTIALS_JSON)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+    else:
+        # Use application default credentials
+        firebase_admin.initialize_app()
+    
+    print("Firebase initialized for admin creation")
+
+def create_admin_user(admin: AdminSetup):
+    # Initialize Firebase
+    initialize_firebase()
+    
+    # Connect to Firestore
+    db = firestore.client()
+    
+    try:
+        # Check if user already exists in Firebase Auth
+        try:
+            firebase_user = auth.get_user_by_email(admin.email)
+            print(f"User {admin.email} already exists in Firebase Auth.")
+            firebase_uid = firebase_user.uid
+        except auth.UserNotFoundError:
+            # Create user in Firebase Auth
+            firebase_user = auth.create_user(
+                email=admin.email,
+                password=admin.password,
+                display_name=admin.full_name
+            )
+            firebase_uid = firebase_user.uid
+            print(f"Created user in Firebase Auth with UID: {firebase_uid}")
+            
+            # Set admin custom claim
+            auth.set_custom_user_claims(firebase_uid, {'admin': True})
+            print("Added admin claim to Firebase user")
+    
+        # Check if user already exists in Firestore
+        users_ref = db.collection('users')
+        query = users_ref.where('email', '==', admin.email.lower()).limit(1).get()
+        
+        if len(query) > 0:
+            user_id = query[0].id
+            print(f"User {admin.email} already exists in Firestore with ID: {user_id}")
+            
+            # Update Firebase UID if needed
+            if not query[0].get('firebase_uid'):
+                users_ref.document(user_id).update({
+                    'firebase_uid': firebase_uid,
+                    'updated_at': datetime.utcnow()
+                })
+        else:
+            # Create user document in Firestore
+            user_ref = users_ref.document()
+            user_ref.set({
+                'email': admin.email.lower(),
+                'full_name': admin.full_name,
+                'firebase_uid': firebase_uid,
+                'created_at': datetime.utcnow(),
+            })
+            user_id = user_ref.id
+            print(f"Created user in Firestore with ID: {user_id}")
+        
+        # Ensure user has admin role in Firestore
+        user_roles_ref = db.collection('user_roles')
+        role_query = user_roles_ref.where('user_id', '==', user_id).limit(1).get()
+        
+        if len(role_query) > 0:
+            role_id = role_query[0].id
+            # Update existing role
+            user_roles_ref.document(role_id).update({
+                'is_admin': True,
+                'updated_at': datetime.utcnow()
+            })
+            print(f"Updated admin role for user {admin.email}")
+        else:
+            # Create new role
+            role_ref = user_roles_ref.document()
+            role_ref.set({
+                'user_id': user_id,
+                'is_admin': True,
+                'is_staff': True,
+                'is_verified': True,
+                'created_at': datetime.utcnow()
+            })
+            print(f"Created admin role for user {admin.email}")
+        
+        print(f"Admin user {admin.email} setup completed successfully.")
+        
+    except Exception as e:
+        print(f"Error creating admin user: {e}")
+
+if __name__ == "__main__":
+    print("Creating default admin user...")
+    admin = AdminSetup(
+        email="admin@chemouflage.com",
+        password="adminpassword123",  # Change this password before running!
+        full_name="Admin User"
+    )
+    create_admin_user(admin)
+    print("Done!")

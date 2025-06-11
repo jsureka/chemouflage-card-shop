@@ -1,0 +1,417 @@
+# filepath: c:\Personal\chemouflage-card-shop\backend\app\repositories\order.py.new
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+from app.db.firebase import get_firestore_db
+from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
+                                OrderInDB, OrderItem, OrderItemCreate,
+                                OrderItemInDB, OrderItemResponse,
+                                OrderItemUpdate, OrderUpdate, OrderWithItems)
+from app.repositories.premium_code import PremiumCodeRepository
+from google.cloud.firestore import FieldFilter
+import uuid
+
+
+class OrderRepository:
+    COLLECTION = "orders"
+    ITEMS_COLLECTION = "order_items"
+    
+    @staticmethod
+    def _convert_to_order(doc_dict: Dict[str, Any]) -> Order:
+        """Convert Firestore document to Order model"""
+        order_dict = doc_dict.copy()
+        order_dict["id"] = order_dict.pop("doc_id")
+        return Order(**order_dict)
+    
+    @staticmethod
+    async def create(order: OrderCreate) -> str:
+        """Create a new order in Firestore"""
+        db = get_firestore_db()
+        
+        # Create the order
+        order_dict = order.model_dump()
+        order_dict["created_at"] = datetime.utcnow()
+        
+        # Generate document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Add the document
+        db.collection(OrderRepository.COLLECTION).document(doc_id).set(order_dict)
+        
+        return doc_id
+    
+    @staticmethod
+    async def get_by_id(order_id: str) -> Optional[Order]:
+        """Get order by ID"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderRepository.COLLECTION).document(order_id)
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            order_dict = doc.to_dict()
+            order_dict["doc_id"] = doc.id
+            return OrderRepository._convert_to_order(order_dict)
+        
+        return None
+    
+    @staticmethod
+    async def get_with_items(order_id: str) -> Optional[OrderWithItems]:
+        """Get order with items by order ID"""
+        db = get_firestore_db()
+        order_ref = db.collection(OrderRepository.COLLECTION).document(order_id)
+        order_doc = order_ref.get()
+        
+        if not order_doc.exists:
+            return None
+        
+        # Get order data
+        order_dict = order_doc.to_dict()
+        order_dict["doc_id"] = order_doc.id
+        
+        # Fetch related order items
+        items_query = db.collection(OrderRepository.ITEMS_COLLECTION).where(
+            filter=FieldFilter("order_id", "==", order_id)
+        )
+        
+        items = []
+        for item_doc in items_query.stream():
+            item_dict = item_doc.to_dict()
+            
+            # Get product name
+            product_id = item_dict.get("product_id")
+            product_name = "Unknown Product"
+            
+            try:
+                product_doc = db.collection("products").document(product_id).get()
+                if product_doc.exists:
+                    product_name = product_doc.to_dict().get("name", "Unknown Product")
+            except Exception:
+                pass
+                
+            items.append(OrderItemResponse(
+                id=item_doc.id,
+                product_id=product_id,
+                product_name=product_name,
+                quantity=item_dict.get("quantity", 0),
+                price=item_dict.get("price", 0)
+            ))
+        
+        # Create OrderWithItems model
+        return OrderWithItems(**order_dict, id=order_dict["doc_id"], items=items)
+    
+    @staticmethod
+    async def find_by_partial_id(partial_id: str) -> Optional[OrderWithItems]:
+        """Find an order by partial ID (last 8 characters) and return with items"""
+        db = get_firestore_db()
+        
+        # Remove any case and whitespace variations
+        partial_id_clean = partial_id.strip().lower()
+        
+        # If it's a full UUID format, use the regular method
+        if len(partial_id_clean) == 36:  # UUID length
+            try:
+                return await OrderRepository.get_with_items(partial_id_clean)
+            except:
+                pass
+        
+        # For partial IDs, we need to search through all orders
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        all_orders = list(orders_ref.stream())
+        
+        for order_doc in all_orders:
+            order_id = order_doc.id.lower()
+            
+            # Check if the partial ID matches the end of the order ID
+            if order_id.endswith(partial_id_clean) or order_id[-8:] == partial_id_clean:
+                # Found a match, get the full order with items
+                return await OrderRepository.get_with_items(order_doc.id)
+        
+        return None
+    
+    @staticmethod
+    async def get_by_user(user_id: str) -> List[OrderWithItems]:
+        """Get all orders for a user with items"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        query = orders_ref.where(filter=FieldFilter("user_id", "==", user_id)).order_by("created_at", direction="DESCENDING")
+        
+        orders = []
+        for order_doc in query.stream():
+            order_with_items = await OrderRepository.get_with_items(order_doc.id)
+            if order_with_items:
+                orders.append(order_with_items)
+        
+        return orders
+    
+    @staticmethod
+    async def get_all(skip: int = 0, limit: int = 100, status_filter: Optional[str] = None) -> List[Order]:
+        """Get all orders with pagination and optional status filter"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        
+        # Apply status filter if needed
+        if status_filter:
+            query = orders_ref.where(filter=FieldFilter("status", "==", status_filter))
+            all_orders = list(query.stream())
+        else:
+            all_orders = list(orders_ref.stream())
+        
+        # Sort by created_at (descending)
+        all_orders.sort(key=lambda doc: doc.to_dict().get("created_at", datetime.min), reverse=True)
+        
+        total_count = len(all_orders)
+        
+        # Apply pagination
+        start = min(skip, total_count)
+        end = min(skip + limit, total_count)
+        
+        result = []
+        for i in range(start, end):
+            if i >= len(all_orders):
+                break
+                
+            doc = all_orders[i]
+            order_dict = doc.to_dict()
+            order_dict["doc_id"] = doc.id
+            result.append(OrderRepository._convert_to_order(order_dict))
+        
+        return result
+    
+    @staticmethod
+    async def update(order_id: str, order_update: OrderUpdate) -> Optional[Order]:
+        """Update order"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderRepository.COLLECTION).document(order_id)
+        
+        # Check if order exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        
+        # Update order
+        update_dict = order_update.model_dump(exclude_unset=True)
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        doc_ref.update(update_dict)
+        return await OrderRepository.get_by_id(order_id)
+    
+    @staticmethod
+    async def delete(order_id: str) -> bool:
+        """Delete order and its items"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderRepository.COLLECTION).document(order_id)
+        
+        # Check if order exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Get related items
+        items_ref = db.collection(OrderRepository.ITEMS_COLLECTION)
+        items_query = items_ref.where(filter=FieldFilter("order_id", "==", order_id))
+        
+        # Delete items in batches (Firestore has a limit on batch operations)
+        batch_size = 500
+        items = list(items_query.stream())
+        
+        for i in range(0, len(items), batch_size):
+            batch = db.batch()
+            current_batch = items[i:i+batch_size]
+            
+            for item in current_batch:
+                batch.delete(items_ref.document(item.id))
+            
+            batch.commit()
+        
+        # Delete order
+        doc_ref.delete()
+        return True
+    
+    @staticmethod
+    async def count(status_filter: Optional[str] = None) -> int:
+        """Count orders with optional status filter"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        
+        if status_filter:
+            query = orders_ref.where(filter=FieldFilter("status", "==", status_filter))
+            count = len(list(query.stream()))
+        else:
+            count = len(list(orders_ref.stream()))
+        
+        return count
+    
+    @staticmethod
+    async def count_by_user(user_id: str) -> int:
+        """Count orders by user ID"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        query = orders_ref.where(filter=FieldFilter("user_id", "==", user_id))
+        return len(list(query.stream()))
+    
+    @staticmethod
+    async def get_total_revenue() -> float:
+        """Get total revenue from all orders"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        
+        total = 0.0
+        for doc in orders_ref.stream():
+            order_dict = doc.to_dict()
+            total += float(order_dict.get("total_amount", 0))
+        
+        return total
+    
+    @staticmethod
+    async def get_revenue_by_period(days_ago: int) -> float:
+        """Get total revenue from a specific number of days ago to now"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        start_date = datetime.utcnow() - timedelta(days=days_ago)
+        
+        total = 0.0
+        for doc in orders_ref.stream():
+            order_dict = doc.to_dict()
+            created_at = order_dict.get("created_at")
+            
+            if created_at and created_at >= start_date:
+                total += float(order_dict.get("total_amount", 0))
+        
+        return total
+    
+    @staticmethod
+    async def get_count_by_period(days_ago: int) -> int:
+        """Get order count from a specific number of days ago to now"""
+        db = get_firestore_db()
+        orders_ref = db.collection(OrderRepository.COLLECTION)
+        start_date = datetime.utcnow() - timedelta(days=days_ago)
+        
+        count = 0
+        for doc in orders_ref.stream():
+            order_dict = doc.to_dict()
+            created_at = order_dict.get("created_at")
+            
+            if created_at and created_at >= start_date:
+                count += 1
+        
+        return count
+    
+    @staticmethod
+    async def update_admin(order_id: str, order_update: AdminOrderUpdate) -> Optional[Order]:
+        """Admin-specific order update with automatic premium code binding"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderRepository.COLLECTION).document(order_id)
+        
+        # Check if order exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        
+        # Get current order to check status changes
+        current_order = doc.to_dict()
+        current_order_id = doc.id
+        
+        update_dict = order_update.model_dump(exclude_unset=True)
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        # Check if payment status is being updated to "paid"
+        if (update_dict.get("payment_status") == "paid" and 
+            current_order.get("payment_status") != "paid"):
+            
+            # Automatically assign any available premium code if this is a premium product
+            # Implementation would depend on premium code repository
+            pass
+        
+        # Update the order
+        doc_ref.update(update_dict)
+        return await OrderRepository.get_by_id(order_id)
+
+
+class OrderItemRepository:
+    COLLECTION = "order_items"
+    
+    @staticmethod
+    def _convert_to_order_item(doc_dict: Dict[str, Any]) -> OrderItem:
+        """Convert Firestore document to OrderItem model"""
+        item_dict = doc_dict.copy()
+        item_dict["id"] = item_dict.pop("doc_id")
+        return OrderItem(**item_dict)
+    
+    @staticmethod
+    async def create(item: OrderItemCreate) -> str:
+        """Create a new order item in Firestore"""
+        db = get_firestore_db()
+        
+        # Create the item
+        item_dict = item.model_dump()
+        item_dict["created_at"] = datetime.utcnow()
+        
+        # Generate document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Add the document
+        db.collection(OrderItemRepository.COLLECTION).document(doc_id).set(item_dict)
+        
+        return doc_id
+    
+    @staticmethod
+    async def get_by_id(item_id: str) -> Optional[OrderItem]:
+        """Get order item by ID"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderItemRepository.COLLECTION).document(item_id)
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            item_dict = doc.to_dict()
+            item_dict["doc_id"] = doc.id
+            return OrderItemRepository._convert_to_order_item(item_dict)
+        
+        return None
+    
+    @staticmethod
+    async def get_by_order_id(order_id: str) -> List[OrderItem]:
+        """Get all order items for an order"""
+        db = get_firestore_db()
+        items_ref = db.collection(OrderItemRepository.COLLECTION)
+        query = items_ref.where(filter=FieldFilter("order_id", "==", order_id))
+        
+        items = []
+        for doc in query.stream():
+            item_dict = doc.to_dict()
+            item_dict["doc_id"] = doc.id
+            items.append(OrderItemRepository._convert_to_order_item(item_dict))
+        
+        return items
+    
+    @staticmethod
+    async def update(item_id: str, item_update: OrderItemUpdate) -> Optional[OrderItem]:
+        """Update order item"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderItemRepository.COLLECTION).document(item_id)
+        
+        # Check if item exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        
+        # Update item
+        update_dict = item_update.model_dump(exclude_unset=True)
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        doc_ref.update(update_dict)
+        return await OrderItemRepository.get_by_id(item_id)
+    
+    @staticmethod
+    async def delete(item_id: str) -> bool:
+        """Delete order item"""
+        db = get_firestore_db()
+        doc_ref = db.collection(OrderItemRepository.COLLECTION).document(item_id)
+        
+        # Check if item exists
+        doc = doc_ref.get()
+        if not doc.exists:
+            return False
+        
+        # Delete item
+        doc_ref.delete()
+        return True

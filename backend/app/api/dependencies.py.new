@@ -5,12 +5,12 @@ from app.db.firebase import get_auth, verify_firebase_token
 from app.models.user import User, UserProfile
 from app.repositories.user import UserRepository, UserRoleRepository
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 
 # Firebase auth scheme
 firebase_auth_scheme = HTTPBearer()
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(firebase_auth_scheme)) -> User:
+async def get_current_user(credentials = Depends(firebase_auth_scheme)) -> User:
     try:
         # Verify Firebase token
         token = credentials.credentials
@@ -50,55 +50,34 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(f
             detail=f"Could not validate credentials: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    return user
-
-async def get_current_user_profile(token: str = Depends(oauth2_scheme)) -> UserProfile:
-    """
-    Get current user with complete profile information including role.
-    This dependency validates the JWT token and returns UserProfile with role.
-    """
-    try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        token_data = TokenPayload(**payload)
-    except (JWTError, ValidationError):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    profile = await UserRepository.get_profile(token_data.sub)
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    return profile
-
-async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme)) -> Optional[User]:
-    if not token:
-        return None
-    
-    try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        token_data = TokenPayload(**payload)
-        user = await UserRepository.get_by_id(token_data.sub)
-        return user
-    except:
-        return None
 
 async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     is_admin = await UserRoleRepository.is_admin(current_user.id)
     if not is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions",
-        )
+        # Also check Firebase custom claims as a fallback
+        try:
+            firebase_auth = get_auth()
+            firebase_user = firebase_auth.get_user_by_email(current_user.email)
+            custom_claims = firebase_user.custom_claims or {}
+            if not custom_claims.get('admin', False):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Insufficient permissions",
+                )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
+    
     return current_user
+
+async def get_current_user_optional() -> Optional[User]:
+    """
+    Similar to get_current_user but returns None if no valid authentication is provided.
+    This is useful for endpoints that work both for authenticated and anonymous users.
+    """
+    try:
+        return await get_current_user()
+    except HTTPException:
+        return None

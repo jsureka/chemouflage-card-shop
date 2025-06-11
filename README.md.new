@@ -1,0 +1,61 @@
+# Chemouflage Card Shop
+
+## Database Migration: MongoDB to Firebase/Firestore
+
+This project has been migrated from MongoDB to Firebase/Firestore. This README provides instructions for performing the migration.
+
+## Migration Steps
+
+1. **Create Firebase Project**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project or use an existing one
+   - Enable Firebase Authentication and Firestore Database
+   - Download service account credentials from Project Settings > Service accounts > Generate new private key
+
+2. **Update Environment Variables**
+   - Add Firebase configuration to both frontend and backend `.env` files (see `.env.example`)
+   - For the backend, you can either set `FIREBASE_CREDENTIALS_PATH` to the path of your credentials JSON file or set `FIREBASE_CREDENTIALS_JSON` to the contents of the credentials file
+
+3. **Run Migration Script**
+   - Run the migration script to update all files:
+     ```
+     migrate_to_firebase.bat
+     ```
+   - To migrate existing data from MongoDB to Firestore, run:
+     ```
+     cd backend && python migrate_to_firestore.py
+     ```
+
+4. **Start the Application**
+   - Start the backend:
+     ```
+     cd backend && start.bat
+     ```
+   - Start the frontend:
+     ```
+     npm run dev
+     ```
+
+## Project Structure
+
+- `backend/`: FastAPI backend server
+- `src/`: React frontend application
+- `docker-compose.yml`: Docker configuration for production
+- `docker-compose.dev.yml`: Docker configuration for development
+
+## Features
+
+- User authentication with Firebase
+- Product management
+- Order processing
+- Payment integration
+- Admin dashboard
+
+## Development
+
+See the backend README for detailed information about backend development.
+See the DOCKER.md file for Docker-related information.
+
+## Original Project Info
+
+**URL**: https://lovable.dev/projects/911c4282-15af-46c9-afc3-bce57af410d7

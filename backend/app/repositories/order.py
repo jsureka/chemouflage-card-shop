@@ -107,7 +107,9 @@ class OrderRepository:
         async for doc in cursor:
             doc["user_id"] = str(doc["user_id"])
             orders.append(Order(**doc, id=str(doc["_id"])))
-        return orders    @staticmethod
+        return orders    
+    
+    @staticmethod
     async def get_all(
         skip: int = 0, 
         limit: int = 100, 

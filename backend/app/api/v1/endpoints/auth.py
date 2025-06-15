@@ -8,12 +8,14 @@ from app.core.security import create_access_token, create_refresh_token
 from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.password_reset import (PasswordResetConfirm,
                                        PasswordResetRequest)
-from app.models.user import (Token, TokenPayload, User, UserCreate,
-                             UserProfile, UserUpdate)
+from app.models.user import (FirebaseLoginRequest, FirebaseUserCreate, Token,
+                             TokenPayload, User, UserCreate, UserProfile,
+                             UserUpdate)
 from app.repositories.password_reset import PasswordResetTokenRepository
 from app.repositories.token import RefreshTokenRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
+from app.services.firebase_auth import firebase_auth_service
 from app.utils.pagination import create_paginated_response
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -315,3 +317,82 @@ async def reset_password(reset_data: PasswordResetConfirm) -> dict:
     await PasswordResetTokenRepository.mark_as_used(reset_data.token)
     
     return {"message": "Password has been reset successfully."}
+
+@router.post("/firebase-login", response_model=Token)
+async def firebase_login(firebase_request: FirebaseLoginRequest) -> Any:
+    """
+    Firebase authentication login.
+    Verify Firebase ID token and create/login user.
+    """
+    from app.services.firebase_auth import firebase_auth_service
+
+    # Verify Firebase ID token
+    firebase_data = await firebase_auth_service.verify_id_token(firebase_request.id_token)
+    if not firebase_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Firebase ID token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Check if user exists in our database
+    user = await UserRepository.get_by_firebase_uid(firebase_data['uid'])
+    
+    if not user:
+        # Create new user from Firebase data
+        firebase_user = FirebaseUserCreate(
+            firebase_uid=firebase_data['uid'],
+            email=firebase_data['email'],
+            full_name=firebase_data.get('name'),
+            avatar_url=firebase_data.get('picture'),
+            email_verified=firebase_data.get('email_verified', False)
+        )
+        
+        try:
+            user_id = await UserRepository.create_firebase_user(firebase_user)
+            user = await UserRepository.get_by_id(user_id)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create or retrieve user"
+        )
+    
+    # Get user profile with role information
+    user_profile = await UserRepository.get_profile(user.id)
+    if not user_profile:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve user profile"
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=user.id, expires_delta=access_token_expires
+    )
+    
+    # Create refresh token
+    refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token = create_refresh_token(
+        subject=user.id, expires_delta=refresh_token_expires
+    )
+    
+    # Store refresh token in database
+    await RefreshTokenRepository.create(
+        user_id=user.id,
+        token=refresh_token,
+        expires_delta=refresh_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": user_profile
+    }

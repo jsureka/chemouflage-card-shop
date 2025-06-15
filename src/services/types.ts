@@ -3,6 +3,9 @@ export interface User {
   email: string;
   full_name: string;
   phone?: string;
+  avatar_url?: string;
+  firebase_uid?: string;
+  email_verified?: boolean;
   role: "customer" | "admin";
 }
 

@@ -76,6 +76,27 @@ class AuthService {
     return result;
   }
 
+  async firebaseLogin(
+    idToken: string
+  ): Promise<
+    ApiResponse<{ user: User; access_token: string; refresh_token: string }>
+  > {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/firebase-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: idToken }),
+    });
+
+    const result = await this.handleResponse<AuthTokens>(response);
+    if (result.data?.access_token && result.data?.refresh_token) {
+      this.accessToken = result.data.access_token;
+      this.refreshToken = result.data.refresh_token;
+      localStorage.setItem("auth_access_token", this.accessToken);
+      localStorage.setItem("auth_refresh_token", this.refreshToken);
+    }
+    return result;
+  }
+
   async register(
     email: string,
     password: string,

@@ -46,9 +46,12 @@ class Settings(BaseSettings):
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
       # CORS"http://localhost:5173",
     BACKEND_CORS_ORIGINS: List[str] = [ "http://localhost:8080", "http://localhost:8000"]
-    
-    # Password Reset
+      # Password Reset
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
+    
+    # Firebase Configuration
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
     
     class Config:
         env_file = ".env"

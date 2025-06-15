@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const logout = async () => {
     try {
-      await authService.logout(); // Now returns a Promise
+      await authService.logout();
       setUser(null);
       toast({
         title: "Logged out",
@@ -145,9 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         variant: "destructive",
       });
     }
-  };
-
-  // Add a method to logout from all devices
+  }; // Add a method to logout from all devices
   const logoutAllDevices = async () => {
     try {
       await authService.logout(true); // true = logout from all devices

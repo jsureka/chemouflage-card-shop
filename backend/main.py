@@ -6,6 +6,7 @@ import uvicorn
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.db.mongodb import close_mongo_connection, connect_to_mongo
+from app.services.firebase_auth import firebase_auth_service
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -44,6 +45,12 @@ async def startup_db_client():
     logger.info("Starting up Chemouflage API...")
     await connect_to_mongo()
     logger.info("Database connected successfully")
+    
+    # Initialize Firebase (this happens automatically when imported)
+    if firebase_auth_service._app:
+        logger.info("Firebase authentication initialized successfully")
+    else:
+        logger.warning("Firebase authentication not initialized - check configuration")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

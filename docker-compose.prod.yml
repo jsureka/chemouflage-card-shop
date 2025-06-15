@@ -6,6 +6,8 @@ services:
     image: mongo:7.0
     container_name: chemouflage-mongodb
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
@@ -34,6 +36,8 @@ services:
     image: redis:7.2-alpine
     container_name: chemouflage-redis
     restart: unless-stopped
+    env_file:
+      - .env
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --tcp-keepalive 60 --timeout 300 --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "127.0.0.1:6379:6379" # Bind to localhost only for security
@@ -60,6 +64,8 @@ services:
       dockerfile: Dockerfile
     container_name: chemouflage-backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       # Database connection
       - MONGODB_URL=${MONGODB_URL}
@@ -126,6 +132,8 @@ services:
       dockerfile: Dockerfile
     container_name: chemouflage-frontend
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "80:80"
       - "443:443"

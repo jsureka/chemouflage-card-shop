@@ -56,11 +56,6 @@ class RedisManager:
             # Don't raise exception to allow app to start without Redis
             # Redis operations will gracefully degrade
             self.redis = None
-        except Exception as e:
-            logger.error(f"Failed to connect to Redis: {e}")
-            # Don't raise exception to allow app to start without Redis
-            # Redis operations will gracefully degrade
-            self.redis = None
     
     async def disconnect(self) -> None:
         """Close Redis connection."""

@@ -107,13 +107,54 @@ class OrderRepository:
         async for doc in cursor:
             doc["user_id"] = str(doc["user_id"])
             orders.append(Order(**doc, id=str(doc["_id"])))
-        return orders
-    @staticmethod
-    async def get_all(skip: int = 0, limit: int = 100, status_filter: Optional[str] = None) -> List[Order]:
+        return orders    @staticmethod
+    async def get_all(
+        skip: int = 0, 
+        limit: int = 100, 
+        status_filter: Optional[str] = None,
+        payment_status_filter: Optional[str] = None,
+        search: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> List[Order]:
         db = await get_database()
         query = {}
+        
+        # Apply filters
         if status_filter:
             query["status"] = status_filter
+            
+        if payment_status_filter:
+            query["payment_status"] = payment_status_filter
+            
+        # Date range filter
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["created_at"] = date_query
+            
+        # Search functionality (search by order ID or customer name)
+        if search:
+            search_term = search.strip()
+            # Try to match against order ID (if it looks like an ObjectId)
+            if len(search_term) == 24:
+                try:
+                    # Check if it's a valid ObjectId
+                    order_id_obj = ObjectId(search_term)
+                    query["_id"] = order_id_obj
+                except:
+                    pass
+            # Otherwise search in shipping address name fields
+            if "_id" not in query:
+                query["$or"] = [
+                    {"shipping_address.firstName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.lastName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.phone": {"$regex": search_term, "$options": "i"}}
+                ]
+        
         cursor = db.orders.find(query).skip(skip).limit(limit).sort("created_at", -1)
         orders = []
         async for doc in cursor:
@@ -143,13 +184,52 @@ class OrderRepository:
             # Also delete related order items
             await db.order_items.delete_many({"order_id": ObjectId(order_id)})
             return True
-        return False
-    @staticmethod
-    async def count(status_filter: Optional[str] = None) -> int:
+        return False    @staticmethod
+    async def count(
+        status_filter: Optional[str] = None,
+        payment_status_filter: Optional[str] = None,
+        search: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> int:
         db = await get_database()
         query = {}
+        
+        # Apply filters
         if status_filter:
             query["status"] = status_filter
+            
+        if payment_status_filter:
+            query["payment_status"] = payment_status_filter
+            
+        # Date range filter
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["created_at"] = date_query
+            
+        # Search functionality (search by order ID or customer name)
+        if search:
+            search_term = search.strip()
+            # Try to match against order ID (if it looks like an ObjectId)
+            if len(search_term) == 24:
+                try:
+                    # Check if it's a valid ObjectId
+                    order_id_obj = ObjectId(search_term)
+                    query["_id"] = order_id_obj
+                except:
+                    pass
+            # Otherwise search in shipping address name fields
+            if "_id" not in query:
+                query["$or"] = [
+                    {"shipping_address.firstName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.lastName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.phone": {"$regex": search_term, "$options": "i"}}
+                ]
+                
         return await db.orders.count_documents(query)
     
     @staticmethod

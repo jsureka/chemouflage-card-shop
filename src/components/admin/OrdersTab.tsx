@@ -1,6 +1,17 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Order } from "@/services/types";
-import { Edit, Package, ShoppingCart } from "lucide-react";
+import { Edit, Filter, Package, Search, ShoppingCart, X } from "lucide-react";
+import { useState } from "react";
 import AdminTable, {
   PaginationInfo,
   TableAction,
@@ -17,6 +28,20 @@ interface OrdersTabProps {
   onEditOrder: (order: Order) => void;
   onSetOrdersPage: (page: number) => void;
   onSetOrdersPageSize?: (pageSize: number) => void;
+  filters?: {
+    status: string;
+    payment_status: string;
+    search: string;
+    date_from: string;
+    date_to: string;
+  };
+  onFilterChange?: (filters: {
+    status: string;
+    payment_status: string;
+    search: string;
+    date_from: string;
+    date_to: string;
+  }) => void;
 }
 
 const OrdersTab = ({
@@ -29,11 +54,62 @@ const OrdersTab = ({
   onEditOrder,
   onSetOrdersPage,
   onSetOrdersPageSize,
+  filters,
+  onFilterChange,
 }: OrdersTabProps) => {
-  const getStatusBadge = (
-    status: string,
-    type: "status" | "payment" | "delivery"
-  ) => {
+  const [showFilters, setShowFilters] = useState(false);
+  const [localFilters, setLocalFilters] = useState({
+    status: filters?.status || "all",
+    payment_status: filters?.payment_status || "all",
+    search: filters?.search || "",
+    date_from: filters?.date_from || "",
+    date_to: filters?.date_to || "",
+  });
+  // Apply filters when the filter button is clicked
+  const applyFilters = () => {
+    if (onFilterChange) {
+      // Convert "all" values to empty strings for the backend API
+      const apiFilters = {
+        ...localFilters,
+        status: localFilters.status === "all" ? "" : localFilters.status,
+        payment_status:
+          localFilters.payment_status === "all"
+            ? ""
+            : localFilters.payment_status,
+      };
+      onFilterChange(apiFilters);
+    }
+  };
+  // Reset all filters
+  const resetFilters = () => {
+    const resetFilters = {
+      status: "all",
+      payment_status: "all",
+      search: "",
+      date_from: "",
+      date_to: "",
+    };
+    setLocalFilters(resetFilters);
+    if (onFilterChange) {
+      onFilterChange({
+        status: "",
+        payment_status: "",
+        search: "",
+        date_from: "",
+        date_to: "",
+      });
+    }
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (field: string, value: string) => {
+    setLocalFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const getStatusBadge = (status: string, type: "status" | "payment") => {
     let bgColor = "bg-gray-600";
 
     if (type === "status") {
@@ -69,25 +145,8 @@ const OrdersTab = ({
           bgColor = "bg-gray-500";
           break;
       }
-    } else if (type === "delivery") {
-      switch (status) {
-        case "pending":
-          bgColor = "bg-yellow-500";
-          break;
-        case "preparing":
-          bgColor = "bg-blue-500";
-          break;
-        case "shipped":
-          bgColor = "bg-purple-500";
-          break;
-        case "delivered":
-          bgColor = "bg-green-500";
-          break;
-      }
     }
-
-    const prefix =
-      type === "payment" ? "Pay: " : type === "delivery" ? "Del: " : "";
+    const prefix = type === "payment" ? "Pay: " : "";
     const displayStatus = status?.charAt(0).toUpperCase() + status?.slice(1);
 
     return (
@@ -155,7 +214,6 @@ const OrdersTab = ({
         <div className="flex flex-col space-y-1">
           {getStatusBadge(order.status, "status")}
           {getStatusBadge(order.payment_status, "payment")}
-          {getStatusBadge(order.delivery_status, "delivery")}
         </div>
       ),
     },
@@ -207,11 +265,10 @@ const OrdersTab = ({
           <div>
             <p className="text-foreground font-semibold text-lg mb-2">
               ৳{order.total_amount}
-            </p>
+            </p>{" "}
             <div className="flex flex-col space-y-1">
               {getStatusBadge(order.status, "status")}
               {getStatusBadge(order.payment_status, "payment")}
-              {getStatusBadge(order.delivery_status, "delivery")}
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -240,10 +297,130 @@ const OrdersTab = ({
       )}
     </div>
   );
+  // Create the custom toolbar directly rather than as a function
+  const customToolbarContent = (
+    <div className="mb-4">
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-1"
+        >
+          <Filter className="h-4 w-4" />
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </Button>
+
+        {showFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="text-red-500 hover:text-red-700"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Clear Filters
+          </Button>
+        )}
+      </div>
+
+      {showFilters && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 border rounded-lg bg-card/50">
+          {/* Status Filter */}
+          <div>
+            <Label htmlFor="status-filter">Order Status</Label>
+            <Select
+              value={localFilters.status}
+              onValueChange={(value) => handleFilterChange("status", value)}
+            >
+              <SelectTrigger id="status-filter">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                {" "}
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="shipped">Shipped</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Payment Status Filter */}
+          <div>
+            <Label htmlFor="payment-status-filter">Payment Status</Label>
+            <Select
+              value={localFilters.payment_status}
+              onValueChange={(value) =>
+                handleFilterChange("payment_status", value)
+              }
+            >
+              <SelectTrigger id="payment-status-filter">
+                <SelectValue placeholder="All payment statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                {" "}
+                <SelectItem value="all">All payment statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="refunded">Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Search Filter */}
+          <div>
+            <Label htmlFor="search-filter">Search</Label>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search-filter"
+                placeholder="Order ID, Customer name..."
+                className="pl-8"
+                value={localFilters.search}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Date Range Filters */}
+          <div>
+            <Label htmlFor="date-from">From Date</Label>
+            <Input
+              id="date-from"
+              type="date"
+              value={localFilters.date_from}
+              onChange={(e) => handleFilterChange("date_from", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="date-to">To Date</Label>
+            <Input
+              id="date-to"
+              type="date"
+              value={localFilters.date_to}
+              onChange={(e) => handleFilterChange("date_to", e.target.value)}
+            />
+          </div>
+
+          {/* Apply Filters Button */}
+          <div className="flex items-end">
+            <Button onClick={applyFilters} className="w-full">
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
   return (
     <AdminTable
       title="Order Management"
-      description="Manage all customer orders and delivery status"
+      description="Manage all customer orders and their statuses"
       icon={<ShoppingCart className="w-5 h-5" />}
       data={allOrders}
       columns={columns}
@@ -258,6 +435,7 @@ const OrdersTab = ({
       onRefresh={onRefreshOrders}
       renderRow={renderCustomRow}
       keyField="id"
+      customToolbar={customToolbarContent}
     />
   );
 };

@@ -198,13 +198,43 @@ class AuthService {
     localStorage.removeItem("auth_access_token");
     localStorage.removeItem("auth_refresh_token");
   }
-
   getToken(): string | null {
     return this.accessToken;
   }
 
   isAuthenticated(): boolean {
     return !!this.accessToken;
+  }
+
+  async forgotPassword(email: string): Promise<ApiResponse<any>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+        }),
+      }
+    );
+
+    return this.handleResponse(response);
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token,
+        new_password: newPassword,
+      }),
+    });
+
+    return this.handleResponse(response);
   }
 }
 

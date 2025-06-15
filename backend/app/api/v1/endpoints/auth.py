@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, List
 
 from app.api.dependencies import (get_current_admin, get_current_user,
@@ -6,8 +6,11 @@ from app.api.dependencies import (get_current_admin, get_current_user,
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token
 from app.models.pagination import PaginatedResponse, PaginationParams
+from app.models.password_reset import (PasswordResetConfirm,
+                                       PasswordResetRequest)
 from app.models.user import (Token, TokenPayload, User, UserCreate,
                              UserProfile, UserUpdate)
+from app.repositories.password_reset import PasswordResetTokenRepository
 from app.repositories.token import RefreshTokenRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
@@ -239,3 +242,76 @@ async def logout_all(current_user: User = Depends(get_current_user)) -> None:
     """
     await RefreshTokenRepository.revoke_all_for_user(current_user.id)
     return None
+
+
+@router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
+async def forgot_password(
+    request: PasswordResetRequest,
+    background_tasks: BackgroundTasks
+) -> dict:
+    """
+    Request a password reset. Sends an email with a reset link.
+    Returns 202 Accepted regardless of whether the email exists for security reasons.
+    """
+    # Try to find the user by email
+    user = await UserRepository.get_by_email(request.email)
+    
+    # If user exists, create reset token and send email
+    if user:
+        # Create password reset token
+        token = await PasswordResetTokenRepository.create_token(str(user.id))
+        
+        # Generate reset link
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+        
+        # Calculate expiry date for email
+        expiry_hours = settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
+        expiry_date = (datetime.utcnow() + timedelta(hours=expiry_hours)).strftime('%Y-%m-%d %H:%M:%S UTC')
+        
+        # Send reset email in background
+        background_tasks.add_task(
+            EmailService.send_password_reset,
+            recipient_email=user.email,
+            customer_name=user.full_name or user.email,
+            reset_link=reset_link,
+            expiry_hours=expiry_hours,
+            expiry_date=expiry_date
+        )
+    
+    # Always return success for security (don't reveal if email exists)
+    return {"message": "If your email is registered, you will receive a password reset link."}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(reset_data: PasswordResetConfirm) -> dict:
+    """
+    Reset a user's password using a valid reset token.
+    """
+    # Verify the token is valid
+    is_valid = await PasswordResetTokenRepository.is_token_valid(reset_data.token)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired password reset token"
+        )
+    
+    # Get token details
+    token_data = await PasswordResetTokenRepository.get_by_token(reset_data.token)
+    if not token_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token not found"
+        )
+    
+    # Update user's password
+    success = await UserRepository.update_password(token_data.user_id, reset_data.new_password)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update password"
+        )
+    
+    # Mark token as used
+    await PasswordResetTokenRepository.mark_as_used(reset_data.token)
+    
+    return {"message": "Password has been reset successfully."}

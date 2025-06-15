@@ -81,14 +81,25 @@ class AdminService {
   async getAllOrders(
     page: number = 1,
     limit: number = 100,
-    status?: string
+    filters?: {
+      status?: string;
+      payment_status?: string;
+      search?: string;
+      date_from?: string;
+      date_to?: string;
+    }
   ): Promise<ApiResponse<PaginatedResponse<Order>>> {
     const queryParams = new URLSearchParams();
     queryParams.append("page", page.toString());
     queryParams.append("limit", limit.toString());
 
-    if (status) {
-      queryParams.append("status", status);
+    if (filters) {
+      if (filters.status) queryParams.append("status", filters.status);
+      if (filters.payment_status)
+        queryParams.append("payment_status", filters.payment_status);
+      if (filters.search) queryParams.append("search", filters.search);
+      if (filters.date_from) queryParams.append("date_from", filters.date_from);
+      if (filters.date_to) queryParams.append("date_to", filters.date_to);
     }
 
     const response = await fetch(
@@ -100,15 +111,14 @@ class AdminService {
 
     return this.handleResponse<PaginatedResponse<Order>>(response);
   }
-
   async updateOrderStatus(
     orderId: string,
     updates: {
       status?: string;
       payment_status?: string;
-      delivery_status?: string;
       payment_method?: string;
       total_amount?: number;
+      delivery_charge?: number;
     }
   ): Promise<ApiResponse<Order>> {
     const response = await fetch(

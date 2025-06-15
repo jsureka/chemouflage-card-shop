@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Email Configuration
     MAIL_USERNAME: str = os.getenv("MAIL_USERNAME", "")
     MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD", "")
-    MAIL_FROM: str = os.getenv("MAIL_FROM", "noreply@chemouflage.com")
+    MAIL_FROM: str = os.getenv("MAIL_FROM", "hello@chemouflage.app")
     MAIL_FROM_NAME: str = os.getenv("MAIL_FROM_NAME", "Chemouflage Card Shop")
     MAIL_PORT: int = int(os.getenv("MAIL_PORT", "587"))
     MAIL_SERVER: str = os.getenv("MAIL_SERVER", "smtp.gmail.com")
@@ -44,9 +44,11 @@ class Settings(BaseSettings):
     AAMARPAY_SANDBOX: bool = os.getenv("AAMARPAY_SANDBOX", "true").lower() == "true"
     AAMARPAY_STORE_ID: str = os.getenv("AAMARPAY_STORE_ID", "aamarpaytest")
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
-    
-    # CORS"http://localhost:5173",
+      # CORS"http://localhost:5173",
     BACKEND_CORS_ORIGINS: List[str] = [ "http://localhost:8080", "http://localhost:8000"]
+    
+    # Password Reset
+    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
     
     class Config:
         env_file = ".env"

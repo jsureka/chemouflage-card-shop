@@ -71,7 +71,6 @@ class OrderBase(BaseModel):
     shipping_address: ShippingAddress
     status: str = "pending"  # pending, processing, shipped, delivered, cancelled
     payment_status: str = "pending"  # pending, paid, failed, refunded
-    delivery_status: str = "pending"  # pending, preparing, shipped, delivered
     premium_code_id: Optional[str] = None  # Bound premium code when payment is confirmed
 
 class OrderCreate(OrderBase):
@@ -82,7 +81,6 @@ class OrderUpdate(BaseModel):
     shipping_address: Optional[ShippingAddress] = None
     status: Optional[str] = None
     payment_status: Optional[str] = None
-    delivery_status: Optional[str] = None
     total_amount: Optional[float] = None
     delivery_charge: Optional[float] = None
     premium_code_id: Optional[str] = None
@@ -91,11 +89,9 @@ class AdminOrderUpdate(BaseModel):
     """Admin-specific order update with validation for status fields"""
     status: Optional[str] = None  # pending, processing, shipped, delivered, cancelled
     payment_status: Optional[str] = None  # pending, paid, failed, refunded
-    delivery_status: Optional[str] = None  # pending, preparing, shipped, delivered
     payment_method: Optional[str] = None
     shipping_address: Optional[ShippingAddress] = None
     total_amount: Optional[float] = None
-    delivery_charge: Optional[float] = None
     delivery_charge: Optional[float] = None
 
 class OrderInDB(OrderBase):

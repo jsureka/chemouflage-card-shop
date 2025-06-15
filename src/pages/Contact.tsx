@@ -234,7 +234,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-foreground">Email</h3>
                     <p className="text-muted-foreground">
-                      support@chemouflage.com
+                      support@chemouflage.app
                     </p>
                     <p className="text-sm text-muted-foreground">
                       We respond within 24 hours

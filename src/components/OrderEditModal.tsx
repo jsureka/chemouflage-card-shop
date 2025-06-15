@@ -41,7 +41,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
   const [formData, setFormData] = useState({
     status: "",
     payment_status: "",
-    delivery_status: "",
     payment_method: "",
     total_amount: 0,
     delivery_charge: 0,
@@ -62,19 +61,11 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
     { value: "failed", label: "Failed", color: "bg-red-500" },
     { value: "refunded", label: "Refunded", color: "bg-gray-500" },
   ];
-
-  const deliveryStatusOptions = [
-    { value: "pending", label: "Pending", color: "bg-yellow-500" },
-    { value: "preparing", label: "Preparing", color: "bg-blue-500" },
-    { value: "shipped", label: "Shipped", color: "bg-purple-500" },
-    { value: "delivered", label: "Delivered", color: "bg-green-500" },
-  ];
   useEffect(() => {
     if (order && isOpen) {
       setFormData({
         status: order.status,
         payment_status: order.payment_status,
-        delivery_status: order.delivery_status,
         payment_method: order.payment_method,
         total_amount: order.total_amount,
         delivery_charge: order.delivery_charge || 0,
@@ -97,7 +88,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
       console.error("Failed to fetch order details:", error);
     }
   };
-
   const handleSave = async () => {
     if (!order) return;
 
@@ -107,8 +97,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
       if (formData.status !== order.status) updates.status = formData.status;
       if (formData.payment_status !== order.payment_status)
         updates.payment_status = formData.payment_status;
-      if (formData.delivery_status !== order.delivery_status)
-        updates.delivery_status = formData.delivery_status;
       if (formData.payment_method !== order.payment_method)
         updates.payment_method = formData.payment_method;
       if (formData.total_amount !== order.total_amount)
@@ -142,17 +130,8 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
       setLoading(false);
     }
   };
-
-  const getStatusBadge = (
-    status: string,
-    type: "status" | "payment" | "delivery"
-  ) => {
-    const options =
-      type === "status"
-        ? statusOptions
-        : type === "payment"
-        ? paymentStatusOptions
-        : deliveryStatusOptions;
+  const getStatusBadge = (status: string, type: "status" | "payment") => {
+    const options = type === "status" ? statusOptions : paymentStatusOptions;
 
     const option = options.find((opt) => opt.value === status);
     return (
@@ -203,9 +182,9 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
                 {new Date(order.created_at).toLocaleDateString()}
               </p>
             </div>
-          </div>
+          </div>{" "}
           {/* Current Status Display */}{" "}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm text-gray-600 dark:text-gray-400">
                 Current Status
@@ -220,14 +199,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
               </Label>
               <div className="mt-1">
                 {getStatusBadge(order.payment_status, "payment")}
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-gray-600 dark:text-gray-400">
-                Delivery Status
-              </Label>
-              <div className="mt-1">
-                {getStatusBadge(order.delivery_status, "delivery")}
               </div>
             </div>
           </div>{" "}
@@ -266,7 +237,8 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
           )}
           {/* Edit Form */}{" "}
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            {" "}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="status" className="dark:text-gray-300">
                   Order Status
@@ -305,29 +277,6 @@ export const OrderEditModal: React.FC<OrderEditModalProps> = ({
                   </SelectTrigger>
                   <SelectContent className="dark:bg-gray-800 dark:text-white dark:border-gray-700">
                     {paymentStatusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="delivery_status" className="dark:text-gray-300">
-                  Delivery Status
-                </Label>
-                <Select
-                  value={formData.delivery_status}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, delivery_status: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {deliveryStatusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

@@ -89,11 +89,19 @@ const Login = () => {
                   required
                   className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                 />
-              </div>
+              </div>{" "}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
-                </Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password" className="text-foreground">
+                    Password
+                  </Label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -122,9 +130,6 @@ const Login = () => {
                 >
                   Sign up
                 </Link>
-              </p>
-              <p className="text-sm text-muted-foreground/80 mt-2">
-                Demo: Use any email with "admin" for admin access
               </p>
             </div>
           </CardContent>

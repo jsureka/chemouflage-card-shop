@@ -86,7 +86,7 @@ const Register = () => {
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Join Chemouflage AR Chemistry and start your learning journey
-            </CardDescription>
+            </CardDescription>{" "}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

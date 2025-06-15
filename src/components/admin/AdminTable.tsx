@@ -66,6 +66,10 @@ interface AdminTableProps<T = any> {
   actions?: TableAction<T>[];
   onRefresh?: () => void;
   refreshDisabled?: boolean;
+
+  // Custom toolbar
+  customToolbar?: ReactNode;
+
   // Pagination
   pagination?: PaginationInfo;
   onPageChange?: (page: number) => void;
@@ -97,6 +101,7 @@ const AdminTable = <T extends Record<string, any>>({
   actions = [],
   onRefresh,
   refreshDisabled = false,
+  customToolbar,
   pagination,
   onPageChange,
   showPagination = true,
@@ -220,8 +225,10 @@ const AdminTable = <T extends Record<string, any>>({
               Refresh
             </Button>
           )}
-        </div>
+        </div>{" "}
       </CardHeader>
+
+      {customToolbar && <div className="px-6">{customToolbar}</div>}
 
       <CardContent className={className}>
         {loading ? (

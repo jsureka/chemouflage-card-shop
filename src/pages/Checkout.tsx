@@ -123,7 +123,6 @@ const Checkout = () => {
       if (error) {
         throw new Error(error);
       }
-
       if (data && data.methods.length > 0) {
         setAvailablePaymentMethods(data.methods);
         // Set the first available payment method as default
@@ -476,6 +475,7 @@ const Checkout = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {" "}
                       <RadioGroup
                         value={paymentMethod}
                         onValueChange={setPaymentMethod}
@@ -483,12 +483,15 @@ const Checkout = () => {
                       >
                         {availablePaymentMethods.map((method) => (
                           <div
-                            key={method.id}
+                            key={method.name}
                             className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-background/40 transition-colors"
                           >
-                            <RadioGroupItem value={method.id} id={method.id} />
+                            <RadioGroupItem
+                              value={method.name}
+                              id={method.name}
+                            />{" "}
                             <Label
-                              htmlFor={method.id}
+                              htmlFor={method.name}
                               className="text-foreground flex items-center cursor-pointer"
                             >
                               {method.name === "aamarpay" ? (

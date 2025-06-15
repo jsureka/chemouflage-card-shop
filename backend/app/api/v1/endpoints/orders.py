@@ -287,13 +287,52 @@ async def delete_order_item(
 @router.get("/", response_model=PaginatedResponse[Order])
 async def read_orders(
     pagination: PaginationParams = Depends(),
+    status: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    search: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     current_user: User = Depends(get_current_admin)
 ) -> Any:
     """
-    Retrieve orders. Only for admins.
+    Retrieve orders with filtering options. Only for admins.
     """
-    orders = await OrderRepository.get_all(skip=pagination.skip, limit=pagination.limit)
-    total_count = await OrderRepository.count()
+    # Convert date strings to datetime objects if provided
+    date_from_dt = None
+    date_to_dt = None
+    
+    if date_from:
+        try:
+            from datetime import datetime
+            date_from_dt = datetime.fromisoformat(date_from)
+        except ValueError:
+            pass
+            
+    if date_to:
+        try:
+            from datetime import datetime
+            date_to_dt = datetime.fromisoformat(date_to)
+        except ValueError:
+            pass
+    
+    orders = await OrderRepository.get_all(
+        skip=pagination.skip, 
+        limit=pagination.limit, 
+        status_filter=status,
+        payment_status_filter=payment_status,
+        search=search,
+        date_from=date_from_dt,
+        date_to=date_to_dt
+    )
+      # Use the same filters for counting
+    total_count = await OrderRepository.count(
+        status_filter=status,
+        payment_status_filter=payment_status,
+        search=search,
+        date_from=date_from_dt,
+        date_to=date_to_dt
+    )
+    
     return await create_paginated_response(orders, pagination.page, pagination.limit, total_count)
 
 @router.get("/my-orders", response_model=List[OrderWithItems])

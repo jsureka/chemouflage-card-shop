@@ -45,8 +45,10 @@ class UserUpdate(BaseModel):
 
 class UserInDB(UserBase):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    hashed_password: str
+    hashed_password: Optional[str] = None  # Make optional for Firebase users
+    firebase_uid: Optional[str] = None  # Firebase UID for Firebase users
     avatar_url: Optional[str] = None
+    email_verified: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
     
@@ -59,6 +61,8 @@ class UserInDB(UserBase):
 class User(UserBase):
     id: str
     avatar_url: Optional[str] = None
+    firebase_uid: Optional[str] = None
+    email_verified: bool = False
     
     model_config = {
         "from_attributes": True
@@ -93,11 +97,26 @@ class UserRole(UserRoleBase):
 # Token models
 class Token(BaseModel):
     access_token: str
+    refresh_token: str  # Added refresh token
     token_type: str = "bearer"
     user: Optional["UserProfile"] = None
     
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
+    exp: Optional[datetime] = None
+    token_type: Optional[str] = None  # To distinguish between access and refresh tokens
+
+# Add RefreshToken model for database storage
+class RefreshToken(BaseModel):
+    user_id: str
+    token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_revoked: bool = False
+    
+    model_config = {
+        "from_attributes": True
+    }
 
 # Profile models - Consolidated user profile
 class UserProfile(BaseModel):
@@ -106,6 +125,8 @@ class UserProfile(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    firebase_uid: Optional[str] = None
+    email_verified: bool = False
     role: str = "customer"
     
     model_config = {
@@ -115,3 +136,14 @@ class UserProfile(BaseModel):
 # GoogleAuth
 class GoogleLoginRequest(BaseModel):
     token: str
+
+# Firebase Auth
+class FirebaseLoginRequest(BaseModel):
+    id_token: str
+
+class FirebaseUserCreate(BaseModel):
+    firebase_uid: str
+    email: EmailStr
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    email_verified: bool = False

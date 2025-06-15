@@ -88,7 +88,7 @@ const Header = () => {
               </Button>
             </>
           ) : (
-            <Link to="/auth">
+            <Link to="/login">
               <Button className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 dark:bg-white dark:text-gray-800 dark:hover:bg-gray-100">
                 <User className="w-4 h-4 mr-2" />
                 Sign In

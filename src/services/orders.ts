@@ -187,6 +187,22 @@ class OrdersService {
 
     return this.handleResponse<OrderWithItems>(response);
   }
+
+  async retryPayment(
+    orderId: string
+  ): Promise<ApiResponse<{ payment_url: string; transaction_id: string }>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/payments/aamarpay/initiate?order_id=${orderId}`,
+      {
+        method: "POST",
+        headers: this.setAuthHeader(),
+      }
+    );
+
+    return this.handleResponse<{ payment_url: string; transaction_id: string }>(
+      response
+    );
+  }
 }
 
 export const ordersService = new OrdersService();

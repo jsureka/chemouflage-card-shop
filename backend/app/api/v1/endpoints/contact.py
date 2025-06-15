@@ -35,7 +35,7 @@ async def send_contact_message(message_data: ContactMessageCreate):
             
             # Send to admin email (you can configure this)
             await send_email(
-                to_email="admin@chemouflage.com",
+                to_email="hello@chemouflage.app",
                 subject=email_subject,
                 content=email_content
             )

@@ -1,4 +1,3 @@
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
+import ForgotPassword from "./pages/ForgotPassword";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import MyOrders from "./pages/MyOrders";
@@ -21,6 +21,7 @@ import PaymentFailed from "./pages/PaymentFailed";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import ProductDetail from "./pages/ProductDetail";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -28,16 +29,19 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
+        {" "}
         <ProductsProvider>
           <TooltipProvider>
             <Toaster />
-            <Sonner />
             <BrowserRouter>
               {" "}
               <Routes>
+                {" "}
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/products" element={<ProductBrowser />} />

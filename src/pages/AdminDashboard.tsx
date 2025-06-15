@@ -41,13 +41,19 @@ const AdminDashboard = () => {
   const [customersPagination, setCustomersPagination] = useState(null);
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customersPage, setCustomersPage] = useState(1);
-  const [customersLimit, setCustomersLimit] = useState(20);
-  // Orders management state
+  const [customersLimit, setCustomersLimit] = useState(20); // Orders management state
   const [allOrders, setAllOrders] = useState([]);
   const [ordersPagination, setOrdersPagination] = useState(null);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersPage, setOrdersPage] = useState(1);
   const [ordersLimit, setOrdersLimit] = useState(20);
+  const [orderFilters, setOrderFilters] = useState({
+    status: "",
+    payment_status: "",
+    search: "",
+    date_from: "",
+    date_to: "",
+  });
 
   // Order editing modal state
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -67,12 +73,11 @@ const AdminDashboard = () => {
       fetchCustomers();
     }
   }, [activeTab, isAdmin, customersPage, customersLimit]);
-
   useEffect(() => {
     if (activeTab === "orders" && isAdmin) {
       fetchAllOrders();
     }
-  }, [activeTab, isAdmin, ordersPage, ordersLimit]);
+  }, [activeTab, isAdmin, ordersPage, ordersLimit, orderFilters]);
 
   const fetchDashboardData = async () => {
     try {
@@ -139,13 +144,14 @@ const AdminDashboard = () => {
       setCustomersLoading(false);
     }
   };
+
   const fetchAllOrders = async () => {
     try {
       setOrdersLoading(true);
 
-      // Fetch all orders with pagination
+      // Fetch all orders with pagination and filters
       const { data: ordersData, error: ordersError } =
-        await adminService.getAllOrders(ordersPage, ordersLimit);
+        await adminService.getAllOrders(ordersPage, ordersLimit, orderFilters);
 
       if (ordersError) {
         throw new Error(ordersError);
@@ -277,7 +283,7 @@ const AdminDashboard = () => {
         {activeTab === "products" && <ProductManagement />}
         {/* Premium Codes Tab */}
         {activeTab === "premium-codes" && <PremiumCodeManagement />}{" "}
-        {/* Orders Tab */}
+        {/* Orders Tab */}{" "}
         {activeTab === "orders" && (
           <OrdersTab
             allOrders={allOrders}
@@ -289,6 +295,8 @@ const AdminDashboard = () => {
             onEditOrder={handleEditOrder}
             onSetOrdersPage={setOrdersPage}
             onSetOrdersPageSize={handleOrdersPageSizeChange}
+            filters={orderFilters}
+            onFilterChange={setOrderFilters}
           />
         )}{" "}
         {/* Customers Tab */}

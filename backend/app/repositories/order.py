@@ -7,6 +7,7 @@ from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
                                 OrderItemInDB, OrderItemResponse,
                                 OrderItemUpdate, OrderUpdate, OrderWithItems)
 from app.repositories.premium_code import PremiumCodeRepository
+from app.services.cache import cache_service, cached
 from bson import ObjectId
 
 
@@ -19,16 +20,35 @@ class OrderRepository:
         order_dict["created_at"] = datetime.utcnow()
         
         result = await db.orders.insert_one(order_dict)
+        
+        # Invalidate user orders cache
+        await cache_service.delete(f"user_orders:{order.user_id}")
+        
         return str(result.inserted_id)
     
     @staticmethod
     async def get_by_id(order_id: str) -> Optional[Order]:
+        # Try cache first
+        cached_order = await cache_service.get(f"order:{order_id}")
+        if cached_order and isinstance(cached_order, dict):
+            return Order(**cached_order)
+        
+        # Get from database
         db = await get_database()
         try:
             order = await db.orders.find_one({"_id": ObjectId(order_id)})
             if order:
                 order["user_id"] = str(order["user_id"])
-                return Order(**order, id=str(order["_id"]))
+                order_obj = Order(**order, id=str(order["_id"]))
+                
+                # Cache the order
+                await cache_service.set(
+                    f"order:{order_id}", 
+                    order_obj.model_dump(), 
+                    ttl=300  # 5 minutes for orders
+                )
+                
+                return order_obj
         except Exception:
             # Invalid ObjectId format
             pass
@@ -86,8 +106,8 @@ class OrderRepository:
             except:
                 pass
         
-        # For partial IDs, search through all orders to find a match
-        # This is not the most efficient but will work for the use case
+        # For partial IDs, search through all orders to find a match.
+        # This is not the most efficient but will work for the use case.
         cursor = db.orders.find({})
         async for order_doc in cursor:
             order_id_str = str(order_doc["_id"]).lower()
@@ -101,19 +121,77 @@ class OrderRepository:
     
     @staticmethod
     async def get_by_user(user_id: str) -> List[Order]:
+        # Try cache first
+        cached_orders = await cache_service.get(f"user_orders:{user_id}")
+        if cached_orders and isinstance(cached_orders, list):
+            return [Order(**order) for order in cached_orders]
+        
+        # Get from database
         db = await get_database()
         cursor = db.orders.find({"user_id": ObjectId(user_id)}).sort("created_at", -1)
         orders = []
         async for doc in cursor:
             doc["user_id"] = str(doc["user_id"])
             orders.append(Order(**doc, id=str(doc["_id"])))
+        
+        # Cache the results
+        if orders:
+            await cache_service.set(
+                f"user_orders:{user_id}",
+                [order.model_dump() for order in orders],
+                ttl=300  # 5 minutes for user orders
+            )
+        
         return orders
+    
     @staticmethod
-    async def get_all(skip: int = 0, limit: int = 100, status_filter: Optional[str] = None) -> List[Order]:
+    async def get_all(
+        skip: int = 0, 
+        limit: int = 100, 
+        status_filter: Optional[str] = None,
+        payment_status_filter: Optional[str] = None,
+        search: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> List[Order]:
         db = await get_database()
         query = {}
+        
+        # Apply filters
         if status_filter:
             query["status"] = status_filter
+            
+        if payment_status_filter:
+            query["payment_status"] = payment_status_filter
+            
+        # Date range filter
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["created_at"] = date_query
+            
+        # Search functionality (search by order ID or customer name)
+        if search:
+            search_term = search.strip()
+            # Try to match against order ID (if it looks like an ObjectId)
+            if len(search_term) == 24:
+                try:
+                    # Check if it's a valid ObjectId
+                    order_id_obj = ObjectId(search_term)
+                    query["_id"] = order_id_obj
+                except:
+                    pass
+            # Otherwise search in shipping address name fields
+            if "_id" not in query:
+                query["$or"] = [
+                    {"shipping_address.firstName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.lastName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.phone": {"$regex": search_term, "$options": "i"}}
+                ]
+        
         cursor = db.orders.find(query).skip(skip).limit(limit).sort("created_at", -1)
         orders = []
         async for doc in cursor:
@@ -143,13 +221,52 @@ class OrderRepository:
             # Also delete related order items
             await db.order_items.delete_many({"order_id": ObjectId(order_id)})
             return True
-        return False
-    @staticmethod
-    async def count(status_filter: Optional[str] = None) -> int:
+        return False    @staticmethod
+    async def count(
+        status_filter: Optional[str] = None,
+        payment_status_filter: Optional[str] = None,
+        search: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None
+    ) -> int:
         db = await get_database()
         query = {}
+        
+        # Apply filters
         if status_filter:
             query["status"] = status_filter
+            
+        if payment_status_filter:
+            query["payment_status"] = payment_status_filter
+            
+        # Date range filter
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["created_at"] = date_query
+            
+        # Search functionality (search by order ID or customer name)
+        if search:
+            search_term = search.strip()
+            # Try to match against order ID (if it looks like an ObjectId)
+            if len(search_term) == 24:
+                try:
+                    # Check if it's a valid ObjectId
+                    order_id_obj = ObjectId(search_term)
+                    query["_id"] = order_id_obj
+                except:
+                    pass
+            # Otherwise search in shipping address name fields
+            if "_id" not in query:
+                query["$or"] = [
+                    {"shipping_address.firstName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.lastName": {"$regex": search_term, "$options": "i"}},
+                    {"shipping_address.phone": {"$regex": search_term, "$options": "i"}}
+                ]
+                
         return await db.orders.count_documents(query)
     
     @staticmethod

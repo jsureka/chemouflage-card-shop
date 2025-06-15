@@ -22,7 +22,6 @@ const Login = () => {
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -72,7 +71,7 @@ const Login = () => {
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Sign in to your Chemouflage AR Chemistry account
-            </CardDescription>
+            </CardDescription>{" "}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -89,11 +88,19 @@ const Login = () => {
                   required
                   className="bg-background/60 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
                 />
-              </div>
+              </div>{" "}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
-                </Label>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password" className="text-foreground">
+                    Password
+                  </Label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -122,9 +129,6 @@ const Login = () => {
                 >
                   Sign up
                 </Link>
-              </p>
-              <p className="text-sm text-muted-foreground/80 mt-2">
-                Demo: Use any email with "admin" for admin access
               </p>
             </div>
           </CardContent>

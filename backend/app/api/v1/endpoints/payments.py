@@ -158,13 +158,12 @@ async def initiate_aamarpay_payment(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Order payment has already been processed or is not eligible for payment"
             )
-        
-        # Create payment request
-        customer_name = f"{order.shipping_address.get('firstName', '')} {order.shipping_address.get('lastName', '')}".strip()
+          # Create payment request
+        customer_name = f"{order.shipping_address.firstName} {order.shipping_address.lastName}".strip()
         customer_email = current_user.email
-        customer_phone = order.shipping_address.get('phone', '')
-        customer_address = order.shipping_address.get('address', '')
-        customer_city = order.shipping_address.get('city', '')
+        customer_phone = order.shipping_address.phone
+        customer_address = order.shipping_address.address
+        customer_city = order.shipping_address.city
         
         payment_result = aamarpay_service.create_payment(
             order_id=order_id,

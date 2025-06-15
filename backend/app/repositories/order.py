@@ -106,7 +106,8 @@ class OrderRepository:
             except:
                 pass
         
-        # For partial IDs, search through all orders to find a match        # This is not the most efficient but will work for the use case
+        # For partial IDs, search through all orders to find a match.
+        # This is not the most efficient but will work for the use case.
         cursor = db.orders.find({})
         async for order_doc in cursor:
             order_id_str = str(order_doc["_id"]).lower()

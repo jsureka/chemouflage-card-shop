@@ -23,6 +23,33 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: chemouflage-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis-password-change-in-production
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chemouflage-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "redis-password-change-in-production",
+          "ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # Backend API
   backend:
     build:
@@ -33,6 +60,14 @@ services:
     environment:
       # Database connection
       - MONGODB_URL=mongodb://admin:password123@mongodb:27017/chemouflage?authSource=admin
+      # Redis connection
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=redis-password-change-in-production
+      - REDIS_DB=0
+      - REDIS_POOL_MAX_CONNECTIONS=20
+      - CACHE_TTL_SECONDS=300
+      - CACHE_TTL_PRODUCTS=600
+      - CACHE_TTL_USER_SESSIONS=3600
       # Authentication
       - SECRET_KEY=your-secret-key-change-in-production
       - ALGORITHM=HS256
@@ -52,16 +87,21 @@ services:
       - MAIL_SSL_TLS=true
       - USE_CREDENTIALS=true
       - VALIDATE_CERTS=true
+      # Frontend URL
       - FRONTEND_URL=http://localhost
+      # Backend URL
+      - BACKEND_URL=http://localhost:8000
+      # AamarPay Configuration
+      - AAMARPAY_SANDBOX=true
+      - AAMARPAY_STORE_ID=aamarpaytest
+      - AAMARPAY_SIGNATURE_KEY=dbb74894e82415a2f7ff0ec3a97e4183
     ports:
       - "8000:8000"
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
+      - redis
     networks:
       - chemouflage-network
-    volumes:
-      - ./backend:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -88,23 +128,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  # Redis for caching (optional)
-  redis:
-    image: redis:7-alpine
-    container_name: chemouflage-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - chemouflage-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 networks:
   chemouflage-network:

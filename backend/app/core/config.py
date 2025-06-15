@@ -10,10 +10,18 @@ load_dotenv()
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Chemouflage API"
-    
-    # MongoDB Configuration
+      # MongoDB Configuration
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "chemouflagedb")
+    
+    # Redis Configuration
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+    REDIS_POOL_MAX_CONNECTIONS: int = int(os.getenv("REDIS_POOL_MAX_CONNECTIONS", "20"))
+    CACHE_TTL_SECONDS: int = int(os.getenv("CACHE_TTL_SECONDS", "300"))  # 5 minutes default
+    CACHE_TTL_PRODUCTS: int = int(os.getenv("CACHE_TTL_PRODUCTS", "600"))  # 10 minutes for products
+    CACHE_TTL_USER_SESSIONS: int = int(os.getenv("CACHE_TTL_USER_SESSIONS", "3600"))  # 1 hour for sessions
     
     # Authentication
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your_very_secure_secret_key_here_change_for_production")

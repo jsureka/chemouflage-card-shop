@@ -17,6 +17,24 @@ services:
     networks:
       - chemouflage-dev-network
 
+  # Redis Cache (Development)
+  redis:
+    image: redis:7.2-alpine
+    container_name: chemouflage-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - chemouflage-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   # Backend API (Development)
   backend-dev:
     build:
@@ -26,6 +44,14 @@ services:
     restart: unless-stopped
     environment:
       - MONGODB_URL=mongodb://admin:devpassword@mongodb:27017/chemouflage_dev?authSource=admin
+      # Redis connection (no password for dev)
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      - REDIS_POOL_MAX_CONNECTIONS=10
+      - CACHE_TTL_SECONDS=120
+      - CACHE_TTL_PRODUCTS=300
+      - CACHE_TTL_USER_SESSIONS=1800
       - SECRET_KEY=dev-secret-key
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=60
@@ -37,6 +63,7 @@ services:
       - "8000:8000"
     depends_on:
       - mongodb
+      - redis
     networks:
       - chemouflage-dev-network
     volumes:
@@ -69,4 +96,6 @@ networks:
 
 volumes:
   mongodb_dev_data:
+    driver: local
+  redis_dev_data:
     driver: local

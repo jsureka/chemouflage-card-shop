@@ -6,6 +6,7 @@ from app.db.mongodb import get_database
 from app.models.user import (FirebaseUserCreate, PyObjectId, User, UserCreate,
                              UserInDB, UserProfile, UserRole, UserRoleCreate,
                              UserRoleInDB, UserUpdate)
+from app.services.cache import cache_service, cached
 from bson import ObjectId
 
 
@@ -55,8 +56,7 @@ class UserRepository:
         existing_firebase_user = await db.users.find_one({"firebase_uid": firebase_user.firebase_uid})
         if existing_firebase_user:
             return str(existing_firebase_user["_id"])
-        
-        # Create new Firebase user
+          # Create new Firebase user
         user_dict = firebase_user.model_dump()
         user_dict["email"] = user_dict["email"].lower()
         user_dict["created_at"] = datetime.utcnow()
@@ -64,7 +64,7 @@ class UserRepository:
         
         result = await db.users.insert_one(user_dict)
         user_id = result.inserted_id
-          # Create default role for the user
+        # Create default role for the user
         role = UserRoleCreate(user_id=str(user_id), role="customer")
         await UserRoleRepository.create(role)
         
@@ -72,15 +72,26 @@ class UserRepository:
     
     @staticmethod
     async def get_by_id(user_id: str) -> Optional[User]:
+        # Try to get from cache first
+        cached_user = await cache_service.get_user_profile(user_id)
+        if cached_user:
+            return User(**cached_user)
+        
+        # Get from database
         db = await get_database()
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         if user:
-            return User(
+            user_obj = User(
                 **{k: v for k, v in user.items() if k != 'hashed_password'}, 
                 id=str(user["_id"]),
                 firebase_uid=user.get("firebase_uid"),
                 email_verified=user.get("email_verified", False)
             )
+            
+            # Cache the user profile
+            await cache_service.set_user_profile(user_id, user_obj.model_dump())
+            
+            return user_obj
         return None
     
     @staticmethod
@@ -144,8 +155,7 @@ class UserRepository:
             phone=user.phone,
             avatar_url=user.avatar_url,
             firebase_uid=user.firebase_uid,
-            email_verified=user.email_verified
-        )
+            email_verified=user.email_verified        )
     
     @staticmethod
     async def update(user_id: str, user_update: UserUpdate) -> Optional[User]:
@@ -158,6 +168,10 @@ class UserRepository:
                 {"_id": ObjectId(user_id)},
                 {"$set": update_data}
             )
+        
+        # Invalidate user cache
+        await cache_service.invalidate_user_profile(user_id)
+        await cache_service.invalidate_user_session(user_id)
         
         return await UserRepository.get_by_id(user_id)
     

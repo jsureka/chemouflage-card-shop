@@ -19,7 +19,19 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     commonjsOptions: {
-      include: [],
+      include: [/node_modules/],
+    },
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-toast', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        }
+      }
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom']
+  }
 }));

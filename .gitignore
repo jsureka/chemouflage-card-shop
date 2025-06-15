@@ -34,3 +34,4 @@ venv/
 .env.development.local
 
 *firebase-credentials.json
+package-lock.json

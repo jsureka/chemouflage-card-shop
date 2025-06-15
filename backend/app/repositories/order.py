@@ -7,6 +7,7 @@ from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
                                 OrderItemInDB, OrderItemResponse,
                                 OrderItemUpdate, OrderUpdate, OrderWithItems)
 from app.repositories.premium_code import PremiumCodeRepository
+from app.services.cache import cache_service, cached
 from bson import ObjectId
 
 
@@ -19,16 +20,35 @@ class OrderRepository:
         order_dict["created_at"] = datetime.utcnow()
         
         result = await db.orders.insert_one(order_dict)
+        
+        # Invalidate user orders cache
+        await cache_service.delete(f"user_orders:{order.user_id}")
+        
         return str(result.inserted_id)
     
     @staticmethod
     async def get_by_id(order_id: str) -> Optional[Order]:
+        # Try cache first
+        cached_order = await cache_service.get(f"order:{order_id}")
+        if cached_order and isinstance(cached_order, dict):
+            return Order(**cached_order)
+        
+        # Get from database
         db = await get_database()
         try:
             order = await db.orders.find_one({"_id": ObjectId(order_id)})
             if order:
                 order["user_id"] = str(order["user_id"])
-                return Order(**order, id=str(order["_id"]))
+                order_obj = Order(**order, id=str(order["_id"]))
+                
+                # Cache the order
+                await cache_service.set(
+                    f"order:{order_id}", 
+                    order_obj.model_dump(), 
+                    ttl=300  # 5 minutes for orders
+                )
+                
+                return order_obj
         except Exception:
             # Invalid ObjectId format
             pass
@@ -86,8 +106,7 @@ class OrderRepository:
             except:
                 pass
         
-        # For partial IDs, search through all orders to find a match
-        # This is not the most efficient but will work for the use case
+        # For partial IDs, search through all orders to find a match        # This is not the most efficient but will work for the use case
         cursor = db.orders.find({})
         async for order_doc in cursor:
             order_id_str = str(order_doc["_id"]).lower()
@@ -101,13 +120,28 @@ class OrderRepository:
     
     @staticmethod
     async def get_by_user(user_id: str) -> List[Order]:
+        # Try cache first
+        cached_orders = await cache_service.get(f"user_orders:{user_id}")
+        if cached_orders and isinstance(cached_orders, list):
+            return [Order(**order) for order in cached_orders]
+        
+        # Get from database
         db = await get_database()
         cursor = db.orders.find({"user_id": ObjectId(user_id)}).sort("created_at", -1)
         orders = []
         async for doc in cursor:
             doc["user_id"] = str(doc["user_id"])
             orders.append(Order(**doc, id=str(doc["_id"])))
-        return orders    
+        
+        # Cache the results
+        if orders:
+            await cache_service.set(
+                f"user_orders:{user_id}",
+                [order.model_dump() for order in orders],
+                ttl=300  # 5 minutes for user orders
+            )
+        
+        return orders
     
     @staticmethod
     async def get_all(

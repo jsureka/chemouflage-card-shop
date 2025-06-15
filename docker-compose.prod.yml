@@ -1,0 +1,159 @@
+version: "3.8"
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: chemouflage-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_DATABASE: chemouflage
+    ports:
+      - "127.0.0.1:27017:27017" # Bind to localhost only for security
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - chemouflage-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017/chemouflage --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: chemouflage-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --tcp-keepalive 60 --timeout 300 --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6379:6379" # Bind to localhost only for security
+    volumes:
+      - redis_data:/data
+    networks:
+      - chemouflage-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chemouflage-backend
+    restart: unless-stopped
+    environment:
+      # Database connection
+      - MONGODB_URL=${MONGODB_URL}
+      # Redis connection
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_POOL_MAX_CONNECTIONS=${REDIS_POOL_MAX_CONNECTIONS}
+      - CACHE_TTL_SECONDS=${CACHE_TTL_SECONDS}
+      - CACHE_TTL_PRODUCTS=${CACHE_TTL_PRODUCTS}
+      - CACHE_TTL_USER_SESSIONS=${CACHE_TTL_USER_SESSIONS}
+      # Authentication
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      # API configuration
+      - API_V1_STR=${API_V1_STR}
+      - PROJECT_NAME=${PROJECT_NAME}
+      - ENVIRONMENT=${ENVIRONMENT}
+      # Email configuration
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_FROM=${MAIL_FROM}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_STARTTLS=${MAIL_STARTTLS}
+      - MAIL_SSL_TLS=${MAIL_SSL_TLS}
+      - USE_CREDENTIALS=${USE_CREDENTIALS}
+      - VALIDATE_CERTS=${VALIDATE_CERTS}
+      # Frontend URL
+      - FRONTEND_URL=${FRONTEND_URL}
+      # Backend URL
+      - BACKEND_URL=${BACKEND_URL}
+      # AamarPay Configuration
+      - AAMARPAY_SANDBOX=${AAMARPAY_SANDBOX}
+      - AAMARPAY_STORE_ID=${AAMARPAY_STORE_ID}
+      - AAMARPAY_SIGNATURE_KEY=${AAMARPAY_SIGNATURE_KEY}
+    ports:
+      - "127.0.0.1:8000:8000" # Bind to localhost only, nginx will proxy
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chemouflage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend with Nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chemouflage-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - chemouflage-network
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro # For SSL certificates
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  chemouflage-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local

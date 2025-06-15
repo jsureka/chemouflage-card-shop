@@ -123,9 +123,33 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
-        max-file: "3"
-
-  # Frontend with Nginx
+        max-file: "3" # Backend API nginx proxy - Remove this service
+  # api:
+  #   image: nginx:1.25-alpine
+  #   container_name: chemouflage-api
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:80"   # HTTP for API (use reverse proxy or load balancer)
+  #     - "8443:443"  # HTTPS for API (use reverse proxy or load balancer)
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - chemouflage-network
+  #   volumes:
+  #     - ./nginx.api.conf:/etc/nginx/nginx.conf:ro
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro # For SSL certificates
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  # Combined Frontend and API nginx
   frontend:
     build:
       context: .
@@ -135,14 +159,14 @@ services:
     env_file:
       - .env
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80" # HTTP traffic for both domains
+      - "443:443" # HTTPS traffic for both domains
     depends_on:
       - backend
     networks:
       - chemouflage-network
     volumes:
-      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.combined.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro # For SSL certificates
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

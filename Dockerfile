@@ -8,8 +8,9 @@ COPY package*.json ./
 RUN rm -rf node_modules package-lock.json 2>/dev/null || true
 RUN npm install
 
-# Copy source code
+# Copy source code and environment files
 COPY . .
+COPY .env.production .env
 
 # Build the application
 RUN npm run build

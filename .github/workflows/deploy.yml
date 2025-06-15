@@ -71,8 +71,8 @@ jobs:
             MAIL_FROM_NAME=Chemouflage Card Shop
             MAIL_SERVER=${{ secrets.MAIL_SERVER }}
             MAIL_PORT=${{ secrets.MAIL_PORT }}
-            MAIL_STARTTLS=${{ secrets.MAIL_STARTTLS }}
-            MAIL_SSL_TLS=${{ secrets.MAIL_SSL_TLS }}
+            MAIL_STARTTLS=false
+            MAIL_SSL_TLS=true
             USE_CREDENTIALS=true
             VALIDATE_CERTS=true
 

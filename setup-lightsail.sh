@@ -119,7 +119,7 @@ EOF
 
 # Create health check script
 echo "🏥 Creating health check script..."
-tee /opt/chemouflage-card-shop/health-check.sh > /dev/null <<'EOF'
+sudo tee /opt/chemouflage-card-shop/health-check.sh > /dev/null <<'EOF'
 #!/bin/bash
 
 # Chemouflage Card Shop Health Check Script

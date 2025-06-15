@@ -25,13 +25,17 @@ export default defineConfig(({ mode }) => ({
       external: [],
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-toast', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
-        }
-      }
+          vendor: ["react", "react-dom"],
+          ui: [
+            "@radix-ui/react-toast",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+          ],
+        },
+      },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom']
-  }
+    include: ["react", "react-dom"],
+  },
 }));

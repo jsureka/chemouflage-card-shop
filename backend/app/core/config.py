@@ -10,12 +10,15 @@ load_dotenv()
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Chemouflage API"
-      # MongoDB Configuration
+    
+    # MongoDB Configuration
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "chemouflagedb")
     
     # Redis Configuration
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
     REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
     REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
     REDIS_POOL_MAX_CONNECTIONS: int = int(os.getenv("REDIS_POOL_MAX_CONNECTIONS", "20"))
@@ -52,17 +55,19 @@ class Settings(BaseSettings):
     AAMARPAY_SANDBOX: bool = os.getenv("AAMARPAY_SANDBOX", "true").lower() == "true"
     AAMARPAY_STORE_ID: str = os.getenv("AAMARPAY_STORE_ID", "aamarpaytest")
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
-      # CORS"http://localhost:5173",
-    BACKEND_CORS_ORIGINS: List[str] = [ "http://localhost:8080", "http://localhost:8000"]
-      # Password Reset
-    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
     
-    # Firebase Configuration
+    # CORS
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:8080", "http://localhost:8000"]
+    
+    # Password Reset
+    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
+      # Firebase Configuration
     FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
     FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
     
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra environment variables
 
 settings = Settings()

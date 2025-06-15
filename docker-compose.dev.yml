@@ -16,13 +16,12 @@ services:
       - mongodb_dev_data:/data/db
     networks:
       - chemouflage-dev-network
-
   # Redis Cache (Development)
   redis:
     image: redis:7.2-alpine
     container_name: chemouflage-redis-dev
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --tcp-keepalive 60 --timeout 300
     ports:
       - "6379:6379"
     volumes:
@@ -32,8 +31,9 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 5s
-      retries: 3
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # Backend API (Development)
   backend-dev:
@@ -62,8 +62,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - chemouflage-dev-network
     volumes:
@@ -78,7 +80,7 @@ services:
     container_name: chemouflage-frontend-dev
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "8080:8080"
     depends_on:
       - backend-dev
     networks:

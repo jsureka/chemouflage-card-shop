@@ -22,14 +22,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-
-  # Redis Cache
+      start_period: 40s # Redis Cache
   redis:
     image: redis:7.2-alpine
     container_name: chemouflage-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass redis-password-change-in-production
+    command: redis-server --appendonly yes --requirepass redis-password-change-in-production --tcp-keepalive 60 --timeout 300
     ports:
       - "6379:6379"
     volumes:
@@ -46,9 +44,9 @@ services:
           "ping",
         ]
       interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # Backend API
   backend:
@@ -98,8 +96,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - chemouflage-network
     healthcheck:

@@ -44,7 +44,7 @@ jobs:
             # Create environment file if it doesn't exist
             if [ ! -f .env ]; then
               echo "📝 Creating environment file..."
-              cat > .env << EOF
+              cat > .env << 'EOF'
             # Database Configuration
             MONGODB_URL=mongodb://admin:${{ secrets.MONGODB_PASSWORD }}@mongodb:27017/chemouflage?authSource=admin
             MONGODB_PASSWORD=${{ secrets.MONGODB_PASSWORD }}

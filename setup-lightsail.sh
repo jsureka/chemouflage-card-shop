@@ -29,7 +29,7 @@ sudo apt install -y \
 echo "🐳 Installing Docker..."
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+sudo usermod -aG docker ubuntu
 
 # Install Docker Compose
 echo "🔨 Installing Docker Compose..."
@@ -39,7 +39,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 # Create application directory
 echo "📁 Creating application directory..."
 sudo mkdir -p /opt/chemouflage-card-shop
-sudo chown $USER:$USER /opt/chemouflage-card-shop
+sudo chown ubuntu:ubuntu /opt/chemouflage-card-shop
 
 # Clone repository (replace with your actual repository URL)
 echo "📥 Cloning repository..."
@@ -48,7 +48,7 @@ git clone https://github.com/YOUR_USERNAME/chemouflage-card-shop.git .
 
 # Create logs directory
 sudo mkdir -p /var/log/chemouflage
-sudo chown $USER:$USER /var/log/chemouflage
+sudo chown ubuntu:ubuntu /var/log/chemouflage
 
 # Configure firewall
 echo "🔥 Configuring firewall..."
@@ -89,7 +89,7 @@ RemainAfterExit=true
 WorkingDirectory=/opt/chemouflage-card-shop
 ExecStart=/usr/local/bin/docker-compose -f docker-compose.prod.yml up -d
 ExecStop=/usr/local/bin/docker-compose -f docker-compose.prod.yml down
-User=$USER
+User=ubuntu
 Group=docker
 
 [Install]
@@ -113,7 +113,7 @@ sudo tee /etc/logrotate.d/chemouflage > /dev/null <<EOF
     compress
     delaycompress
     notifempty
-    create 644 $USER $USER
+    create 644 ubuntu ubuntu
 }
 EOF
 

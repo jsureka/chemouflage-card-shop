@@ -134,15 +134,19 @@ class RedisManager:
             return False
     
     async def delete_pattern(self, pattern: str) -> int:
-        """Delete keys matching pattern."""
+        """Delete keys matching pattern using SCAN to avoid blocking."""
         if not await self.is_connected():
             return 0
         
         try:
-            keys = await self.redis.keys(pattern)
-            if keys:
-                return await self.redis.delete(*keys)
-            return 0
+            cursor = "0"
+            total_deleted = 0
+            while cursor != 0:
+                cursor, keys = await self.redis.scan(cursor=cursor, match=pattern, count=100)
+                if keys:
+                    deleted_count = await self.redis.delete(*keys)
+                    total_deleted += deleted_count
+            return total_deleted
         except Exception as e:
             logger.error(f"Redis DELETE pattern error for pattern {pattern}: {e}")
             return 0

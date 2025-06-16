@@ -4,14 +4,16 @@ from datetime import datetime
 from typing import List
 
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.v1.api import api_router
 from app.core.config import settings
-from app.db.mongodb import close_mongo_connection, connect_to_mongo
+from app.db.mongodb import close_mongo_connection, connect_to_mongo, db
 from app.db.redis import close_redis_connection, connect_to_redis
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.services.firebase_auth import firebase_auth_service
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from db_initializer import initialize_database_on_startup
 
 # Configure logging
 logging.basicConfig(
@@ -56,6 +58,17 @@ async def startup_db_client():
     logger.info("Starting up Chemouflage API...")
     await connect_to_mongo()
     logger.info("Database connected successfully")
+    
+    # Initialize database (create indexes, admin user, default settings)
+    logger.info("Initializing database...")
+    try:
+        success = await initialize_database_on_startup(db.client, settings.DATABASE_NAME)
+        if success:
+            logger.info("Database initialization completed successfully")
+        else:
+            logger.error("Database initialization failed")
+    except Exception as e:
+        logger.error(f"Database initialization error: {e}")
     
     # Initialize Redis
     await connect_to_redis() 

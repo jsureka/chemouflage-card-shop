@@ -42,12 +42,19 @@ This directory contains the FastAPI backend server for the Chemouflage Card Shop
 
 5. Configure your environment variables in the `.env` file.
 
-6. Run the database setup scripts:
+6. **Database Initialization (Automated)**:
+
+   The database is now automatically initialized when you start the application! The system will:
+
+   - Check database connection
+   - Create database indexes if missing
+   - Create admin user if missing (requires `ADMIN_PASSWORD` environment variable)
+   - Create default payment settings if missing
+
+   Simply start the application and everything will be set up automatically:
 
    ```
-   python create_indexes.py
-   python create_admin_user.py
-   python create_default_settings.py
+   python main.py
    ```
 
 7. (Optional) Create sample data:
@@ -88,12 +95,36 @@ Make sure to change this password in production!
 
 Configure these in the `.env` file:
 
-- `MONGODB_URI`: MongoDB connection string
-- `DATABASE_NAME`: Name of the database
+### Database Configuration
+
+- `MONGODB_URI` or `MONGODB_URL`: MongoDB connection string
+- `DATABASE_NAME`: Name of the database (default: chemouflagedb)
+
+### Authentication & Security
+
 - `SECRET_KEY`: Secret key for JWT token generation
+- `REFRESH_TOKEN_SECRET_KEY`: Secret key for refresh tokens
 - `ALGORITHM`: Algorithm for JWT (default: HS256)
-- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time in minutes
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time in minutes (default: 60)
+- `REFRESH_TOKEN_EXPIRE_DAYS`: Refresh token expiration in days (default: 30)
+
+### Admin User Configuration (for automatic creation)
+
+- `ADMIN_EMAIL`: Email for the default admin user (default: admin@chemouflage.app)
+- `ADMIN_PASSWORD`: Password for the default admin user (required for auto-creation)
+- `ADMIN_FULL_NAME`: Full name for the admin user (default: Admin User)
+
+### Payment Configuration
+
+- `AAMARPAY_STORE_ID`: AamarPay store ID
+- `AAMARPAY_SIGNATURE_KEY`: AamarPay signature key
+- `AAMARPAY_SANDBOX`: Enable sandbox mode (default: true)
+
+### Other Settings
+
 - `BACKEND_CORS_ORIGINS`: List of allowed CORS origins
+- `REDIS_URL`: Redis connection string
+- `MAIL_USERNAME`, `MAIL_PASSWORD`: Email configuration for notifications
 
 ## Project Structure
 

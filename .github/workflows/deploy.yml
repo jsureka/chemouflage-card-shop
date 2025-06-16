@@ -92,6 +92,10 @@ jobs:
             AAMARPAY_STORE_ID=${{ secrets.AAMARPAY_STORE_ID }}
             AAMARPAY_SIGNATURE_KEY=${{ secrets.AAMARPAY_SIGNATURE_KEY }}
 
+            # Firebase Configuration
+            FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
+            FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+
             # Cache Configuration
             CACHE_TTL_SECONDS=300
             CACHE_TTL_PRODUCTS=600
@@ -132,10 +136,10 @@ jobs:
           port: ${{ secrets.LIGHTSAIL_SSH_PORT || 22 }}
           script: |
             # Test API endpoint
-            curl -f http://localhost:8000/health || echo "API health check failed"
+            curl -f https://api.chemouflage.app/health || echo "API health check failed"
 
             # Test frontend
-            curl -f http://localhost/health || echo "Frontend health check failed"
+            curl -f https://chemouflage.app/health || echo "Frontend health check failed"
               # Check logs for errors
             cd ${{ env.DEPLOYMENT_PATH }}
             docker-compose -f docker-compose.prod.yml logs --tail=50 backend | grep -i error || echo "No errors found in backend logs"

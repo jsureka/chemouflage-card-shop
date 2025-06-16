@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Clean install dependencies
-RUN rm -rf node_modules package-lock.json 2>/dev/null || true
+RUN rm -rf package-lock.json 2>/dev/null || true
 RUN npm install
 
 # Copy source code and environment files

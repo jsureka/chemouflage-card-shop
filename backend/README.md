@@ -47,6 +47,7 @@ This directory contains the FastAPI backend server for the Chemouflage Card Shop
    ```
    python create_indexes.py
    python create_admin_user.py
+   python create_default_settings.py
    ```
 
 7. (Optional) Create sample data:
@@ -106,3 +107,110 @@ Configure these in the `.env` file:
 ## Note for Integration with React Frontend
 
 This backend is designed to work with the existing React frontend. The API endpoints maintain compatibility with the existing data structures used in the frontend.
+
+# Default Settings Setup Script
+
+## Overview
+
+The `create_default_settings.py` script initializes the default settings for the Chemouflage Card Shop application. This script should be run once after setting up the database to ensure all necessary default configurations are in place.
+
+## What This Script Does
+
+1. **Payment Settings**: Creates default payment method configurations:
+
+   - **AamarPay**: Enabled by default with secure payment processing
+   - **Cash on Delivery**: Enabled by default for customers who prefer to pay upon delivery
+
+2. **Delivery Charges**: Sets up default delivery pricing:
+
+   - **Inside Dhaka**: ৳60.00
+   - **Outside Dhaka**: ৳120.00
+
+3. **Database Indexes**: Creates essential database indexes for optimal performance:
+   - Unique index on user emails
+   - Indexes on product categories and status
+   - Indexes on order status and dates
+   - Unique index on user roles
+
+## Usage
+
+### Prerequisites
+
+1. MongoDB should be running
+2. Environment variables should be configured in `.env` file
+3. Required dependencies should be installed (`pip install -r requirements.txt`)
+
+### Running the Script
+
+```bash
+cd backend
+python create_default_settings.py
+```
+
+### Environment Variables Required
+
+- `MONGODB_URI` or `MONGODB_URL`: MongoDB connection string
+- `DATABASE_NAME`: Name of the database (defaults to 'chemouflagedb')
+
+## Script Features
+
+- **Safety Checks**: Validates environment variables and database connectivity
+- **Duplicate Protection**: Checks for existing settings before creating new ones
+- **Interactive Prompts**: Asks for confirmation before overwriting existing settings
+- **Comprehensive Logging**: Logs all operations to both console and `create_default_settings.log`
+- **Error Handling**: Graceful error handling with informative messages
+
+## Default Settings Created
+
+### Payment Methods
+
+```json
+{
+  "aamarpay": {
+    "name": "aamarpay",
+    "is_enabled": true,
+    "display_name": "AamarPay",
+    "description": "Pay securely with AamarPay",
+    "icon": "smartphone"
+  },
+  "cash_on_delivery": {
+    "name": "cash_on_delivery",
+    "is_enabled": true,
+    "display_name": "Cash on Delivery",
+    "description": "Pay when you receive your order",
+    "icon": "banknote"
+  }
+}
+```
+
+### Delivery Charges
+
+```json
+{
+  "delivery_charges": {
+    "inside_dhaka": 60.0,
+    "outside_dhaka": 120.0
+  }
+}
+```
+
+## Troubleshooting
+
+1. **Connection Issues**: Ensure MongoDB is running and accessible
+2. **Permission Issues**: Check that the script has write permissions for log files
+3. **Environment Issues**: Verify all required environment variables are set
+4. **Duplicate Settings**: The script will prompt before overwriting existing settings
+
+## Related Files
+
+- `create_admin_user.py`: Creates the admin user account
+- `app/models/settings.py`: Contains the settings data models
+- `app/repositories/payment_settings.py`: Database operations for settings
+- `app/api/v1/endpoints/settings.py`: API endpoints for settings management
+
+## Notes
+
+- This script is designed to be run once during initial setup
+- Settings can be modified later through the admin dashboard
+- The script creates database indexes to optimize query performance
+- All operations are logged for debugging and audit purposes

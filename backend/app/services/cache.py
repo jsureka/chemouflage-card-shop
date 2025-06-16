@@ -2,6 +2,7 @@
 Cache service for managing application-level caching with Redis.
 Provides decorators and utility functions for common caching patterns.
 """
+import inspect
 import json
 import logging
 from functools import wraps
@@ -170,10 +171,18 @@ def cached(key_pattern: str, ttl: Optional[int] = None):
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
             # Generate cache key
-            cache_key = key_pattern.format(
-                args='_'.join(str(arg) for arg in args),
-                **kwargs
-            )
+            # Get function signature to map positional args to parameter names
+            sig = inspect.signature(func)
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            
+            # Create a format dict with both positional args and kwargs
+            format_dict = {
+                'args': '_'.join(str(arg) for arg in args),
+                **bound_args.arguments
+            }
+            
+            cache_key = key_pattern.format(**format_dict)
             
             # Try to get from cache
             cached_result = await cache_service.get(cache_key)
@@ -207,10 +216,18 @@ def cache_invalidate(key_pattern: str):
             result = await func(*args, **kwargs)
             
             # Invalidate cache
-            cache_key = key_pattern.format(
-                args='_'.join(str(arg) for arg in args),
-                **kwargs
-            )
+            # Get function signature to map positional args to parameter names
+            sig = inspect.signature(func)
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            
+            # Create a format dict with both positional args and kwargs
+            format_dict = {
+                'args': '_'.join(str(arg) for arg in args),
+                **bound_args.arguments
+            }
+            
+            cache_key = key_pattern.format(**format_dict)
             await cache_service.delete(cache_key)
             logger.debug(f"Invalidated cache for key: {cache_key}")
             

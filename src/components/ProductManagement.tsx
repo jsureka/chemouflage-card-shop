@@ -36,7 +36,149 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
+
+// Move ProductForm outside to prevent recreation on every render
+interface ProductFormProps {
+  formData: {
+    name: string;
+    description: string;
+    price: string;
+    original_price: string;
+    discount_percentage: string;
+    category: string;
+    stock_quantity: string;
+    is_active: boolean;
+    image_url: string;
+  };
+  isEdit?: boolean;
+  onInputChange: (field: string, value: any) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+}
+
+const ProductForm = React.memo<ProductFormProps>(
+  ({ formData, isEdit = false, onInputChange, onCancel, onSubmit }) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Product Name</Label>
+          <Input
+            value={formData.name}
+            onChange={(e) => onInputChange("name", e.target.value)}
+            placeholder="Enter product name"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Category</Label>
+          <Select
+            value={formData.category}
+            onValueChange={(value) => onInputChange("category", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Education">Education</SelectItem>
+              <SelectItem value="Software">Software</SelectItem>
+              <SelectItem value="Physical">Physical</SelectItem>
+              <SelectItem value="Bundle">Bundle</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description}
+          onChange={(e) => onInputChange("description", e.target.value)}
+          placeholder="Enter product description"
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label>Current Price (৳)</Label>
+          <Input
+            type="number"
+            value={formData.price}
+            onChange={(e) => onInputChange("price", e.target.value)}
+            placeholder="199.00"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Original Price (৳)</Label>
+          <Input
+            type="number"
+            value={formData.original_price}
+            onChange={(e) => onInputChange("original_price", e.target.value)}
+            placeholder="299.00"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Discount (%)</Label>
+          <Input
+            type="number"
+            value={formData.discount_percentage}
+            onChange={(e) =>
+              onInputChange("discount_percentage", e.target.value)
+            }
+            placeholder="33"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Stock Quantity</Label>
+          <Input
+            type="number"
+            value={formData.stock_quantity}
+            onChange={(e) => onInputChange("stock_quantity", e.target.value)}
+            placeholder="100"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select
+            value={formData.is_active.toString()}
+            onValueChange={(value) =>
+              onInputChange("is_active", value === "true")
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Active</SelectItem>
+              <SelectItem value="false">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Image URL (Optional)</Label>
+        <Input
+          value={formData.image_url}
+          onChange={(e) => onInputChange("image_url", e.target.value)}
+          placeholder="https://example.com/image.jpg"
+        />
+      </div>
+
+      <div className="flex justify-end space-x-2 pt-4">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={onSubmit}>
+          {isEdit ? "Update Product" : "Create Product"}
+        </Button>
+      </div>
+    </div>
+  )
+);
 
 const ProductManagement = () => {
   const { products, loading, createProduct, updateProduct, deleteProduct } =
@@ -138,147 +280,11 @@ const ProductManagement = () => {
       console.error("Error updating product:", error);
     }
   };
-
   const handleDelete = async (productId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       await deleteProduct(productId);
     }
   };
-
-  const ProductForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Product Name</Label>
-          <Input
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            placeholder="Enter product name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Select
-            value={formData.category}
-            onValueChange={(value) => handleInputChange("category", value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Education">Education</SelectItem>
-              <SelectItem value="Software">Software</SelectItem>
-              <SelectItem value="Physical">Physical</SelectItem>
-              <SelectItem value="Bundle">Bundle</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Description</Label>
-        <Textarea
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
-          placeholder="Enter product description"
-          rows={3}
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Current Price (৳)</Label>
-          <Input
-            type="number"
-            value={formData.price}
-            onChange={(e) => handleInputChange("price", e.target.value)}
-            placeholder="199.00"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Original Price (৳)</Label>
-          <Input
-            type="number"
-            value={formData.original_price}
-            onChange={(e) =>
-              handleInputChange("original_price", e.target.value)
-            }
-            placeholder="299.00"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Discount (%)</Label>
-          <Input
-            type="number"
-            value={formData.discount_percentage}
-            onChange={(e) =>
-              handleInputChange("discount_percentage", e.target.value)
-            }
-            placeholder="33"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Stock Quantity</Label>
-          <Input
-            type="number"
-            value={formData.stock_quantity}
-            onChange={(e) =>
-              handleInputChange("stock_quantity", e.target.value)
-            }
-            placeholder="100"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={formData.is_active.toString()}
-            onValueChange={(value) =>
-              handleInputChange("is_active", value === "true")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">Active</SelectItem>
-              <SelectItem value="false">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Image URL (Optional)</Label>
-        <Input
-          value={formData.image_url}
-          onChange={(e) => handleInputChange("image_url", e.target.value)}
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (isEdit) {
-              setIsEditDialogOpen(false);
-            } else {
-              setIsCreateDialogOpen(false);
-            }
-            resetForm();
-          }}
-        >
-          Cancel
-        </Button>
-        <Button onClick={isEdit ? handleUpdate : handleCreate}>
-          {isEdit ? "Update Product" : "Create Product"}
-        </Button>
-      </div>
-    </div>
-  );
 
   if (loading) {
     return <div className="text-white">Loading products...</div>;
@@ -309,7 +315,15 @@ const ProductManagement = () => {
                 Add a new product to your catalog
               </DialogDescription>
             </DialogHeader>
-            <ProductForm />
+            <ProductForm
+              formData={formData}
+              onInputChange={handleInputChange}
+              onCancel={() => {
+                setIsCreateDialogOpen(false);
+                resetForm();
+              }}
+              onSubmit={handleCreate}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -379,7 +393,16 @@ const ProductManagement = () => {
               Update product information and pricing
             </DialogDescription>
           </DialogHeader>
-          <ProductForm isEdit={true} />
+          <ProductForm
+            isEdit={true}
+            formData={formData}
+            onInputChange={handleInputChange}
+            onCancel={() => {
+              setIsEditDialogOpen(false);
+              resetForm();
+            }}
+            onSubmit={handleUpdate}
+          />
         </DialogContent>
       </Dialog>
     </div>

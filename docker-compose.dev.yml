@@ -21,7 +21,7 @@ services:
     image: redis:7.2-alpine
     container_name: chemouflage-redis-dev
     restart: unless-stopped
-    command: redis-server --appendonly yes --tcp-keepalive 60 --timeout 300
+    command: redis-server --appendonly yes --requirepass redispass --tcp-keepalive 60 --timeout 300 --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     volumes:
@@ -43,22 +43,42 @@ services:
     container_name: chemouflage-backend-dev
     restart: unless-stopped
     environment:
-      - MONGODB_URL=mongodb://admin:devpassword@mongodb:27017/chemouflage_dev?authSource=admin
-      # Redis connection (no password for dev)
-      - REDIS_URL=redis://redis:6379
-      - REDIS_PASSWORD=
-      - REDIS_DB=0
-      - REDIS_POOL_MAX_CONNECTIONS=10
-      - CACHE_TTL_SECONDS=120
-      - CACHE_TTL_PRODUCTS=300
-      - CACHE_TTL_USER_SESSIONS=1800
-      - SECRET_KEY=dev-secret-key
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=60
-      - API_V1_STR=/api/v1
-      - PROJECT_NAME=Chemouflage Card Shop API (Dev)
-      - ENVIRONMENT=development
-      - RELOAD=true
+      MONGODB_URL: mongodb://admin:devpassword@mongodb:27017/chemouflage_dev?authSource=admin
+      MONGODB_PASSWORD: devpassword
+      DATABASE_NAME: chemouflage_dev
+      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: redispass
+      REDIS_DB: 0
+      REDIS_POOL_MAX_CONNECTIONS: 20
+      SECRET_KEY: your-secret-key-change-in-development
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      API_V1_STR: /api/v1
+      PROJECT_NAME: Chemouflage Card Shop API (Development)
+      ENVIRONMENT: development
+      MAIL_USERNAME: hello@chemouflage.app
+      MAIL_PASSWORD: Chemouflage1428*
+      MAIL_FROM: hello@chemouflage.app
+      MAIL_FROM_NAME: Chemouflage Card Shop
+      MAIL_PORT: 465
+      MAIL_SERVER: mail.spacemail.com
+      MAIL_STARTTLS: false
+      MAIL_SSL_TLS: true
+      USE_CREDENTIALS: true
+      VALIDATE_CERTS: true
+      FRONTEND_URL: http://localhost:8080
+      BACKEND_URL: http://localhost:8000
+      AAMARPAY_SANDBOX: true
+      AAMARPAY_STORE_ID: aamarpaytest
+      AAMARPAY_SIGNATURE_KEY: dbb74894e82415a2f7ff0ec3a97e4183
+      VITE_CLOUDINARY_CLOUD_NAME: dacjxfyhr
+      CLOUDINARY_API_KEY: 382644488185499
+      CLOUDINARY_API_SECRET: J4GLrEHjZ9TBmNthcKv_R1Rata8
+      FIREBASE_CREDENTIALS_PATH: firebase-credentials.json
+      FIREBASE_PROJECT_ID: chemouflage-edu
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
     ports:
       - "8000:8000"
     depends_on:

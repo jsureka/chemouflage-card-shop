@@ -104,6 +104,15 @@ services:
       - AAMARPAY_SANDBOX=${AAMARPAY_SANDBOX}
       - AAMARPAY_STORE_ID=${AAMARPAY_STORE_ID}
       - AAMARPAY_SIGNATURE_KEY=${AAMARPAY_SIGNATURE_KEY}
+
+      # Cloudinary Configuration
+      - VITE_CLOUDINARY_CLOUD_NAME=${VITE_CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+
+      #Firebase Configuration
+      - FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
     ports:
       - "8000:8000" # Bind to localhost only, nginx will proxy
     depends_on:

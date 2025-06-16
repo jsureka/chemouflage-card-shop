@@ -1,13 +1,23 @@
 from datetime import datetime
 from typing import List, Optional
 
+from bson import ObjectId
+
 from app.core.security import get_password_hash, verify_password
 from app.db.mongodb import get_database
-from app.models.user import (FirebaseUserCreate, PyObjectId, User, UserCreate,
-                             UserInDB, UserProfile, UserRole, UserRoleCreate,
-                             UserRoleInDB, UserUpdate)
+from app.models.user import (
+    FirebaseUserCreate,
+    PyObjectId,
+    User,
+    UserCreate,
+    UserInDB,
+    UserProfile,
+    UserRole,
+    UserRoleCreate,
+    UserRoleInDB,
+    UserUpdate,
+)
 from app.services.cache import cache_service, cached
-from bson import ObjectId
 
 
 class UserRepository:
@@ -76,13 +86,12 @@ class UserRepository:
         cached_user = await cache_service.get_user_profile(user_id)
         if cached_user:
             return User(**cached_user)
-        
-        # Get from database
+          # Get from database
         db = await get_database()
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         if user:
             user_obj = User(
-                **{k: v for k, v in user.items() if k != 'hashed_password'}, 
+                **{k: v for k, v in user.items() if k not in ['hashed_password', '_id', 'firebase_uid', 'email_verified']}, 
                 id=str(user["_id"]),
                 firebase_uid=user.get("firebase_uid"),
                 email_verified=user.get("email_verified", False)

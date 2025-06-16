@@ -141,7 +141,7 @@ services:
     networks:
       - chemouflage-network
     volumes:
-      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.combined.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro # For SSL certificates
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

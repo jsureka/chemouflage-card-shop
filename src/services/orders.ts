@@ -62,6 +62,7 @@ class OrdersService {
     }`;
 
     const response = await fetch(url, {
+      method: "GET",
       headers: this.setAuthHeader(),
     });
 

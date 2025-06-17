@@ -249,7 +249,7 @@ class DatabaseInitializer:
             
             logger.info("✅ Database indexes created successfully")
             return True            
-        except Exception as e:
+        except Exception as e:           
             logger.error(f"Error creating indexes: {e}")
             return False
     
@@ -264,7 +264,7 @@ class DatabaseInitializer:
             except DuplicateKeyError:
                 logger.debug(f"Index already exists on {collection_name}: {str(index_spec)}")
             except Exception as e:
-                logger.warning(f"Failed to create index on {collection_name} {str(index_spec)}: {e}")
+                logger.warning(f"Failed to create index on {collection_name} {repr(index_spec)}: {e}")
     
     async def _create_admin_user(self) -> bool:
         """Create default admin user"""
@@ -316,17 +316,21 @@ class DatabaseInitializer:
     
     async def _create_default_settings(self) -> bool:
         """Create default payment settings"""
-        try:
-            # Default payment settings
+        try:            # Default payment settings
             default_settings = {
                 "aamarpay": {
+                    "name": "aamarpay",
                     "is_enabled": True,
-                    "store_id": os.getenv("AAMARPAY_STORE_ID", ""),
-                    "signature_key": os.getenv("AAMARPAY_SIGNATURE_KEY", ""),
-                    "sandbox_mode": os.getenv("AAMARPAY_SANDBOX", "true").lower() == "true"
+                    "display_name": "AamarPay",
+                    "description": "Pay securely with AamarPay",
+                    "icon": "smartphone"
                 },
                 "cash_on_delivery": {
-                    "is_enabled": True
+                    "name": "cash_on_delivery",
+                    "is_enabled": True,
+                    "display_name": "Cash on Delivery",
+                    "description": "Pay when you receive your order",
+                    "icon": "banknote"
                 },
                 "delivery_charges": {
                     "inside_dhaka": 60,

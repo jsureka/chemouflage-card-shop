@@ -57,8 +57,8 @@ class AuthService {
   > {
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
         username: email,
         password: password,
       }),

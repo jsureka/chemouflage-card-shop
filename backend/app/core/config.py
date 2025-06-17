@@ -64,7 +64,6 @@ class Settings(BaseSettings):
         "http://localhost:8080", 
         "http://localhost:8000",
         "https://chemouflage.app",
-        "https://www.chemouflage.app",
         "https://api.chemouflage.app"
     ]
       # Password Reset

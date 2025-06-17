@@ -69,6 +69,8 @@ services:
     environment:
       # Database connection
       - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
       # Redis connection
       - REDIS_URL=${REDIS_URL}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
@@ -139,8 +141,6 @@ services:
       dockerfile: Dockerfile
     container_name: chemouflage-frontend
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - "80:80" # HTTP traffic for both domains
       - "443:443" # HTTPS traffic for both domains

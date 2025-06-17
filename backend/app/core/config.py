@@ -58,9 +58,15 @@ class Settings(BaseSettings):
     AAMARPAY_SANDBOX: bool = os.getenv("AAMARPAY_SANDBOX", "true").lower() == "true"
     AAMARPAY_STORE_ID: str = os.getenv("AAMARPAY_STORE_ID", "aamarpaytest")
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
-    
-    # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:8080", "http://localhost:8000"]
+      # CORS
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:5173", 
+        "http://localhost:8080", 
+        "http://localhost:8000",
+        "https://chemouflage.app",
+        "https://www.chemouflage.app",
+        "https://api.chemouflage.app"
+    ]
       # Password Reset
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
     

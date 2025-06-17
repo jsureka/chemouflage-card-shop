@@ -46,8 +46,9 @@ jobs:
               echo "📝 Creating environment file..."
               cat > .env << EOF
             # Database Configuration
-            MONGODB_URL=mongodb://admin:${{ secrets.MONGODB_PASSWORD }}@mongodb:27017/chemouflage?authSource=admin
+            MONGODB_URL=mongodb://admin:${{ secrets.MONGODB_PASSWORD }}@mongodb:27017/${{ secrets.DATABASE_NAME }}?authSource=admin
             MONGODB_PASSWORD=${{ secrets.MONGODB_PASSWORD }}
+            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
             # Redis Configuration
             REDIS_URL=redis://redis:6379
             REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}

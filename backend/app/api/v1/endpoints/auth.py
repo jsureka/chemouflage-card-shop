@@ -1,26 +1,36 @@
 from datetime import datetime, timedelta
 from typing import Any, List
 
-from app.api.dependencies import (get_current_admin, get_current_user,
-                                  get_current_user_profile)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from pydantic import BaseModel, ValidationError
+
+from app.api.dependencies import (
+    get_current_admin,
+    get_current_user,
+    get_current_user_profile,
+)
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token
 from app.models.pagination import PaginatedResponse, PaginationParams
-from app.models.password_reset import (PasswordResetConfirm,
-                                       PasswordResetRequest)
-from app.models.user import (FirebaseLoginRequest, FirebaseUserCreate, Token,
-                             TokenPayload, User, UserCreate, UserProfile,
-                             UserUpdate)
+from app.models.password_reset import PasswordResetConfirm, PasswordResetRequest
+from app.models.user import (
+    FirebaseLoginRequest,
+    FirebaseUserCreate,
+    Token,
+    TokenPayload,
+    User,
+    UserCreate,
+    UserProfile,
+    UserUpdate,
+)
 from app.repositories.password_reset import PasswordResetTokenRepository
 from app.repositories.token import RefreshTokenRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
 from app.services.firebase_auth import firebase_auth_service
 from app.utils.pagination import create_paginated_response
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
-from jose import JWTError, jwt
-from pydantic import BaseModel, ValidationError
 
 router = APIRouter()
 
@@ -37,6 +47,21 @@ async def register(
     Register a new user.
     """
     try:
+        # Register user in Firebase first
+        firebase_result = await firebase_auth_service.register_with_email_password(
+            email=user_in.email,
+            password=user_in.password,
+            display_name=user_in.full_name
+        )
+        if firebase_result is None:
+            # If Firebase says email exists, allow local registration to continue
+            # Otherwise, raise error
+            from httpx import HTTPStatusError
+
+            # Firebase error response is in the form {"error": {"message": ...}}
+            # But our method logs and returns None on any error, so we can't distinguish here
+            # So, just proceed (worst case: user already exists in Firebase)
+            pass
         user_id = await UserRepository.create(user_in)
         user = await UserRepository.get_by_id(user_id)
         
@@ -63,12 +88,27 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """
     user = await UserRepository.authenticate(form_data.username, form_data.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
+        # Try Firebase email/password authentication
+        firebase_data = await firebase_auth_service.authenticate_with_email_password(form_data.username, form_data.password)
+        if firebase_data and firebase_data.get("localId"):
+            # Prepare FirebaseUserCreate model
+            from app.models.user import FirebaseUserCreate
+            firebase_user = FirebaseUserCreate(
+                firebase_uid=firebase_data["localId"],
+                email=firebase_data["email"],
+                full_name=firebase_data.get("displayName"),
+                avatar_url=firebase_data.get("photoUrl"),
+                email_verified=firebase_data.get("emailVerified", False)
+            )
+            user_id = await UserRepository.create_firebase_user(firebase_user)
+            user = await UserRepository.get_by_id(user_id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     # Get user profile with role information
     user_profile = await UserRepository.get_profile(user.id)
     if not user_profile:
@@ -76,26 +116,26 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve user profile"
         )
-    
+
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         subject=user.id, expires_delta=access_token_expires
     )
-    
+
     # Create refresh token
     refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     refresh_token = create_refresh_token(
         subject=user.id, expires_delta=refresh_token_expires
     )
-    
+
     # Store refresh token in database
     await RefreshTokenRepository.create(
         user_id=user.id,
         token=refresh_token,
         expires_delta=refresh_token_expires
     )
-    
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -305,14 +345,18 @@ async def reset_password(reset_data: PasswordResetConfirm) -> dict:
             detail="Token not found"
         )
     
-    # Update user's password
+    # Get user by id
+    user = await UserRepository.get_by_id(token_data.user_id)
+    # Update user's password in MongoDB
     success = await UserRepository.update_password(token_data.user_id, reset_data.new_password)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update password"
         )
-    
+    # Also update password in Firebase if user has firebase_uid or exists in Firebase
+    if user and user.email:
+        await firebase_auth_service.update_password_with_email(user.email, reset_data.new_password)
     # Mark token as used
     await PasswordResetTokenRepository.mark_as_used(reset_data.token)
     

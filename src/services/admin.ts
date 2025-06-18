@@ -57,7 +57,7 @@ class AdminService {
     limit: number = 10
   ): Promise<ApiResponse<PaginatedResponse<Order>>> {
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/orders?limit=${limit}`,
+      `${API_BASE_URL}/api/v1/orders/?limit=${limit}`,
       {
         headers: this.setAuthHeader(),
       }

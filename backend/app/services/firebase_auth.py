@@ -2,8 +2,10 @@ import logging
 from typing import Any, Dict, Optional
 
 import firebase_admin
-from app.core.config import settings
+import httpx
 from firebase_admin import auth, credentials
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +147,79 @@ class FirebaseAuthService:
         except Exception as e:
             logger.error(f"Error creating custom token: {str(e)}")
             return None
+    
+    async def authenticate_with_email_password(self, email: str, password: str) -> Optional[dict]:
+        """
+        Authenticate with Firebase using email and password via REST API.
+        Returns user info dict if successful, None otherwise.
+        """
+        if not settings.FIREBASE_API_KEY:
+            logger.error("FIREBASE_API_KEY not set in settings.")
+            return None
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={settings.FIREBASE_API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return data
+                else:
+                    logger.warning(f"Firebase email/password login failed: {resp.text}")
+                    return None
+            except Exception as e:
+                logger.error(f"Error authenticating with Firebase REST API: {str(e)}")
+                return None
+    
+    async def register_with_email_password(self, email: str, password: str, display_name: str = None) -> Optional[dict]:
+        """
+        Register a user in Firebase using email and password via REST API.
+        Returns user info dict if successful, None otherwise.
+        """
+        if not settings.FIREBASE_API_KEY:
+            logger.error("FIREBASE_API_KEY not set in settings.")
+            return None
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={settings.FIREBASE_API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        if display_name:
+            payload["displayName"] = display_name
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return data
+                else:
+                    logger.warning(f"Firebase registration failed: {resp.text}")
+                    return None
+            except Exception as e:
+                logger.error(f"Error registering with Firebase REST API: {str(e)}")
+                return None
+    
+    async def update_password_with_email(self, email: str, new_password: str) -> bool:
+        """
+        Update a user's password in Firebase using the REST API (requires idToken, so use Admin SDK instead).
+        Returns True if successful, False otherwise.
+        """
+        # Try to get user by email using Admin SDK
+        try:
+            if not self._app:
+                logger.error("Firebase not initialized")
+                return False
+            user_record = auth.get_user_by_email(email)
+            auth.update_user(user_record.uid, password=new_password)
+            return True
+        except Exception as e:
+            logger.error(f"Error updating Firebase password for {email}: {str(e)}")
+            return False
     
     def is_configured(self) -> bool:
         """Check if Firebase is properly configured"""

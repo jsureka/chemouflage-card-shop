@@ -78,6 +78,7 @@ services:
       FIREBASE_PROJECT_ID: chemouflage-edu
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      FIREBASE_API_KEY: AIzaSyD09OWm9XrX4OE-TklsHKxc4LjRke-hKIY
 
     ports:
       - "8000:8000"

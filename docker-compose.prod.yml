@@ -115,6 +115,7 @@ services:
       #Firebase Configuration
       - FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY}
     ports:
       - "8000:8000" # Bind to localhost only, nginx will proxy
     depends_on:

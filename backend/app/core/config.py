@@ -1,13 +1,17 @@
 import os
+import sys
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-# Load .env file from the root directory (parent of backend folder)
-root_dir = Path(__file__).parent.parent.parent
+# Load .env file from the project root directory (parent of backend folder)
+root_dir = Path(__file__).resolve().parent.parent.parent.parent
 env_path = root_dir / ".env"
+print(f"[config.py] Loading .env from: {env_path}")
+if not env_path.exists():
+    print(f"[config.py] WARNING: .env file not found at {env_path}", file=sys.stderr)
 load_dotenv(dotenv_path=env_path)
 
 class Settings(BaseSettings):
@@ -60,8 +64,8 @@ class Settings(BaseSettings):
     AAMARPAY_SIGNATURE_KEY: str = os.getenv("AAMARPAY_SIGNATURE_KEY", "dbb74894e82415a2f7ff0ec3a97e4183")
       # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
-        "http://localhost:5173", 
-        "http://localhost:8080", 
+        "http://localhost:5173",
+        "http://localhost:8080",
         "http://localhost:8000",
         "https://chemouflage.app",
         "https://api.chemouflage.app"
@@ -70,8 +74,9 @@ class Settings(BaseSettings):
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_HOURS", "24"))
     
     # Firebase Configuration
-    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
-    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "chemouflage-edu")
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
+    FIREBASE_API_KEY: str = os.getenv("FIREBASE_API_KEY", "")
 
     class Config:
         env_file = str(root_dir / ".env")

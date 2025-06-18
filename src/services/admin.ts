@@ -103,7 +103,7 @@ class AdminService {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/api/v1/orders?${queryParams.toString()}`,
+      `${API_BASE_URL}/api/v1/orders/?${queryParams.toString()}`,
       {
         headers: this.setAuthHeader(),
       }

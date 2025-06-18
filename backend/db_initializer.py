@@ -106,12 +106,12 @@ class DatabaseInitializer:
                         success = False
                 
                 if success:
-                    logger.info("✅ Database initialization completed successfully")
+                    logger.info("Database initialization completed successfully")
                 else:
-                    logger.error("❌ Some database initialization tasks failed")
+                    logger.error("Some database initialization tasks failed")
                     
             else:
-                logger.info("✅ Database already initialized, no action needed")
+                logger.info("Database already initialized, no action needed")
                 success = True
                 
             return success
@@ -179,79 +179,80 @@ class DatabaseInitializer:
             
             # Users collection indexes
             await self._create_collection_indexes('users', [
-                (("email", ASCENDING), {"unique": True, "background": True}),
-                (("firebase_uid", ASCENDING), {"sparse": True, "background": True}),
-                (("email_verified", ASCENDING), {"background": True}),
-                (("created_at", DESCENDING), {"background": True}),
+                ([('email', ASCENDING)], {"unique": True, "background": True}),
+                ([('firebase_uid', ASCENDING)], {"sparse": True, "background": True}),
+                ([('email_verified', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
             ])
             
             # User roles collection indexes
             await self._create_collection_indexes('user_roles', [
-                (("user_id", ASCENDING), {"unique": True, "background": True}),
-                (("role", ASCENDING), {"background": True}),
-                (("created_at", DESCENDING), {"background": True}),
+                ([('user_id', ASCENDING)], {"unique": True, "background": True}),
+                ([('role', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
             ])
             
             # Products collection indexes
             await self._create_collection_indexes('products', [
-                ([("name", TEXT), ("description", TEXT), ("category", TEXT)], {"background": True}),
-                (("category", ASCENDING), {"background": True}),
-                (("is_active", ASCENDING), {"background": True}),
-                (("created_at", DESCENDING), {"background": True}),
-                (("price", ASCENDING), {"background": True}),
-                ([("category", ASCENDING), ("is_active", ASCENDING)], {"background": True}),
-                ([("is_active", ASCENDING), ("created_at", DESCENDING)], {"background": True}),
+                ([('name', TEXT), ('description', TEXT), ('category', TEXT)], {"background": True}),
+                ([('category', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('price', ASCENDING)], {"background": True}),
+                ([('category', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
             ])
             
             # Orders collection indexes
             await self._create_collection_indexes('orders', [
-                (("user_id", ASCENDING), {"background": True}),
-                (("status", ASCENDING), {"background": True}),
-                (("payment_status", ASCENDING), {"background": True}),
-                (("created_at", DESCENDING), {"background": True}),
-                (("updated_at", DESCENDING), {"background": True}),
-                (("premium_code_id", ASCENDING), {"sparse": True, "background": True}),
-                ([("user_id", ASCENDING), ("created_at", DESCENDING)], {"background": True}),
-                ([("status", ASCENDING), ("created_at", DESCENDING)], {"background": True}),
-                ([("user_id", ASCENDING), ("status", ASCENDING)], {"background": True}),
+                ([('user_id', ASCENDING)], {"background": True}),
+                ([('status', ASCENDING)], {"background": True}),
+                ([('payment_status', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('updated_at', DESCENDING)], {"background": True}),
+                ([('premium_code_id', ASCENDING)], {"sparse": True, "background": True}),
+                ([('user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+                ([('status', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+                ([('user_id', ASCENDING), ('status', ASCENDING)], {"background": True}),
             ])
             
             # Order items collection indexes
             await self._create_collection_indexes('order_items', [
-                (("order_id", ASCENDING), {"background": True}),
-                (("product_id", ASCENDING), {"background": True}),
-                (("created_at", DESCENDING), {"background": True}),
-                ([("order_id", ASCENDING), ("product_id", ASCENDING)], {"background": True}),
+                ([('order_id', ASCENDING)], {"background": True}),
+                ([('product_id', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('order_id', ASCENDING), ('product_id', ASCENDING)], {"background": True}),
             ])
             
             # Premium codes collection indexes
             await self._create_collection_indexes('premium_codes', [
-                (("code", ASCENDING), {"unique": True, "background": True}),
-                (("is_active", ASCENDING), {"background": True}),
-                (("bound_user_id", ASCENDING), {"sparse": True, "background": True}),
-                (("expires_at", ASCENDING), {"sparse": True, "background": True}),
-                (("created_at", DESCENDING), {"background": True}),
-                ([("is_active", ASCENDING), ("expires_at", ASCENDING)], {"background": True}),
-                ([("bound_user_id", ASCENDING), ("created_at", DESCENDING)], {"background": True}),
+                ([('code', ASCENDING)], {"unique": True, "background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('bound_user_id', ASCENDING)], {"sparse": True, "background": True}),
+                ([('expires_at', ASCENDING)], {"sparse": True, "background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('expires_at', ASCENDING)], {"background": True}),
+                ([('bound_user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
             ])
             
             # Refresh tokens collection indexes
             await self._create_collection_indexes('refresh_tokens', [
-                (("token", ASCENDING), {"unique": True, "background": True}),
-                (("user_id", ASCENDING), {"background": True}),
-                (("expires_at", ASCENDING), {"background": True}),
+                ([('token', ASCENDING)], {"unique": True, "background": True}),
+                ([('user_id', ASCENDING)], {"background": True}),
+                ([('expires_at', ASCENDING)], {"background": True}),
             ])
             
             # Payment settings collection indexes
             await self._create_collection_indexes('payment_settings', [
-                (("created_at", DESCENDING), {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
             ])
             
-            logger.info("✅ Database indexes created successfully")
+            logger.info("Database indexes created successfully")
             return True            
         except Exception as e:           
             logger.error(f"Error creating indexes: {e}")
             return False
+    
     
     async def _create_collection_indexes(self, collection_name: str, indexes: List[Tuple]):
         """Create indexes for a specific collection"""
@@ -259,10 +260,11 @@ class DatabaseInitializer:
         
         for index_spec, options in indexes:
             try:
+                logger.debug(f"Attempting to create index on {collection_name}: {repr(index_spec)}, options: {options}")
                 await collection.create_index(index_spec, **options)
-                logger.debug(f"Created index on {collection_name}: {str(index_spec)}")
+                logger.debug(f"Created index on {collection_name}: {repr(index_spec)}")
             except DuplicateKeyError:
-                logger.debug(f"Index already exists on {collection_name}: {str(index_spec)}")
+                logger.debug(f"Index already exists on {collection_name}: {repr(index_spec)}")
             except Exception as e:
                 logger.warning(f"Failed to create index on {collection_name} {repr(index_spec)}: {e}")
     
@@ -304,7 +306,7 @@ class DatabaseInitializer:
             
             await self.db.user_roles.insert_one(role_doc)
             
-            logger.info(f"✅ Admin user created successfully: {admin.email}")
+            logger.info(f"Admin user created successfully: {admin.email}")
             return True
             
         except DuplicateKeyError:
@@ -342,7 +344,7 @@ class DatabaseInitializer:
             # Insert settings
             await self.db.payment_settings.insert_one(default_settings)
             
-            logger.info("✅ Default payment settings created successfully")
+            logger.info("Default payment settings created successfully")
             return True
             
         except Exception as e:

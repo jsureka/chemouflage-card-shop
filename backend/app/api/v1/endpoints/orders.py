@@ -1,18 +1,26 @@
 import logging
 from typing import Any, List, Optional
 
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+
 from app.api.dependencies import get_current_admin, get_current_user
 from app.core.config import settings
 from app.models.pagination import PaginatedResponse, PaginationParams
-from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
-                                OrderItem, OrderItemCreate, OrderItemUpdate,
-                                OrderUpdate, OrderWithItems)
+from app.models.product import (
+    AdminOrderUpdate,
+    Order,
+    OrderCreate,
+    OrderItem,
+    OrderItemCreate,
+    OrderItemUpdate,
+    OrderUpdate,
+    OrderWithItems,
+)
 from app.models.user import User
 from app.repositories.order import OrderItemRepository, OrderRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
 from app.utils.pagination import create_paginated_response
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -292,7 +300,6 @@ async def read_orders(
     search: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    current_user: User = Depends(get_current_admin)
 ) -> Any:
     """
     Retrieve orders with filtering options. Only for admins.

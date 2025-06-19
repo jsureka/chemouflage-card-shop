@@ -74,6 +74,7 @@ services:
       VITE_CLOUDINARY_CLOUD_NAME: dacjxfyhr
       CLOUDINARY_API_KEY: 382644488185499
       CLOUDINARY_API_SECRET: J4GLrEHjZ9TBmNthcKv_R1Rata8
+      CLOUDINARY_CLOUD_NAME: dacjxfyhr
       FIREBASE_CREDENTIALS_PATH: firebase-credentials.json
       FIREBASE_PROJECT_ID: chemouflage-edu
       REDIS_HOST: redis

@@ -143,7 +143,7 @@ class CacheService:
         ttl: Optional[int] = None
     ) -> bool:
         """Set value in cache."""
-        redis = await self
+        redis = await self._get_redis()
         return await redis.set(key, value, ttl or settings.CACHE_TTL_SECONDS)
     
     async def delete(self, key: str) -> bool:

@@ -60,7 +60,7 @@ const AdminDashboard = () => {
   const [isOrderEditModalOpen, setIsOrderEditModalOpen] = useState(false);
   useEffect(() => {
     if (!isLoading && (!user || !isAdmin)) {
-      navigate("/auth");
+      navigate("/login");
       return;
     }
 

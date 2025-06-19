@@ -40,7 +40,7 @@ const MyOrders = () => {
         description: "Please log in to view your orders.",
         variant: "destructive",
       });
-      navigate("/auth");
+      navigate("/login");
       return;
     }
 

@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProductBrowser from "./components/ProductBrowser";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -24,7 +25,6 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import ProductDetail from "./pages/ProductDetail";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
-import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +52,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/auth" element={<Auth />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />

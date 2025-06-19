@@ -248,7 +248,7 @@ const Checkout = () => {
           description: "Please log in to place an order.",
           variant: "destructive",
         });
-        navigate("/auth");
+        navigate("/login");
         return;
       } // Check if product is loaded
       if (!product) {

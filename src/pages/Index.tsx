@@ -117,12 +117,10 @@ const Index = () => {
                 <Card className="bg-teal-50/80 dark:bg-teal-900/20 backdrop-blur-lg border-teal-500/30 hover:bg-teal-100/60 dark:hover:bg-teal-900/30 transition-all duration-300">
                   <CardHeader>
                     <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
-                      <CloudinaryImage
-                        fileName={premiumARCards.image_url}
+                      <img
+                        src={premiumARCards.image_url}
                         alt={premiumARCards.name}
                         className="w-full h-full object-cover"
-                        width={400}
-                        height={600}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
                     </div>

@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
-import { useState, useRef } from "react";
+import { productsService } from "@/services/products";
+import { Image as ImageIcon, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 interface ImageUploadProps {
   onImageUpload: (imageUrl: string) => void;
@@ -11,9 +12,15 @@ interface ImageUploadProps {
   className?: string;
 }
 
-export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: ImageUploadProps) => {
+export const ImageUpload = ({
+  onImageUpload,
+  currentImageUrl,
+  className,
+}: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
+  const [preview, setPreview] = useState<string | null>(
+    currentImageUrl || null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -22,7 +29,7 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast({
         title: "Invalid file type",
         description: "Please select an image file",
@@ -55,29 +62,17 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
   const uploadFile = async (file: File) => {
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/products/upload-image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
+      const result = await productsService.uploadProductImage(file);
+      if (result.error) {
+        throw new Error(result.error);
       }
-
-      const data = await response.json();
-      onImageUpload(data.image_url);
-      
+      onImageUpload(result.data!.image_url);
       toast({
         title: "Success",
         description: "Image uploaded successfully",
       });
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
         description: "Failed to upload image. Please try again.",
@@ -91,9 +86,9 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
 
   const handleRemoveImage = () => {
     setPreview(null);
-    onImageUpload('');
+    onImageUpload("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -104,7 +99,7 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
   return (
     <div className={`space-y-2 ${className}`}>
       <Label>Product Image</Label>
-      
+
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
         {preview ? (
           <div className="relative">
@@ -135,7 +130,7 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
               disabled={uploading}
             >
               <Upload className="w-4 h-4 mr-2" />
-              {uploading ? 'Uploading...' : 'Select Image'}
+              {uploading ? "Uploading..." : "Select Image"}
             </Button>
           </div>
         )}
@@ -148,7 +143,7 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
         onChange={handleFileSelect}
         className="hidden"
       />
-      
+
       {preview && (
         <Button
           type="button"
@@ -158,7 +153,7 @@ export const ImageUpload = ({ onImageUpload, currentImageUrl, className }: Image
           className="w-full"
         >
           <Upload className="w-4 h-4 mr-2" />
-          {uploading ? 'Uploading...' : 'Change Image'}
+          {uploading ? "Uploading..." : "Change Image"}
         </Button>
       )}
     </div>

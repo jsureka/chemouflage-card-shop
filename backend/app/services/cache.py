@@ -143,7 +143,7 @@ class CacheService:
         ttl: Optional[int] = None
     ) -> bool:
         """Set value in cache."""
-        redis = await self._get_redis()
+        redis = await self
         return await redis.set(key, value, ttl or settings.CACHE_TTL_SECONDS)
     
     async def delete(self, key: str) -> bool:
@@ -162,44 +162,48 @@ cache_service = CacheService()
 def cached(key_pattern: str, ttl: Optional[int] = None):
     """
     Decorator for caching function results.
-    
-    Args:
-        key_pattern: Cache key pattern (can include {args} placeholders)
-        ttl: Time to live in seconds
+    Converts Pydantic model(s) to dict(s) before caching, and restores them after retrieval.
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
+            import inspect
+
+            from pydantic import BaseModel
+
             # Generate cache key
-            # Get function signature to map positional args to parameter names
             sig = inspect.signature(func)
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
-            
-            # Create a format dict with both positional args and kwargs
             format_dict = {
                 'args': '_'.join(str(arg) for arg in args),
                 **bound_args.arguments
             }
-            
             cache_key = key_pattern.format(**format_dict)
-            
             # Try to get from cache
             cached_result = await cache_service.get(cache_key)
             if cached_result is not None:
-                logger.debug(f"Cache hit for key: {cache_key}")
+                # If the function returns a list of models, reconstruct them
+                if hasattr(func, '__annotations__') and 'return' in func.__annotations__:
+                    return_type = func.__annotations__['return']
+                    # Handle List[Model] return type
+                    if (getattr(return_type, '__origin__', None) is list and
+                        hasattr(return_type, '__args__') and
+                        hasattr(return_type.__args__[0], 'parse_obj')):
+                        model_cls = return_type.__args__[0]
+                        return [model_cls.parse_obj(item) for item in cached_result]
                 return cached_result
-            
             # Execute function
             result = await func(*args, **kwargs)
-            
-            # Cache result
-            if result is not None:
-                await cache_service.set(cache_key, result, ttl)
-                logger.debug(f"Cached result for key: {cache_key}")
-            
+            # Convert Pydantic models to dicts before caching
+            to_cache = result
+            if isinstance(result, BaseModel):
+                to_cache = result.model_dump()
+            elif isinstance(result, list) and result and isinstance(result[0], BaseModel):
+                to_cache = [item.model_dump() for item in result]
+            if to_cache is not None:
+                await cache_service.set(cache_key, to_cache, ttl)
             return result
-        
         return wrapper
     return decorator
 

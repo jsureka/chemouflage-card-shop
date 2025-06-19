@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 import uuid
 
-from app.api.dependencies import get_current_admin, get_current_user
+from app.api.dependencies import get_current_admin
 from app.config.cloudinary import CloudinaryService
 from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import Product, ProductCreate, ProductUpdate

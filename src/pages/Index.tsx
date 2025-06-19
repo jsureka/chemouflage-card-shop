@@ -178,7 +178,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-background/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             <div className="space-y-4">
               {" "}
               <div className="flex items-center space-x-2">
@@ -240,6 +240,49 @@ const Index = () => {
                 </li>
               </ul>
             </div>
+            <div>
+              <h3 className="text-foreground font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li>
+                  <a
+                    href="https://www.facebook.com/chemouflage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal-400 transition-colors"
+                  >
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.facebook.com/chemouflage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal-400 transition-colors"
+                  >
+                    Terms & Conditions
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="hover:text-teal-400 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="https://www.facebook.com/chemouflage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal-400 transition-colors"
+                  >
+                    Return and Refund Policy
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>{" "}
           <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-muted-foreground">
             <div className="flex items-center justify-center">
@@ -252,7 +295,7 @@ const Index = () => {
                 width={400}
               />
             </div>
-            <p>&copy; 2024 Chemouflage. All rights reserved.</p>
+            <p>&copy; 2025 Chemouflage. All rights reserved.</p>
           </div>
         </div>
       </footer>

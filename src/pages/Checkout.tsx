@@ -1,4 +1,4 @@
-import CloudinaryImage from "@/components/CloudinaryImage";
+ import CloudinaryImage from "@/components/CloudinaryImage";
 import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -566,8 +566,8 @@ const Checkout = () => {
                   {" "}
                   <div className="flex items-center space-x-4 p-4 bg-background/40 border border-border rounded-lg">
                     <div className="text-4xl">
-                      <CloudinaryImage
-                        fileName={product.image_url}
+                      <img
+                        src={product.image_url}
                         alt={product.name}
                         className="w-16 h-16 rounded-lg"
                         width={64}

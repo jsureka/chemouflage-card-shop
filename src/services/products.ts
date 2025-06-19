@@ -118,6 +118,37 @@ class ProductsService {
 
     return this.handleResponse<Product>(response);
   }
+
+  async uploadProductImage(
+    file: File
+  ): Promise<ApiResponse<{ image_url: string }>> {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Use setAuthHeader, but remove Content-Type for FormData
+    const headers = { ...this.setAuthHeader() };
+    if (headers["Content-Type"]) {
+      delete headers["Content-Type"];
+    }
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/products/upload-image`,
+      {
+        method: "POST",
+        headers,
+        body: formData,
+      }
+    );
+    try {
+      const data = await response.json();
+      if (!response.ok) {
+        return {
+          error: data.detail || data.message || "Failed to upload image",
+        };
+      }
+      return { data };
+    } catch (error) {
+      return { error: "Failed to process response" };
+    }
+  }
 }
 
 export const productsService = new ProductsService();

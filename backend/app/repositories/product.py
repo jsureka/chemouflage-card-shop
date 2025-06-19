@@ -2,12 +2,12 @@ import hashlib
 from datetime import datetime
 from typing import List, Optional
 
+from bson import ObjectId
+
 from app.db.mongodb import get_database
-from app.models.product import (Product, ProductCreate, ProductInDB,
-                                ProductUpdate)
+from app.models.product import Product, ProductCreate, ProductInDB, ProductUpdate
 from app.models.user import PyObjectId
 from app.services.cache import cache_invalidate, cache_service, cached
-from bson import ObjectId
 
 
 class ProductRepository:

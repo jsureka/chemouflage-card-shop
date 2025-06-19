@@ -711,7 +711,7 @@ const PremiumCodeManagement = () => {
           </CardContent>
         </Card>{" "}
         {/* Pagination Controls */}
-        {pagination && pagination.total_pages > 1 && (
+        {pagination && (
           <ModernPagination
             currentPage={pagination.current_page}
             totalPages={pagination.total_pages}

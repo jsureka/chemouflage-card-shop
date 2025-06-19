@@ -226,10 +226,18 @@ const ProductBrowser = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayProducts.map((product) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">          {displayProducts.map((product) => (
             <Link key={product.id} to={`/products/${product.id}`}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                {product.image_url && (
+                  <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                )}
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg line-clamp-2">

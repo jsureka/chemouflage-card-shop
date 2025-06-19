@@ -1,12 +1,14 @@
 from typing import Any, List, Optional
+import uuid
 
-from app.api.dependencies import get_current_admin, get_current_user
+from app.api.dependencies import get_current_admin
+from app.config.cloudinary import CloudinaryService
 from app.models.pagination import PaginatedResponse, PaginationParams
 from app.models.product import Product, ProductCreate, ProductUpdate
 from app.models.user import User
 from app.repositories.product import ProductRepository
 from app.utils.pagination import create_paginated_response
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 
 router = APIRouter()
 
@@ -20,6 +22,57 @@ async def create_product(
     """
     product_id = await ProductRepository.create(product_in)
     return await ProductRepository.get_by_id(product_id)
+
+@router.post("/upload-image")
+async def upload_product_image(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_admin)
+) -> dict:
+    """
+    Upload a product image to Cloudinary. Only for admins.
+    """
+    # Validate file type
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be an image"
+        )
+    
+    # Validate file size (5MB limit)
+    if file.size and file.size > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size must be less than 5MB"
+        )
+    
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        # Generate unique filename
+        file_extension = file.filename.split(".")[-1] if file.filename and "." in file.filename else "jpg"
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        
+        # Upload to Cloudinary
+        image_url = await CloudinaryService.upload_image(
+            file_content=file_content,
+            filename=unique_filename,
+            folder="products"
+        )
+        
+        return {
+            "message": "Image uploaded successfully",
+            "image_url": image_url,
+            "filename": unique_filename
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload image: {str(e)}"
+        )
 
 @router.get("/", response_model=PaginatedResponse[Product])
 async def read_products(

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ImageUpload";
 import { useProducts } from "@/contexts/ProductsContext";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -156,17 +157,12 @@ const ProductForm = React.memo<ProductFormProps>(
               <SelectItem value="false">Inactive</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        </div>      </div>
 
-      <div className="space-y-2">
-        <Label>Image URL (Optional)</Label>
-        <Input
-          value={formData.image_url}
-          onChange={(e) => onInputChange("image_url", e.target.value)}
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
+      <ImageUpload
+        onImageUpload={(imageUrl) => onInputChange("image_url", imageUrl)}
+        currentImageUrl={formData.image_url}
+      />
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button variant="outline" onClick={onCancel}>
@@ -327,9 +323,17 @@ const ProductManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">        {products.map((product) => (
           <Card key={product.id} className="backdrop-blur-lg border-primary/30">
+            {product.image_url && (
+              <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{product.name}</CardTitle>

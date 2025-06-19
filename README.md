@@ -79,7 +79,48 @@ MAIL_STARTTLS=false
 MAIL_SSL_TLS=true
 ```
 
-### 2.5 Application URL Secrets
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+- FastAPI (Backend)
+- MongoDB (Database)
+- Cloudinary (Image Storage)
+
+## Image Upload Feature
+
+The application includes a complete image upload system:
+
+### Backend Setup
+1. Install Cloudinary dependency: `pip install cloudinary==1.36.0`
+2. Add Cloudinary configuration to your `.env` file:
+   ```
+   CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+   CLOUDINARY_API_KEY=your_cloudinary_api_key
+   CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+   ```
+3. Restart your backend server
+
+### Frontend Features
+- **Image Upload Component**: Drag-and-drop or click-to-select image upload
+- **File Validation**: Automatic validation for file type and size (max 5MB)
+- **Image Preview**: Real-time preview of selected images
+- **Cloudinary Integration**: Images are automatically uploaded to Cloudinary with optimizations
+- **Product Management**: Upload images directly from the admin product management interface
+
+### Usage
+1. Navigate to the Admin Dashboard
+2. Go to Product Management
+3. Create or edit a product
+4. Use the image upload section to add product images
+5. Images are automatically optimized and stored in Cloudinary
+6. The public URL is saved to the database and displayed throughout the application
+
+### Quick Setup
+Run the provided installation script:
+- **Windows**: `install-image-upload.bat`
+- **Linux/Mac**: `bash install-image-upload.sh`
 
 ```
 FRONTEND_URL=http://YOUR_DOMAIN_OR_IP

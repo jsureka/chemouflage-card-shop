@@ -10,7 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
+import { trackError, trackLogin } from "@/lib/analytics";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -22,18 +24,29 @@ const Login = () => {
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Track engagement time on login page
+  useEngagementTracking('login');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       await login(email, password);
+      
+      // Track successful login
+      trackLogin('email');
+      
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
       navigate("/");
     } catch (error) {
+      // Track login error
+      trackError(`Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'login');
+      
       toast({
         title: "Login failed",
         description: "Please check your credentials and try again.",

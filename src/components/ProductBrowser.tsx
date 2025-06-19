@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useProducts } from "@/contexts/ProductsContext";
+import { useEngagementTracking } from "@/hooks/use-analytics";
+import { trackSearch } from "@/lib/analytics";
 import { Product } from "@/services/types";
 import { Filter, Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,6 +32,9 @@ const ProductBrowser = () => {
     page: 1,
     limit: 12,
   });
+
+  // Track engagement time on product browser page
+  useEngagementTracking('product_browser');
 
   // Categories - you can expand this based on your actual categories
   const categories = [
@@ -49,12 +54,14 @@ const ProductBrowser = () => {
       fetchProducts(filters);
     }
   }, [filters, isSearchMode]);
-
   const handleSearch = async () => {
     if (searchQuery.trim()) {
       setIsSearchMode(true);
       const results = await searchProducts(searchQuery);
       setSearchResults(results);
+      
+      // Track search event
+      trackSearch(searchQuery.trim(), results.length);
     } else {
       setIsSearchMode(false);
       setSearchResults([]);

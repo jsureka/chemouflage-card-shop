@@ -10,7 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
+import { trackError, trackSignUp } from "@/lib/analytics";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,10 +28,14 @@ const Register = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Track engagement time on register page
+  useEngagementTracking('register');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
+      trackError('Password mismatch during registration', 'register');
       toast({
         title: "Passwords don't match",
         description: "Please make sure your passwords match.",
@@ -42,13 +48,19 @@ const Register = () => {
 
     try {
       await register(email, password, name);
+      
+      // Track successful registration
+      trackSignUp('email');
+      
       toast({
         title: "Account created!",
         description:
           "Welcome to Chemouflage AR Chemistry. Your account has been created successfully.",
       });
-      navigate("/");
-    } catch (error) {
+      navigate("/");    } catch (error) {
+      // Track registration error
+      trackError(`Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'register');
+      
       toast({
         title: "Registration failed",
         description: "Something went wrong. Please try again.",

@@ -12,7 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
+import { trackContactForm, trackError } from "@/lib/analytics";
 import { contactService } from "@/services/contact";
 import {
   Clock,
@@ -36,6 +38,9 @@ const Contact = () => {
     subject: "",
     message: "",
   });
+
+  // Track engagement time on contact page
+  useEngagementTracking('contact');
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -64,12 +69,13 @@ const Contact = () => {
           variant: "destructive",
         });
         return;
-      }
-
-      // Send message using the contact service
+      }      // Send message using the contact service
       const response = await contactService.sendMessage(formData);
 
       if (response.error) {
+        // Track contact form error
+        trackError(`Contact form submission failed: ${response.error}`, 'contact');
+        
         toast({
           title: "Error",
           description: response.error,
@@ -77,6 +83,9 @@ const Contact = () => {
         });
         return;
       }
+
+      // Track successful contact form submission
+      trackContactForm('contact_page');
 
       toast({
         title: "Message Sent!",

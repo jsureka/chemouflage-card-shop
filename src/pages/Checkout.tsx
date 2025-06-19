@@ -8,7 +8,16 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  trackBeginCheckout, 
+  trackPaymentMethodSelection, 
+  trackPurchase, 
+  trackShippingMethodSelection,
+  trackError,
+  AnalyticsItem 
+} from "@/lib/analytics";
 import { ordersService, productsService, settingsService } from "@/services";
 import { Product } from "@/services/types";
 import {
@@ -41,6 +50,10 @@ const Checkout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Track engagement time on checkout page
+  useEngagementTracking('checkout');
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -65,13 +78,17 @@ const Checkout = () => {
   const decrementQuantity = () => {
     setQuantity((prev) => Math.max(prev - 1, 1)); // Min 1 item
   };
-
   // Calculate delivery charge based on city
   const calculateDeliveryCharge = (city: string) => {
     const isDhaka = city.toLowerCase().includes("dhaka");
-    return isDhaka
+    const charge = isDhaka
       ? deliveryCharges.inside_dhaka
       : deliveryCharges.outside_dhaka;
+    
+    // Track shipping method selection
+    trackShippingMethodSelection(isDhaka ? 'inside_dhaka' : 'outside_dhaka', charge);
+    
+    return charge;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +103,13 @@ const Checkout = () => {
       const newDeliveryCharge = calculateDeliveryCharge(value);
       setDeliveryCharge(newDeliveryCharge);
     }
+  };
+
+  // Handle payment method selection
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value);
+    // Track payment method selection
+    trackPaymentMethodSelection(value);
   };
 
   // Fetch delivery charges
@@ -191,12 +215,27 @@ const Checkout = () => {
     } finally {
       setProductLoading(false);
     }
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     fetchPaymentMethods();
     fetchProduct();
     fetchDeliveryCharges();
   }, []);
+
+  // Track begin checkout when product is loaded
+  useEffect(() => {
+    if (product && !productLoading) {
+      const analyticsItem: AnalyticsItem = {
+        item_id: product.id,
+        item_name: product.name,
+        category: product.category,
+        price: product.price,
+        currency: 'BDT',
+        quantity: quantity,
+      };
+      
+      trackBeginCheckout([analyticsItem], product.price * quantity + deliveryCharge);
+    }
+  }, [product, productLoading, quantity, deliveryCharge]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -251,10 +290,29 @@ const Checkout = () => {
 
       if (error) {
         throw new Error(error);
-      }
-
-      // Handle different response types
+      }      // Handle different response types
       if (data) {
+        // Prepare analytics data for purchase tracking
+        const analyticsItem: AnalyticsItem = {
+          item_id: product!.id,
+          item_name: product!.name,
+          category: product!.category,
+          price: product!.price,
+          currency: 'BDT',
+          quantity: quantity,
+        };
+
+        const purchaseData = {
+          transaction_id: data.order.id,
+          value: totalAmount,
+          currency: 'BDT',
+          items: [analyticsItem],
+          shipping: deliveryCharge,
+        };
+
+        // Track purchase event
+        trackPurchase(purchaseData);
+
         // Check if payment is required (AamarPay)
         if (data.payment_required && data.payment_url) {
           toast({
@@ -287,8 +345,10 @@ const Checkout = () => {
         });
 
         navigate("/");
-      }
-    } catch (error: any) {
+      }    } catch (error: any) {
+      // Track checkout error
+      trackError(`Checkout failed: ${error.message || 'Unknown error'}`, 'checkout');
+      
       toast({
         title: "Order Failed",
         description:
@@ -475,10 +535,9 @@ const Checkout = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {" "}
-                      <RadioGroup
+                      {" "}                      <RadioGroup
                         value={paymentMethod}
-                        onValueChange={setPaymentMethod}
+                        onValueChange={handlePaymentMethodChange}
                         className="space-y-3"
                       >
                         {availablePaymentMethods.map((method) => (
@@ -569,9 +628,7 @@ const Checkout = () => {
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-16 h-16 rounded-lg"
-                        width={64}
-                        height={64}
+                        className="w-32 h-32 rounded-lg"
                       />
                     </div>
                     <div className="flex-1">

@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import ModernPagination from "@/components/ui/ModernPagination";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { trackAdminAction, trackPremiumCodeUsage } from "@/lib/analytics";
 import { PaginationMetadata } from "@/services";
 import {
   PremiumCode,
@@ -126,7 +127,6 @@ const PremiumCodeManagement = () => {
       setLoading(false);
     }
   };
-
   const handleCreate = async () => {
     try {
       const response = await premiumCodesService.createPremiumCode(createForm);
@@ -134,6 +134,9 @@ const PremiumCodeManagement = () => {
       if (response.error) {
         throw new Error(response.error);
       }
+
+      // Track admin action
+      trackAdminAction('create', 'premium_code');
 
       toast({
         title: "Success",
@@ -161,15 +164,16 @@ const PremiumCodeManagement = () => {
           variant: "destructive",
         });
         return;
-      }
-
-      const response = await premiumCodesService.generatePremiumCodes(
+      }      const response = await premiumCodesService.generatePremiumCodes(
         generateForm
       );
 
       if (response.error) {
         throw new Error(response.error);
       }
+
+      // Track admin action for bulk code generation
+      trackAdminAction('generate_bulk', 'premium_codes');
 
       toast({
         title: "Success",
@@ -241,7 +245,6 @@ const PremiumCodeManagement = () => {
       });
     }
   };
-
   const handleDelete = async (codeId: string) => {
     if (!confirm("Are you sure you want to delete this premium code?")) {
       return;
@@ -253,6 +256,10 @@ const PremiumCodeManagement = () => {
       if (response.error) {
         throw new Error(response.error);
       }
+
+      // Track admin action for code deletion
+      trackAdminAction('delete', 'premium_code');
+
       toast({
         title: "Success",
         description: "Premium code deleted successfully",

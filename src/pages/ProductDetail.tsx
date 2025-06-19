@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProducts } from "@/contexts/ProductsContext";
+import { useEngagementTracking } from "@/hooks/use-analytics";
+import { trackProductView, AnalyticsItem } from "@/lib/analytics";
 import { Product } from "@/services/types";
 import { ArrowLeft, DollarSign, Package, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,6 +16,9 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Track engagement time on product detail page
+  useEngagementTracking('product_detail');
+
   useEffect(() => {
     const fetchProduct = async () => {
       if (id) {
@@ -21,6 +26,20 @@ const ProductDetail = () => {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
         setLoading(false);
+
+        // Track product view once product is loaded
+        if (fetchedProduct) {
+          const analyticsItem: AnalyticsItem = {
+            item_id: fetchedProduct.id,
+            item_name: fetchedProduct.name,
+            category: fetchedProduct.category,
+            price: fetchedProduct.price,
+            currency: 'BDT',
+            item_brand: 'Chemouflage',
+          };
+          
+          trackProductView(analyticsItem);
+        }
       }
     };
 

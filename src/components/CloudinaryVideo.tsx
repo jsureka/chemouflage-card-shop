@@ -1,5 +1,6 @@
 import { getCloudinaryVideoUrl } from "@/config/cloudinary";
-import React from "react";
+import { trackVideoPlay } from "@/lib/analytics";
+import React, { useRef } from "react";
 
 interface CloudinaryVideoProps
   extends React.VideoHTMLAttributes<HTMLVideoElement> {
@@ -17,6 +18,10 @@ interface CloudinaryVideoProps
   format?: string;
   /** Custom Cloudinary transformations */
   transformations?: string;
+  /** Product ID for analytics tracking */
+  productId?: string;
+  /** Video title for analytics */
+  videoTitle?: string;
 }
 
 /**
@@ -32,8 +37,13 @@ export const CloudinaryVideo: React.FC<CloudinaryVideoProps> = ({
   format = "auto",
   transformations,
   className,
+  productId,
+  videoTitle,
+  onPlay,
   ...props
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   // Build transformations string
   const buildTransformations = () => {
     if (transformations) return transformations;
@@ -49,6 +59,17 @@ export const CloudinaryVideo: React.FC<CloudinaryVideoProps> = ({
 
   const cloudinaryUrl = getCloudinaryVideoUrl(publicId, buildTransformations());
 
+  // Handle video play event with analytics
+  const handlePlay = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    // Track video play event
+    trackVideoPlay(videoTitle || publicId, productId);
+    
+    // Call original onPlay if provided
+    if (onPlay) {
+      onPlay(event);
+    }
+  };
+
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     if (fallbackPath && e.currentTarget.src !== fallbackPath) {
       console.warn(
@@ -62,9 +83,14 @@ export const CloudinaryVideo: React.FC<CloudinaryVideoProps> = ({
       props.onError(e);
     }
   };
-
   return (
-    <video {...props} className={className} onError={handleError}>
+    <video 
+      {...props} 
+      ref={videoRef}
+      className={className} 
+      onError={handleError}
+      onPlay={handlePlay}
+    >
       <source src={cloudinaryUrl} type="video/mp4" />
       {fallbackPath && <source src={fallbackPath} type="video/mp4" />}
       Your browser does not support the video tag.

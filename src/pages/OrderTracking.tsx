@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
+import { trackOrderTracking, trackError } from "@/lib/analytics";
 import { ordersService } from "@/services";
 import { CheckCircle, Clock, MapPin, Package, Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -23,6 +25,9 @@ const OrderTracking = () => {
   const [orderData, setOrderData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Track engagement time on order tracking page
+  useEngagementTracking('order_tracking');
 
   // Auto-track if order ID is provided via route
   useEffect(() => {
@@ -37,12 +42,20 @@ const OrderTracking = () => {
 
     setIsLoading(true);
     setHasSearched(true);
+    
+    // Track order tracking attempt
+    trackOrderTracking(idToUse);
+    
     try {
       const { data, error } = await ordersService.trackOrder(idToUse.trim());
 
       if (error) {
         console.error("Track order error:", error);
         setOrderData(null);
+        
+        // Track order tracking error
+        trackError(`Order tracking failed for ID: ${idToUse} - ${error}`, 'order_tracking');
+        
         toast({
           title: "Order Not Found",
           description: `We couldn't find an order with the ID "${idToUse}". Please check your order ID or tracking number and try again.`,

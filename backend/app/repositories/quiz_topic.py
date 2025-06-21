@@ -58,17 +58,35 @@ class TopicRepository:
             query_filter["name"] = {"$regex": search, "$options": "i"}
         
         # Get topics
-        cursor = db.quiz_topics.find(query_filter).skip(skip).limit(limit).sort("created_at", -1)
+        pipeline = [
+            {"$match": query_filter},
+            {"$lookup": {
+                "from": "quiz_questions",
+                "localField": "_id",
+                "foreignField": "topic_id",
+                "as": "questions"
+            }},
+            {"$addFields": {
+                "question_count": {
+                    "$size": {
+                        "$filter": {
+                            "input": "$questions",
+                            "as": "question",
+                            "cond": {"$eq": ["$$question.is_active", True]}
+                        }
+                    }
+                }
+            }},
+            {"$sort": {"created_at": -1}},
+            {"$skip": skip},
+            {"$limit": limit}
+        ]
+        
+        cursor = db.quiz_topics.aggregate(pipeline)
         topics = []
         
         async for doc in cursor:
-            # Get question count for each topic
-            question_count = await db.quiz_questions.count_documents({
-                "topic_id": str(doc["_id"]),
-                "is_active": True
-            })
-            
-            topic_data = {**doc, "id": str(doc["_id"]), "question_count": question_count}
+            topic_data = {**doc, "id": str(doc["_id"])}
             topics.append(Topic(**topic_data))
         
         return topics

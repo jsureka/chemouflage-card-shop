@@ -740,7 +740,7 @@ const Checkout = () => {
               />
             </div>
             <p className="text-center text-muted-foreground text-sm">
-              &copy; 2024 Chemouflage. All rights reserved.
+              &copy; 2025 Chemouflage. All rights reserved.
             </p>
           </div>
         </div>

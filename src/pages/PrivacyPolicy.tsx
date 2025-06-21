@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import CloudinaryImage from "@/components/CloudinaryImage";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const PrivacyPolicy = () => {
   return (
@@ -123,22 +124,7 @@ const PrivacyPolicy = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-background/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
-        <div className="container mx-auto px-4">
-          <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-muted-foreground">
-            <div className="flex items-center justify-center">
-              <CloudinaryImage
-                fileName="Footer-Logo_vd1b65.png"
-                alt="AamarPay - Secure Payment Gateway"
-                className="h-6 opacity-80 hover:opacity-100 transition-opacity"
-                height={24}
-                width={400}
-              />
-            </div>
-            <p>&copy; 2025 Chemouflage. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

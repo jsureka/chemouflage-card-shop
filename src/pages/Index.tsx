@@ -15,6 +15,7 @@ import { useProducts } from "@/contexts/ProductsContext";
 import { Box, FlaskConical, Globe, ShoppingCart, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const { user, isAdmin, logout } = useAuth();
@@ -176,129 +177,7 @@ const Index = () => {
         </section>
       )}
       {/* Footer */}
-      <footer className="bg-background/80 backdrop-blur-lg border-t border-teal-500/30 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            <div className="space-y-4">
-              {" "}
-              <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-foreground">
-                  Chemouflage
-                </span>
-              </div>
-              <p className="text-muted-foreground">
-                Revolutionary AR chemistry education platform for the next
-                generation of scientists.
-              </p>
-            </div>{" "}
-            <div>
-              <h3 className="text-foreground font-semibold mb-4">Products</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  <Link
-                    to="/checkout"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    AR Chemistry Cards
-                  </Link>
-                </li>
-              </ul>
-            </div>{" "}
-            <div>
-              <h3 className="text-foreground font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  <Link
-                    to="/track-order"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Track Order
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
-              </ul>
-            </div>{" "}
-            <div>
-              <h3 className="text-foreground font-semibold mb-4">Connect</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  <a
-                    href="https://www.facebook.com/chemouflage"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Facebook
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-foreground font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>
-                  <a
-                    href="https://www.facebook.com/chemouflage"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://www.facebook.com/chemouflage"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Terms & Conditions
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    to="/privacy-policy"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <a
-                    href="https://www.facebook.com/chemouflage"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-teal-400 transition-colors"
-                  >
-                    Return and Refund Policy
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>{" "}
-          <div className="border-t border-teal-500/30 mt-8 pt-8 text-center text-muted-foreground">
-            <div className="flex items-center justify-center">
-              {" "}
-              <CloudinaryImage
-                fileName="Footer-Logo_vd1b65.png"
-                alt="AamarPay - Secure Payment Gateway"
-                className="h-6 opacity-80 hover:opacity-100 transition-opacity"
-                height={24}
-                width={400}
-              />
-            </div>
-            <p>&copy; 2025 Chemouflage. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

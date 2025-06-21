@@ -14,16 +14,18 @@ const Header = () => {
     <nav className="container mx-auto px-4 py-6">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
-          <CloudinaryImage
-            fileName="logoRound_1_yn0smh.png"
-            alt="Chemouflage Logo"
-            className="w-10 h-10 object-contain"
-            width={40}
-            height={40}
-          />
-          <span className="text-xl font-bold text-foreground">Chemouflage</span>
-        </div>
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <CloudinaryImage
+              fileName="logoRound_1_yn0smh.png"
+              alt="Chemouflage Logo"
+              className="w-10 h-10 object-contain"
+              width={40}
+              height={40}
+            />
+            <span className="text-xl font-bold text-foreground">Chemouflage</span>
+          </div>
+        </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6">

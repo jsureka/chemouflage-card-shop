@@ -25,60 +25,55 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import ProductDetail from "./pages/ProductDetail";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import RefundPolicy from "./pages/RefundPolicy";
 
 const queryClient = new QueryClient();
 
-// Component to handle page tracking
-const PageTracker = () => {
-  usePageTracking();
-  return null;
-};
-
-const App = () => {
-  // Initialize Google Analytics
-  useEffect(() => {
-    initGA();
-  }, []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <ProductsProvider>
-            <TooltipProvider>
-              <Toaster />
-              <BrowserRouter>
-                <PageTracker />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/products" element={<ProductBrowser />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/my-orders" element={<MyOrders />} />
-                  <Route path="/track-order" element={<OrderTracking />} />
-                  <Route path="/track/:orderId" element={<OrderTracking />} />
-                  <Route path="/payment/success" element={<PaymentSuccess />} />
-                  <Route path="/payment/failed" element={<PaymentFailed />} />
-                  <Route
-                    path="/payment/cancelled"
-                    element={<PaymentCancelled />}
-                  />
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ProductsProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-};
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
+      <AuthProvider>
+        {" "}
+        <ProductsProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              {" "}
+              <Routes>
+                {" "}
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/products" element={<ProductBrowser />} />
+                <Route path="/products/:id" element={<ProductDetail />} />{" "}
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/my-orders" element={<MyOrders />} />
+                <Route path="/track-order" element={<OrderTracking />} />
+                <Route path="/track/:orderId" element={<OrderTracking />} />
+                <Route path="/payment/success" element={<PaymentSuccess />} />
+                <Route path="/payment/failed" element={<PaymentFailed />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                <Route path="/refund-exchange-policy" element={<RefundPolicy />} />
+                <Route
+                  path="/payment/cancelled"
+                  element={<PaymentCancelled />}
+                />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ProductsProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+);
 
 export default App;

@@ -155,7 +155,7 @@ class CacheService:
         redis = await self._get_redis()
         total_deleted = 0
         for pattern in patterns:
-            keys = await redis.get(pattern)
+            keys = [key async for key in redis.scan_iter(pattern)]
             if keys:
                 deleted = await redis.delete_many(keys)
                 total_deleted += deleted

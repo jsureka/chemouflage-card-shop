@@ -4,14 +4,24 @@ import { contactService } from "./contact";
 import { ordersService } from "./orders";
 import { premiumCodesService } from "./premiumCodes";
 import { productsService } from "./products";
+import { quizService } from "./quiz";
 import { settingsService } from "./settings";
 
 export type {
   ApiResponse,
+  CreateQuestionRequest,
+  CreateTopicRequest,
+  DifficultyLevel,
   Order,
   PaginatedResponse,
   PaginationMetadata,
   Product,
+  Question,
+  QuestionOption,
+  QuestionType,
+  QuizStats,
+  Topic,
+  TopicStats,
   User,
 } from "./types";
 
@@ -22,6 +32,7 @@ export {
   ordersService,
   premiumCodesService,
   productsService,
+  quizService,
   settingsService,
 };
 

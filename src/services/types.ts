@@ -78,3 +78,85 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+// Quiz types
+export interface QuestionOption {
+  id: string;
+  title: string;
+  image_url?: string;
+  is_correct: boolean;
+}
+
+export type DifficultyLevel = "easy" | "medium" | "hard";
+export type QuestionType = "descriptive" | "short_answer" | "multiple_choice";
+
+export interface Topic {
+  id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+  question_count: number;
+}
+
+export interface Question {
+  id: string;
+  topic_id: string;
+  title: string;
+  image_url?: string;
+  difficulty: DifficultyLevel;
+  question_type: QuestionType;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+  options?: QuestionOption[];
+  topic_name?: string;
+}
+
+export interface CreateTopicRequest {
+  name: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface CreateQuestionRequest {
+  topic_id: string;
+  title: string;
+  image_url?: string;
+  difficulty: DifficultyLevel;
+  question_type: QuestionType;
+  options?: Omit<QuestionOption, "id">[];
+}
+
+export interface QuizStats {
+  total_topics: number;
+  total_questions: number;
+  active_topics: number;
+  active_questions: number;
+  questions_by_difficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+  questions_by_type: {
+    multiple_choice: number;
+    short_answer: number;
+    descriptive: number;
+  };
+}
+
+export interface TopicStats {
+  topic: Topic;
+  total_questions: number;
+  questions_by_difficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+  questions_by_type: {
+    multiple_choice: number;
+    short_answer: number;
+    descriptive: number;
+  };
+}

@@ -144,12 +144,26 @@ class CacheService:
     ) -> bool:
         """Set value in cache."""
         redis = await self._get_redis()
-        return await redis.set(key, value, ttl or settings.CACHE_TTL_SECONDS)
-    
+        return await redis.set(key, value, ttl or settings.CACHE_TTL_SECONDS)    
     async def delete(self, key: str) -> bool:
         """Delete key from cache."""
         redis = await self._get_redis()
         return await redis.delete(key)
+    
+    async def delete_patterns(self, *patterns: str) -> int:
+        """Delete all keys matching the given patterns."""
+        redis = await self._get_redis()
+        total_deleted = 0
+        for pattern in patterns:
+            keys = await redis.get(pattern)
+            if keys:
+                deleted = await redis.delete_many(keys)
+                total_deleted += deleted
+        return total_deleted
+    
+    async def invalidate_patterns(self, *patterns: str) -> int:
+        """Alias for delete_patterns for consistency with decorators."""
+        return await self.delete_patterns(*patterns)
     
     async def exists(self, key: str) -> bool:
         """Check if key exists in cache."""
@@ -237,5 +251,21 @@ def cache_invalidate(key_pattern: str):
             
             return result
         
+        return wrapper
+    return decorator
+
+def cache_invalidate_patterns(*key_patterns: str):
+    """
+    Decorator for invalidating multiple cache patterns after function execution.
+    Args:
+        *key_patterns: Multiple cache key patterns to invalidate
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(*args, **kwargs) -> Any:
+            result = await func(*args, **kwargs)
+            await cache_service.invalidate_patterns(*key_patterns)
+            logger.debug(f"Invalidated cache patterns: {key_patterns}")
+            return result
         return wrapper
     return decorator

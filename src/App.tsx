@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AdminLayout from "./components/AdminLayout";
 import ProductBrowser from "./components/ProductBrowser";
@@ -9,9 +8,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductsProvider } from "./contexts/ProductsContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { usePageTracking } from "./hooks/use-analytics";
-import { initGA } from "./lib/analytics";
-import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
@@ -24,18 +20,21 @@ import OrderTracking from "./pages/OrderTracking";
 import PaymentCancelled from "./pages/PaymentCancelled";
 import PaymentFailed from "./pages/PaymentFailed";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ProductDetail from "./pages/ProductDetail";
+import RefundPolicy from "./pages/RefundPolicy";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
-import RefundPolicy from "./pages/RefundPolicy";
 import {
-  AdminOverview,
-  AdminProducts,
-  AdminOrders,
   AdminCustomers,
+  AdminOrders,
+  AdminOverview,
   AdminPremiumCodes,
+  AdminProducts,
+  AdminQuizQuestions,
+  AdminQuizStats,
+  AdminQuizTopics,
   AdminSettings,
 } from "./pages/admin";
 
@@ -48,7 +47,8 @@ const App = () => (
         <ProductsProvider>
           <TooltipProvider>
             <Toaster />
-            <BrowserRouter><Routes>
+            <BrowserRouter>
+              <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -79,13 +79,19 @@ const App = () => (
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/failed" element={<PaymentFailed />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-                <Route path="/refund-exchange-policy" element={<RefundPolicy />} />
+                <Route
+                  path="/terms-and-conditions"
+                  element={<TermsAndConditions />}
+                />
+                <Route
+                  path="/refund-exchange-policy"
+                  element={<RefundPolicy />}
+                />
                 <Route
                   path="/payment/cancelled"
                   element={<PaymentCancelled />}
                 />
-                
+
                 {/* Admin Routes - Protected */}
                 <Route
                   path="/admin"
@@ -95,26 +101,24 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 >
+                  {" "}
                   <Route index element={<AdminOverview />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="customers" element={<AdminCustomers />} />
                   <Route path="premium-codes" element={<AdminPremiumCodes />} />
                   <Route path="settings" element={<AdminSettings />} />
+                  <Route path="quiz/topics" element={<AdminQuizTopics />} />
+                  <Route
+                    path="quiz/questions"
+                    element={<AdminQuizQuestions />}
+                  />
+                  <Route path="quiz/stats" element={<AdminQuizStats />} />
                 </Route>
-                
-                {/* Legacy admin route for backward compatibility */}
-                <Route
-                  path="/admin-legacy"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                
+
                 <Route path="*" element={<NotFound />} />
-              </Routes>            </BrowserRouter>
+              </Routes>{" "}
+            </BrowserRouter>
           </TooltipProvider>
         </ProductsProvider>
       </AuthProvider>

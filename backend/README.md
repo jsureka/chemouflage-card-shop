@@ -9,6 +9,11 @@ This directory contains the FastAPI backend server for the Chemouflage Card Shop
 - Product management
 - Order and payment processing
 - Admin dashboard statistics
+- Quiz system with topics and questions
+  - Multiple choice, short answer, and descriptive questions
+  - Admin management of quiz content
+  - User access to quizzes and random questions
+  - Comprehensive statistics and analytics
 
 ## Requirements
 
@@ -63,7 +68,13 @@ This directory contains the FastAPI backend server for the Chemouflage Card Shop
    python create_sample_data.py
    ```
 
-8. Start the server:
+8. (Optional) Create sample quiz data:
+
+   ```
+   python create_sample_quiz_data.py
+   ```
+
+9. Start the server:
    ```
    uvicorn main:app --reload
    ```
@@ -238,6 +249,27 @@ python create_default_settings.py
 - `app/models/settings.py`: Contains the settings data models
 - `app/repositories/payment_settings.py`: Database operations for settings
 - `app/api/v1/endpoints/settings.py`: API endpoints for settings management
+
+## Quiz System
+
+The backend includes a comprehensive quiz system with the following features:
+
+- **Topics Management**: Create and manage quiz topics
+- **Questions**: Support for multiple choice, short answer, and descriptive questions
+- **Admin Controls**: Full CRUD operations for admins
+- **User Interface**: Safe access for regular users (without answer keys)
+- **Statistics**: Comprehensive analytics and reporting
+- **Caching**: Optimized performance with Redis caching
+
+### Quiz API Documentation
+
+For detailed API documentation, see: [QUIZ_API_DOCUMENTATION.md](QUIZ_API_DOCUMENTATION.md)
+
+### Quiz Database Collections
+
+- `quiz_topics`: Quiz topic information
+- `quiz_questions`: Question details and metadata
+- `quiz_question_options`: Multiple choice options
 
 ## Notes
 

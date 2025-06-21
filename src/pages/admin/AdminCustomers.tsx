@@ -9,7 +9,7 @@ const AdminCustomers = () => {
   const { user, isAdmin, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const [customers, setCustomers] = useState([]);
   const [customersPagination, setCustomersPagination] = useState(null);
   const [customersLoading, setCustomersLoading] = useState(false);
@@ -37,10 +37,9 @@ const AdminCustomers = () => {
       if (error) {
         throw new Error(error);
       }
-
       if (data) {
         setCustomers(data.data);
-        setCustomersPagination(data);
+        setCustomersPagination(data.pagination);
       }
     } catch (error) {
       console.error("Error fetching customers:", error);

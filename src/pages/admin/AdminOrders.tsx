@@ -11,7 +11,7 @@ const AdminOrders = () => {
   const { user, isAdmin, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   // Orders management state
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [ordersPagination, setOrdersPagination] = useState(null);
@@ -39,7 +39,15 @@ const AdminOrders = () => {
     if (isAdmin) {
       fetchAllOrders();
     }
-  }, [user, isAdmin, isLoading, navigate, ordersPage, ordersLimit, orderFilters]);
+  }, [
+    user,
+    isAdmin,
+    isLoading,
+    navigate,
+    ordersPage,
+    ordersLimit,
+    orderFilters,
+  ]);
 
   const fetchAllOrders = async () => {
     setOrdersLoading(true);
@@ -53,10 +61,9 @@ const AdminOrders = () => {
       if (error) {
         throw new Error(error);
       }
-
       if (data) {
         setAllOrders(data.data);
-        setOrdersPagination(data);
+        setOrdersPagination(data.pagination);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);

@@ -126,23 +126,38 @@ class DatabaseInitializer:
             # Test connection by getting server info
             await self.client.admin.command('ping')
             logger.info("Database connection successful")
-            return True
+            return True        
         except Exception as e:
             logger.error(f"Database connection failed: {e}")
             return False
     
     async def _indexes_exist(self) -> bool:
-        """Check if database indexes exist"""
+        """Check if all required database indexes exist"""
         try:
-            # Check if key collections have indexes
-            collections_to_check = ['users', 'products', 'orders', 'premium_codes']
+            required_indexes = await self._get_required_indexes()
             
-            for collection_name in collections_to_check:
-                collection = self.db[collection_name]
-                indexes = await collection.list_indexes().to_list(length=None)
-                
-                # Every collection should have at least the default _id index
-                if len(indexes) <= 1:  # Only _id index exists
+            for collection_name, expected_indexes in required_indexes.items():
+                try:
+                    collection = self.db[collection_name]
+                    existing_indexes = await collection.list_indexes().to_list(length=None)
+                    
+                    # Convert existing indexes to a set of index keys for comparison
+                    existing_index_keys = set()
+                    for idx in existing_indexes:
+                        if 'key' in idx:
+                            # Convert index key to a comparable format
+                            key_items = tuple(sorted(idx['key'].items()))
+                            existing_index_keys.add(key_items)
+                    
+                    # Check if all expected indexes exist
+                    for index_spec, options in expected_indexes:
+                        expected_key = tuple(sorted(index_spec))
+                        if expected_key not in existing_index_keys:
+                            logger.info(f"Missing index on {collection_name}: {index_spec}")
+                            return False
+                            
+                except Exception as e:
+                    logger.warning(f"Error checking indexes for collection {collection_name}: {e}")
                     return False
             
             return True
@@ -150,6 +165,87 @@ class DatabaseInitializer:
         except Exception as e:
             logger.error(f"Error checking indexes: {e}")
             return False
+    
+    async def _get_required_indexes(self) -> Dict[str, List[Tuple]]:
+        """Get all required indexes organized by collection"""
+        return {
+            'users': [
+                ([('email', ASCENDING)], {"unique": True, "background": True}),
+                ([('firebase_uid', ASCENDING)], {"sparse": True, "background": True}),
+                ([('email_verified', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+            ],
+            'user_roles': [
+                ([('user_id', ASCENDING)], {"unique": True, "background": True}),
+                ([('role', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+            ],
+            'products': [
+                ([('name', TEXT), ('description', TEXT), ('category', TEXT)], {"background": True}),
+                ([('category', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('price', ASCENDING)], {"background": True}),
+                ([('category', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ],
+            'orders': [
+                ([('user_id', ASCENDING)], {"background": True}),
+                ([('status', ASCENDING)], {"background": True}),
+                ([('payment_status', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('updated_at', DESCENDING)], {"background": True}),
+                ([('premium_code_id', ASCENDING)], {"sparse": True, "background": True}),
+                ([('user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+                ([('status', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+                ([('user_id', ASCENDING), ('status', ASCENDING)], {"background": True}),
+            ],
+            'order_items': [
+                ([('order_id', ASCENDING)], {"background": True}),
+                ([('product_id', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('order_id', ASCENDING), ('product_id', ASCENDING)], {"background": True}),
+            ],
+            'premium_codes': [
+                ([('code', ASCENDING)], {"unique": True, "background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('bound_user_id', ASCENDING)], {"sparse": True, "background": True}),
+                ([('expires_at', ASCENDING)], {"sparse": True, "background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('expires_at', ASCENDING)], {"background": True}),
+                ([('bound_user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ],
+            'refresh_tokens': [
+                ([('token', ASCENDING)], {"unique": True, "background": True}),
+                ([('user_id', ASCENDING)], {"background": True}),
+                ([('expires_at', ASCENDING)], {"background": True}),
+            ],
+            'payment_settings': [
+                ([('created_at', DESCENDING)], {"background": True}),
+            ],
+            'quiz_topics': [
+                ([('name', ASCENDING)], {"unique": True, "background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ],
+            'quiz_questions': [
+                ([('topic_id', ASCENDING)], {"background": True}),
+                ([('difficulty', ASCENDING)], {"background": True}),
+                ([('question_type', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
+                ([('difficulty', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ],
+            'quiz_question_options': [
+                ([('question_id', ASCENDING)], {"background": True}),
+                ([('question_id', ASCENDING), ('is_correct', ASCENDING)], {"background": True}),
+            ],
+        }
     
     async def _admin_user_exists(self) -> bool:
         """Check if admin user exists"""
@@ -241,10 +337,37 @@ class DatabaseInitializer:
                 ([('user_id', ASCENDING)], {"background": True}),
                 ([('expires_at', ASCENDING)], {"background": True}),
             ])
-            
-            # Payment settings collection indexes
+              # Payment settings collection indexes
             await self._create_collection_indexes('payment_settings', [
                 ([('created_at', DESCENDING)], {"background": True}),
+            ])
+            
+            # Quiz topics collection indexes
+            await self._create_collection_indexes('quiz_topics', [
+                ([('name', ASCENDING)], {"unique": True, "background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ])
+            
+            # Quiz questions collection indexes
+            await self._create_collection_indexes('quiz_questions', [
+                ([('topic_id', ASCENDING)], {"background": True}),
+                ([('difficulty', ASCENDING)], {"background": True}),
+                ([('question_type', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
+                ([('topic_id', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
+                ([('difficulty', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ])
+            
+            # Quiz question options collection indexes
+            await self._create_collection_indexes('quiz_question_options', [
+                ([('question_id', ASCENDING)], {"background": True}),
+                ([('question_id', ASCENDING), ('is_correct', ASCENDING)], {"background": True}),
             ])
             
             logger.info("Database indexes created successfully")

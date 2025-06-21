@@ -8,13 +8,15 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 const AdminLayout = () => {
   const { user } = useAuth();
   const location = useLocation();
-
   const tabs = [
     { path: "/admin", label: "Overview", exact: true },
     { path: "/admin/products", label: "Products" },
     { path: "/admin/orders", label: "Orders" },
     { path: "/admin/customers", label: "Customers" },
     { path: "/admin/premium-codes", label: "Premium Codes" },
+    { path: "/admin/quiz/topics", label: "Quiz Topics" },
+    { path: "/admin/quiz/questions", label: "Quiz Questions" },
+    { path: "/admin/quiz/stats", label: "Quiz Stats" },
     { path: "/admin/settings", label: "Settings" },
   ];
 

@@ -1,6 +1,9 @@
-export { default as AdminOverview } from './AdminOverview';
-export { default as AdminProducts } from './AdminProducts';
-export { default as AdminOrders } from './AdminOrders';
-export { default as AdminCustomers } from './AdminCustomers';
-export { default as AdminPremiumCodes } from './AdminPremiumCodes';
-export { default as AdminSettings } from './AdminSettings';
+export { default as AdminCustomers } from "./AdminCustomers";
+export { default as AdminOrders } from "./AdminOrders";
+export { default as AdminOverview } from "./AdminOverview";
+export { default as AdminPremiumCodes } from "./AdminPremiumCodes";
+export { default as AdminProducts } from "./AdminProducts";
+export { default as AdminQuizQuestions } from "./AdminQuizQuestions";
+export { default as AdminQuizStats } from "./AdminQuizStats";
+export { default as AdminQuizTopics } from "./AdminQuizTopics";
+export { default as AdminSettings } from "./AdminSettings";

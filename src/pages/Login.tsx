@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { trackError, trackLogin } from "@/lib/analytics";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,6 +24,10 @@ const Login = () => {
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state or default to home
+  const from = location.state?.from?.pathname || "/";
 
   // Track engagement time on login page
   useEngagementTracking('login');
@@ -37,12 +41,11 @@ const Login = () => {
       
       // Track successful login
       trackLogin('email');
-      
-      toast({
+        toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error) {
       // Track login error
       trackError(`Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'login');

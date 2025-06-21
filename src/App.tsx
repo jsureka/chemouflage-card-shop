@@ -3,7 +3,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AdminLayout from "./components/AdminLayout";
 import ProductBrowser from "./components/ProductBrowser";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductsProvider } from "./contexts/ProductsContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -28,6 +30,14 @@ import ResetPassword from "./pages/ResetPassword";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import RefundPolicy from "./pages/RefundPolicy";
+import {
+  AdminOverview,
+  AdminProducts,
+  AdminOrders,
+  AdminCustomers,
+  AdminPremiumCodes,
+  AdminSettings,
+} from "./pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -35,14 +45,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        {" "}
         <ProductsProvider>
           <TooltipProvider>
             <Toaster />
-            <BrowserRouter>
-              {" "}
-              <Routes>
-                {" "}
+            <BrowserRouter><Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -51,9 +57,23 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/products" element={<ProductBrowser />} />
-                <Route path="/products/:id" element={<ProductDetail />} />{" "}
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/my-orders" element={<MyOrders />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <Checkout />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-orders"
+                  element={
+                    <ProtectedRoute>
+                      <MyOrders />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/track-order" element={<OrderTracking />} />
                 <Route path="/track/:orderId" element={<OrderTracking />} />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
@@ -65,10 +85,36 @@ const App = () => (
                   path="/payment/cancelled"
                   element={<PaymentCancelled />}
                 />
-                <Route path="/admin" element={<AdminDashboard />} />
+                
+                {/* Admin Routes - Protected */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<AdminOverview />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="premium-codes" element={<AdminPremiumCodes />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+                
+                {/* Legacy admin route for backward compatibility */}
+                <Route
+                  path="/admin-legacy"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
                 <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+              </Routes>            </BrowserRouter>
           </TooltipProvider>
         </ProductsProvider>
       </AuthProvider>

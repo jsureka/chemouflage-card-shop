@@ -28,10 +28,6 @@ class TopicRepository:
     @staticmethod
     @cached("quiz_topic:{topic_id}", ttl=300)  # Cache for 5 minutes
     async def get_by_id(topic_id: str) -> Optional[Topic]:
-        cached_topic = await cache_service.get(topic_id)
-        if cached_topic:
-            return Topic(**cached_topic)
-
         # Get from database
         db = await get_database()
         topic = await db.quiz_topics.find_one({"_id": ObjectId(topic_id)})

@@ -15,6 +15,9 @@ export interface PremiumCode {
   updated_at?: string;
   bound_user_id?: string;
   bound_user_email?: string;
+  distributed_to_order_id?: string;
+  distributed_to_email?: string;
+  distributed_at?: string;
 }
 
 export interface PremiumCodeCreate {

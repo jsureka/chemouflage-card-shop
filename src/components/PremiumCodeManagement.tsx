@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import ModernPagination from "@/components/ui/ModernPagination";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { trackAdminAction, trackPremiumCodeUsage } from "@/lib/analytics";
+import { trackAdminAction } from "@/lib/analytics";
 import { PaginationMetadata } from "@/services";
 import {
   PremiumCode,
@@ -136,7 +136,7 @@ const PremiumCodeManagement = () => {
       }
 
       // Track admin action
-      trackAdminAction('create', 'premium_code');
+      trackAdminAction("create", "premium_code");
 
       toast({
         title: "Success",
@@ -164,7 +164,8 @@ const PremiumCodeManagement = () => {
           variant: "destructive",
         });
         return;
-      }      const response = await premiumCodesService.generatePremiumCodes(
+      }
+      const response = await premiumCodesService.generatePremiumCodes(
         generateForm
       );
 
@@ -173,7 +174,7 @@ const PremiumCodeManagement = () => {
       }
 
       // Track admin action for bulk code generation
-      trackAdminAction('generate_bulk', 'premium_codes');
+      trackAdminAction("generate_bulk", "premium_codes");
 
       toast({
         title: "Success",
@@ -258,7 +259,7 @@ const PremiumCodeManagement = () => {
       }
 
       // Track admin action for code deletion
-      trackAdminAction('delete', 'premium_code');
+      trackAdminAction("delete", "premium_code");
 
       toast({
         title: "Success",
@@ -634,6 +635,7 @@ const PremiumCodeManagement = () => {
                   >
                     {" "}
                     <div className="flex-1">
+                      {" "}
                       <div className="flex items-center space-x-3 mb-2">
                         <code className="text-lg font-mono font-bold text-foreground bg-background/80 px-3 py-1 rounded">
                           {code.code}
@@ -648,8 +650,12 @@ const PremiumCodeManagement = () => {
                             Bound to {code.bound_user_email}
                           </Badge>
                         )}
-                      </div>
-
+                        {code.distributed_to_email && (
+                          <Badge className="bg-blue-600">
+                            Sent to {code.distributed_to_email}
+                          </Badge>
+                        )}
+                      </div>{" "}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                         <div>
                           <span className="text-muted-foreground">Usage:</span>{" "}
@@ -675,6 +681,25 @@ const PremiumCodeManagement = () => {
                               Description:
                             </span>{" "}
                             {code.description}
+                          </div>
+                        )}
+                        {code.distributed_at && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Distributed:
+                            </span>{" "}
+                            {formatDate(code.distributed_at)}
+                          </div>
+                        )}
+                        {code.distributed_to_order_id && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Order:
+                            </span>{" "}
+                            #
+                            {code.distributed_to_order_id
+                              .slice(-8)
+                              .toUpperCase()}
                           </div>
                         )}
                       </div>

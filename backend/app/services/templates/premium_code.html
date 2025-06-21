@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Premium Codes</title>
+    <title>Your Premium Codes - Order #{{ order_id }}</title>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -40,6 +40,13 @@
         margin: 20px 0;
         text-align: center;
       }
+      .order-summary {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 6px;
+      }
       .code-container {
         background-color: #f8f9fa;
         border: 2px dashed #6c757d;
@@ -47,23 +54,58 @@
         margin: 15px 0;
         border-radius: 8px;
         text-align: center;
+        position: relative;
+      }
+      .code-number {
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
       }
       .code {
         font-family: "Courier New", monospace;
         font-size: 18px;
         font-weight: bold;
         background-color: #e9ecef;
-        padding: 10px 15px;
+        padding: 12px 20px;
         border-radius: 6px;
         display: inline-block;
         margin: 10px 0;
         letter-spacing: 2px;
         border: 1px solid #adb5bd;
+        user-select: all;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .code:hover {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        transform: scale(1.02);
       }
       .code-info {
-        margin-top: 10px;
+        margin-top: 15px;
         font-size: 14px;
         color: #6c757d;
+        text-align: left;
+      }
+      .code-usage {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 12px;
+      }
+      .copy-hint {
+        font-size: 12px;
+        color: #007bff;
+        margin-top: 5px;
+        font-style: italic;
       }
       .btn {
         display: inline-block;
@@ -109,71 +151,169 @@
         <div class="logo">{{ company_name }}</div>
         <h1>🎉 Your Premium Codes</h1>
       </div>
-
       <div>
-        <h2>Hello {{ customer_name }}!</h2>
+        <h2>Hello {{ customer_name }}! 👋</h2>
         <p>
-          Great news! Your premium codes for order
-          <strong>{{ order_id }}</strong> are ready!
+          🎉 Congratulations! Your premium codes for order
+          <strong>#{{ order_id }}</strong> are now ready for use.
+        </p>
+      </div>
+
+      <div class="order-summary">
+        <h3>📦 Order Summary</h3>
+        <p><strong>Order ID:</strong> {{ order_id }}</p>
+        <p><strong>Total Premium Codes:</strong> {{ premium_codes|length }}</p>
+        <p>
+          <strong>Status:</strong>
+          <span style="color: #28a745">✅ Delivered</span>
         </p>
       </div>
 
       <div class="premium-section">
-        <h3>✨ Premium Access Activated</h3>
-        <p>You now have access to exclusive premium content!</p>
+        <h3>🌟 Premium Access Activated</h3>
+        <p>
+          You now have {{ premium_codes|length }} premium code{{ 's' if
+          premium_codes|length != 1 else '' }} ready to use!
+        </p>
+        <p style="font-size: 14px; opacity: 0.9">
+          Each code provides access to exclusive premium content
+        </p>
       </div>
 
       <div class="success">
-        <h3>📋 Instructions</h3>
+        <h3>📋 How to Use Your Codes</h3>
         <p>{{ instructions }}</p>
+        <ul style="text-align: left; margin-top: 10px">
+          <li>Click on any code below to select it for easy copying</li>
+          <li>Use each code individually as needed</li>
+          <li>Codes are case-sensitive and must be entered exactly as shown</li>
+        </ul>
       </div>
+
+      <h3 style="text-align: center; color: #007bff; margin: 30px 0 20px 0">
+        🎯 Your Premium Codes ({{ premium_codes|length }})
+      </h3>
 
       {% for code in premium_codes %}
       <div class="code-container">
-        <h4>{{ code.product_name or code.name or "Premium Code" }}</h4>
-        <div class="code">{{ code.code }}</div>
+        <div class="code-number">Code {{ loop.index }}</div>
+        <h4 style="margin-top: 20px">
+          {{ code.description or "Premium Code" }}
+        </h4>
+        <div
+          class="code"
+          onclick="selectText(this)"
+          title="Click to select code"
+        >
+          {{ code.code }}
+        </div>
+        <div class="copy-hint">
+          💡 Click the code above to select it for copying
+        </div>
+
         <div class="code-info">
-          {% if code.description %}
-          <p><strong>Description:</strong> {{ code.description }}</p>
-          {% endif %} {% if code.expires_at %}
-          <p><strong>Expires:</strong> {{ code.expires_at }}</p>
-          {% endif %} {% if code.usage_limit %}
-          <p><strong>Usage Limit:</strong> {{ code.usage_limit }} uses</p>
+          {% if code.instructions %}
+          <p><strong>Instructions:</strong> {{ code.instructions }}</p>
           {% endif %}
+
+          <div class="code-usage">
+            {% if code.usage_limit %}
+            <strong>Usage Limit:</strong> {{ code.usage_limit }} use{{ 's' if
+            code.usage_limit != 1 else '' }} {% else %}
+            <strong>Usage:</strong> Single use only {% endif %} {% if
+            code.expires_at %} | <strong>Expires:</strong> {{
+            code.expires_at.strftime('%B %d, %Y') if code.expires_at else 'No
+            expiration' }} {% endif %}
+          </div>
         </div>
       </div>
       {% endfor %}
-
       <div class="warning">
-        <h3>⚠️ Important Notes</h3>
+        <h3>🔐 Security & Usage Guidelines</h3>
         <ul>
-          <li>Keep these codes safe and secure</li>
-          <li>Each code can typically only be used once</li>
-          <li>Codes are case-sensitive</li>
-          <li>Contact support if you have any issues using your codes</li>
+          <li>
+            <strong>Keep codes secure:</strong> These codes are unique to your
+            order and should not be shared
+          </li>
+          <li>
+            <strong>One-time use:</strong> Most codes can only be used once
+            (unless specified otherwise)
+          </li>
+          <li>
+            <strong>Case sensitive:</strong> Enter codes exactly as shown,
+            including capitalization
+          </li>
+          <li>
+            <strong>Save this email:</strong> Keep this email for your records
+            and future reference
+          </li>
+          <li>
+            <strong>Troubleshooting:</strong> If a code doesn't work, contact
+            our support team immediately
+          </li>
         </ul>
       </div>
 
       <div style="text-align: center; margin: 30px 0">
-        <a href="{{ frontend_url }}" class="btn">Visit Our Store</a>
-        <a href="mailto:{{ support_email }}" class="btn">Contact Support</a>
+        <a href="{{ frontend_url }}" class="btn">🏪 Visit Our Store</a>
+        <a href="mailto:{{ support_email }}" class="btn">📧 Contact Support</a>
+        <a href="{{ frontend_url }}/track/{{ full_order_id }}" class="btn"
+          >📦 Track Order</a
+        >
       </div>
 
       <div class="footer">
         <p>
-          Questions about your codes? Reply to this email or contact us at {{
-          support_email }}
+          <strong>Need help with your codes?</strong>
         </p>
         <p>
-          {{ company_name }} - Your trusted partner for premium digital content
+          Email us at {{ support_email }} or reply to this email. Please include
+          your order number ({{ order_id }}) for faster assistance.
+        </p>
+        <p>
+          <strong>{{ company_name }}</strong> - Your trusted partner for premium
+          digital content
+        </p>
+        <p style="margin-top: 20px">
+          <small
+            >Order #{{ order_id }} | {{ premium_codes|length }} premium codes
+            delivered</small
+          >
         </p>
         <p>
           <small
             >This is an automated email. Please do not reply directly to this
-            message.</small
+            message unless you need support.</small
           >
         </p>
       </div>
     </div>
+
+    <script>
+      function selectText(element) {
+        if (window.getSelection) {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(element);
+          selection.removeAllRanges();
+          selection.addRange(range);
+
+          // Try to copy to clipboard
+          try {
+            document.execCommand("copy");
+            // Show feedback
+            const originalText = element.textContent;
+            element.style.backgroundColor = "#d4edda";
+            element.style.borderColor = "#c3e6cb";
+            setTimeout(() => {
+              element.style.backgroundColor = "#e9ecef";
+              element.style.borderColor = "#adb5bd";
+            }, 1000);
+          } catch (err) {
+            console.log("Copy failed, but text is selected");
+          }
+        }
+      }
+    </script>
   </body>
 </html>

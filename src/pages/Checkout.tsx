@@ -1,4 +1,4 @@
- import CloudinaryImage from "@/components/CloudinaryImage";
+import CloudinaryImage from "@/components/CloudinaryImage";
 import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEngagementTracking } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  trackBeginCheckout, 
-  trackPaymentMethodSelection, 
-  trackPurchase, 
-  trackShippingMethodSelection,
+import {
+  AnalyticsItem,
+  trackBeginCheckout,
   trackError,
-  AnalyticsItem 
+  trackPaymentMethodSelection,
+  trackPurchase,
+  trackShippingMethodSelection,
 } from "@/lib/analytics";
 import { ordersService, productsService, settingsService } from "@/services";
 import { Product } from "@/services/types";
@@ -52,8 +52,7 @@ const Checkout = () => {
   const { user } = useAuth();
 
   // Track engagement time on checkout page
-  useEngagementTracking('checkout');
-
+  useEngagementTracking("checkout");
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -84,10 +83,13 @@ const Checkout = () => {
     const charge = isDhaka
       ? deliveryCharges.inside_dhaka
       : deliveryCharges.outside_dhaka;
-    
+
     // Track shipping method selection
-    trackShippingMethodSelection(isDhaka ? 'inside_dhaka' : 'outside_dhaka', charge);
-    
+    trackShippingMethodSelection(
+      isDhaka ? "inside_dhaka" : "outside_dhaka",
+      charge
+    );
+
     return charge;
   };
 
@@ -215,11 +217,22 @@ const Checkout = () => {
     } finally {
       setProductLoading(false);
     }
-  };  useEffect(() => {
+  };
+  useEffect(() => {
     fetchPaymentMethods();
     fetchProduct();
     fetchDeliveryCharges();
   }, []);
+
+  // Auto-fill email when user is logged in
+  useEffect(() => {
+    if (user?.email && !formData.email) {
+      setFormData((prev) => ({
+        ...prev,
+        email: user.email,
+      }));
+    }
+  }, [user]);
 
   // Track begin checkout when product is loaded
   useEffect(() => {
@@ -229,11 +242,14 @@ const Checkout = () => {
         item_name: product.name,
         category: product.category,
         price: product.price,
-        currency: 'BDT',
+        currency: "BDT",
         quantity: quantity,
       };
-      
-      trackBeginCheckout([analyticsItem], product.price * quantity + deliveryCharge);
+
+      trackBeginCheckout(
+        [analyticsItem],
+        product.price * quantity + deliveryCharge
+      );
     }
   }, [product, productLoading, quantity, deliveryCharge]);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,7 +306,7 @@ const Checkout = () => {
 
       if (error) {
         throw new Error(error);
-      }      // Handle different response types
+      } // Handle different response types
       if (data) {
         // Prepare analytics data for purchase tracking
         const analyticsItem: AnalyticsItem = {
@@ -298,14 +314,14 @@ const Checkout = () => {
           item_name: product!.name,
           category: product!.category,
           price: product!.price,
-          currency: 'BDT',
+          currency: "BDT",
           quantity: quantity,
         };
 
         const purchaseData = {
           transaction_id: data.order.id,
           value: totalAmount,
-          currency: 'BDT',
+          currency: "BDT",
           items: [analyticsItem],
           shipping: deliveryCharge,
         };
@@ -345,10 +361,14 @@ const Checkout = () => {
         });
 
         navigate("/");
-      }    } catch (error: any) {
+      }
+    } catch (error: any) {
       // Track checkout error
-      trackError(`Checkout failed: ${error.message || 'Unknown error'}`, 'checkout');
-      
+      trackError(
+        `Checkout failed: ${error.message || "Unknown error"}`,
+        "checkout"
+      );
+
       toast({
         title: "Order Failed",
         description:
@@ -535,7 +555,8 @@ const Checkout = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {" "}                      <RadioGroup
+                      {" "}
+                      <RadioGroup
                         value={paymentMethod}
                         onValueChange={handlePaymentMethodChange}
                         className="space-y-3"
@@ -650,7 +671,7 @@ const Checkout = () => {
                             size="sm"
                             onClick={decrementQuantity}
                             disabled={quantity <= 1}
-                            className="h-8 w-8 p-0 border-border hover:bg-muted bg-background dark:bg-white dark:text-gray-800"
+                            className="h-8 w-8 p-0"
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -663,7 +684,7 @@ const Checkout = () => {
                             size="sm"
                             onClick={incrementQuantity}
                             disabled={quantity >= 10}
-                            className="h-8 w-8 p-0 border-border hover:bg-muted bg-background dark:bg-white dark:text-gray-800"
+                            className="h-8 w-8 p-0"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>

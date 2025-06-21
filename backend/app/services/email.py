@@ -2,10 +2,11 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from app.core.config import settings
 from fastapi import HTTPException
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from jinja2 import Environment, FileSystemLoader
+
+from app.core.config import settings
 
 # Email configuration
 conf = ConnectionConfig(
@@ -32,6 +33,11 @@ template_env = Environment(
 
 class EmailService:
     @staticmethod
+    def _shorten_order_id(order_id: str) -> str:
+        """Return the last 8 characters of an order ID for display purposes"""
+        return order_id[-8:] if len(order_id) >= 8 else order_id
+    
+    @staticmethod
     async def send_email(
         recipients: List[str],
         subject: str,
@@ -55,31 +61,36 @@ class EmailService:
                 subtype=MessageType.html,
                 attachments=attachments or []
             )
-            
-            # Send email
+              # Send email
             await fastmail.send_message(message)
             return True
-            
         except Exception as e:
             print(f"Failed to send email: {str(e)}")
-            return False
-    
-    @staticmethod
+            return False    @staticmethod
     async def send_order_confirmation(
         recipient_email: str,
         customer_name: str,
         order_id: str,
         order_items: List[Dict],
         total_amount: float,
-        tracking_url: str
+        tracking_url: str,
+        delivery_charge: float = 0
     ) -> bool:
         """
         Send order confirmation email
         """
+        short_order_id = EmailService._shorten_order_id(order_id)
+        
+        # Calculate subtotal
+        subtotal = total_amount - delivery_charge
+        
         template_data = {
             "customer_name": customer_name,
-            "order_id": order_id,
+            "order_id": short_order_id,
+            "full_order_id": order_id,  # Keep full ID for tracking URL
             "order_items": order_items,
+            "subtotal": subtotal,
+            "delivery_charge": delivery_charge,
             "total_amount": total_amount,
             "tracking_url": tracking_url,
             "company_name": "Chemouflage Card Shop",
@@ -89,7 +100,7 @@ class EmailService:
         
         return await EmailService.send_email(
             recipients=[recipient_email],
-            subject=f"Order Confirmation #{order_id}",
+            subject=f"Order Confirmation #{short_order_id}",
             template_name="order_confirmation.html",
             template_data=template_data
         )
@@ -114,21 +125,22 @@ class EmailService:
             "cancelled": "Your order has been cancelled"
         }
         
+        short_order_id = EmailService._shorten_order_id(order_id)
         template_data = {
             "customer_name": customer_name,
-            "order_id": order_id,
+            "order_id": short_order_id,
+            "full_order_id": order_id,
             "status": status,
             "status_message": status_messages.get(status, "Your order status has been updated"),
             "tracking_url": tracking_url,
             "additional_message": additional_message,
             "company_name": "Chemouflage Card Shop",
             "support_email": settings.MAIL_FROM,
-            "frontend_url": settings.FRONTEND_URL
-        }
+            "frontend_url": settings.FRONTEND_URL        }
         
         return await EmailService.send_email(
             recipients=[recipient_email],
-            subject=f"Order Update #{order_id} - {status.title()}",
+            subject=f"Order Update #{short_order_id} - {status.title()}",
             template_name="order_status_update.html",
             template_data=template_data
         )
@@ -144,9 +156,11 @@ class EmailService:
         """
         Send premium code email
         """
+        short_order_id = EmailService._shorten_order_id(order_id)
         template_data = {
             "customer_name": customer_name,
-            "order_id": order_id,
+            "order_id": short_order_id,
+            "full_order_id": order_id,
             "premium_codes": premium_codes,
             "instructions": instructions or "Use these codes to access your premium content.",
             "company_name": "Chemouflage Card Shop",
@@ -156,7 +170,7 @@ class EmailService:
         
         return await EmailService.send_email(
             recipients=[recipient_email],
-            subject=f"Your Premium Codes - Order #{order_id}",
+            subject=f"Your Premium Codes - Order #{short_order_id}",
             template_name="premium_code.html",
             template_data=template_data
         )
@@ -179,8 +193,7 @@ class EmailService:
         return await EmailService.send_email(
             recipients=[recipient_email],
             subject="Welcome to Chemouflage Card Shop!",
-            template_name="welcome.html",
-            template_data=template_data
+            template_name="welcome.html",            template_data=template_data
         )
     
     @staticmethod
@@ -195,20 +208,21 @@ class EmailService:
         """
         Send order cancellation email
         """
+        short_order_id = EmailService._shorten_order_id(order_id)
         template_data = {
             "customer_name": customer_name,
-            "order_id": order_id,
+            "order_id": short_order_id,
+            "full_order_id": order_id,
             "refund_amount": refund_amount,
             "cancellation_reason": cancellation_reason,
             "additional_message": additional_message,
             "company_name": "Chemouflage Card Shop",
-            "support_email": settings.MAIL_FROM,
-            "frontend_url": settings.FRONTEND_URL
+            "support_email": settings.MAIL_FROM,            "frontend_url": settings.FRONTEND_URL
         }
         
         return await EmailService.send_email(
             recipients=[recipient_email],
-            subject=f"Order Cancelled #{order_id}",
+            subject=f"Order Cancelled #{short_order_id}",
             template_name="order_cancellation.html",
             template_data=template_data
         )
@@ -230,9 +244,11 @@ class EmailService:
         """
         Send shipping notification email
         """
+        short_order_id = EmailService._shorten_order_id(order_id)
         template_data = {
             "customer_name": customer_name,
-            "order_id": order_id,
+            "order_id": short_order_id,
+            "full_order_id": order_id,
             "tracking_number": tracking_number,
             "carrier_name": carrier_name,
             "carrier_url": carrier_url,
@@ -243,12 +259,11 @@ class EmailService:
             "additional_message": additional_message,
             "company_name": "Chemouflage Card Shop",
             "support_email": settings.MAIL_FROM,
-            "frontend_url": settings.FRONTEND_URL
-        }
+            "frontend_url": settings.FRONTEND_URL        }
         
         return await EmailService.send_email(
             recipients=[recipient_email],
-            subject=f"Your Order Has Shipped #{order_id}",
+            subject=f"Your Order Has Shipped #{short_order_id}",
             template_name="shipping_notification.html",
             template_data=template_data
         )

@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from app.models.user import PyObjectId
 from bson import ObjectId
 from pydantic import BaseModel, Field
+
+from app.models.user import PyObjectId
 
 
 class ProductBase(BaseModel):
@@ -172,6 +173,10 @@ class PremiumCodeBase(BaseModel):
     usage_limit: Optional[int] = 1  # How many times this code can be used
     used_count: int = 0
     expires_at: Optional[datetime] = None
+    # Distribution tracking - one code can only be sent to one email
+    distributed_to_order_id: Optional[str] = None  # Order ID this code was sent to
+    distributed_to_email: Optional[str] = None  # Email this code was sent to
+    distributed_at: Optional[datetime] = None  # When this code was distributed
 
 class PremiumCodeCreate(BaseModel):
     description: Optional[str] = None

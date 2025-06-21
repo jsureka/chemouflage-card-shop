@@ -1,12 +1,15 @@
+import logging
 from typing import Any, Dict
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
 
 from app.api.dependencies import get_current_user
 from app.models.user import User
 from app.repositories.order import OrderRepository
 from app.services.aamarpay import aamarpay_service
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import RedirectResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -28,17 +31,31 @@ async def aamarpay_success_callback(request: Request) -> Any:
                 url=f"{aamarpay_service.frontend_url}/payment/failed?error={verification_result.get('error', 'Payment verification failed')}",
                 status_code=status.HTTP_302_FOUND
             )
-        
-        # Extract order ID and update order status
+          # Extract order ID and update order status
         order_id = verification_result.get("order_id")
         if order_id:
             # Update order payment status
+            from fastapi import BackgroundTasks
+
             from app.models.product import OrderUpdate
+            from app.services.premium_code_service import PremiumCodeService
+            
             update_data = OrderUpdate(
                 payment_status="paid" if verification_result.get("payment_status") == "success" else "failed"
             )
             
             updated_order = await OrderRepository.update(order_id, update_data)
+            
+            # If payment was successful, distribute premium codes
+            if (updated_order and 
+                verification_result.get("payment_status") == "success"):
+                
+                try:
+                    # Distribute premium codes based on order quantity
+                    await PremiumCodeService.distribute_codes_for_order(order_id)
+                except Exception as e:
+                    logger.error(f"Failed to distribute premium codes for order {order_id}: {str(e)}")
+                    # Continue with success redirect even if code distribution fails
             
             if updated_order:
                 # Redirect to success page with order details

@@ -134,13 +134,13 @@
             {% endif %}
           </div>
           <div style="font-weight: bold">
-            ${{ "%.2f"|format(item.price * item.quantity) }}
+            ৳{{ "%.2f"|format(item.price * item.quantity) }}
           </div>
         </div>
         {% endfor %}
       </div>
 
-      <div class="total">Total Amount: ${{ "%.2f"|format(total_amount) }}</div>
+      <div class="total">Total Amount: ৳{{ "%.2f"|format(total_amount) }}</div>
 
       <div class="highlight">
         <h3>🎉 What's Next?</h3>

@@ -3,12 +3,18 @@ import string
 from datetime import datetime
 from typing import List, Optional
 
-from app.db.mongodb import get_database
-from app.models.product import (PremiumCode, PremiumCodeBind,
-                                PremiumCodeCreate, PremiumCodeGenerate,
-                                PremiumCodeInDB, PremiumCodeUpdate)
-from app.repositories.user import UserRepository
 from bson import ObjectId
+
+from app.db.mongodb import get_database
+from app.models.product import (
+    PremiumCode,
+    PremiumCodeBind,
+    PremiumCodeCreate,
+    PremiumCodeGenerate,
+    PremiumCodeInDB,
+    PremiumCodeUpdate,
+)
+from app.repositories.user import UserRepository
 
 
 class PremiumCodeRepository:
@@ -283,3 +289,100 @@ class PremiumCodeRepository:
     async def count_bound() -> int:
         """Count premium codes bound to users."""
         return await PremiumCodeRepository.count(bound_only=True)
+    
+    @staticmethod
+    async def get_available_codes_for_distribution(quantity: int) -> List[PremiumCode]:
+        """Get available premium codes for distribution (not yet distributed, active, not expired)"""
+        db = await get_database()
+        
+        # Find available premium codes (not distributed, active, not expired)
+        query = {
+            "distributed_to_email": None,  # Not yet distributed
+            "is_active": True,
+            "$or": [
+                {"expires_at": None},
+                {"expires_at": {"$gt": datetime.utcnow()}}
+            ]
+        }
+        
+        cursor = db.premium_codes.find(query).limit(quantity).sort("created_at", 1)
+        
+        codes = []
+        async for doc in cursor:
+            codes.append(PremiumCode(
+                **doc,
+                id=str(doc["_id"]),
+                bound_user_email=None
+            ))
+        
+        return codes
+    
+    @staticmethod
+    async def distribute_codes_to_order(order_id: str, user_email: str, quantity: int) -> List[PremiumCode]:
+        """Distribute premium codes to an order and mark them as distributed"""
+        db = await get_database()
+        
+        # Get available codes
+        available_codes = await PremiumCodeRepository.get_available_codes_for_distribution(quantity)
+        
+        if len(available_codes) < quantity:
+            raise ValueError(f"Not enough premium codes available. Requested: {quantity}, Available: {len(available_codes)}")
+        
+        distributed_codes = []
+        
+        # Mark codes as distributed
+        for code in available_codes:
+            update_data = {
+                "distributed_to_order_id": order_id,
+                "distributed_to_email": user_email,
+                "distributed_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            result = await db.premium_codes.update_one(
+                {"_id": ObjectId(code.id)},
+                {"$set": update_data}
+            )
+            
+            if result.modified_count > 0:
+                # Get updated code
+                updated_code = await PremiumCodeRepository.get_by_id(code.id)
+                if updated_code:
+                    distributed_codes.append(updated_code)
+        
+        return distributed_codes
+    
+    @staticmethod
+    async def get_codes_by_order(order_id: str) -> List[PremiumCode]:
+        """Get all premium codes distributed to a specific order"""
+        db = await get_database()
+        
+        cursor = db.premium_codes.find({"distributed_to_order_id": order_id}).sort("distributed_at", 1)
+        
+        codes = []
+        async for doc in cursor:
+            codes.append(PremiumCode(
+                **doc,
+                id=str(doc["_id"]),
+                bound_user_email=None
+            ))
+        
+        return codes
+    
+    @staticmethod
+    async def get_codes_by_email(user_email: str) -> List[PremiumCode]:
+        """Get all premium codes distributed to a specific email"""
+        db = await get_database()
+        
+        cursor = db.premium_codes.find({"distributed_to_email": user_email}).sort("distributed_at", -1)
+        
+        codes = []
+        async for doc in cursor:
+            codes.append(PremiumCode(
+                **doc,
+                id=str(doc["_id"]),
+                bound_user_email=None
+            ))
+        
+        return codes
+    

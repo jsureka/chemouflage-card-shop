@@ -20,6 +20,7 @@ from app.models.user import User
 from app.repositories.order import OrderItemRepository, OrderRepository
 from app.repositories.user import UserRepository, UserRoleRepository
 from app.services.email import EmailService
+from app.services.premium_code_service import PremiumCodeService
 from app.utils.pagination import create_paginated_response
 
 logger = logging.getLogger(__name__)
@@ -146,15 +147,13 @@ async def create_order(
                 "payment_error": f"Payment initiation error: {str(e)}",
                 "message": "Order created but payment initiation failed. Please try again or contact support."
             }
-    
-    # For cash on delivery or other payment methods
+      # For cash on delivery or other payment methods
     # Get order with items for email
     order_with_items = await OrderRepository.get_with_items(order_id)
     
     if order_with_items and current_user.email:
         # Prepare order items for email
         order_items = []
-        total_amount = 0
         for item in order_with_items.items:
             order_items.append({
                 "product_name": item.product_name,
@@ -162,12 +161,12 @@ async def create_order(
                 "price": item.price,
                 "description": getattr(item, 'description', '')
             })
-            total_amount += item.price * item.quantity
+        
+        # Use the order's total_amount which includes delivery charge
+        total_amount = order_with_items.total_amount
         
         # Create tracking URL
-        tracking_url = f"{settings.FRONTEND_URL}/track/{order_id}"
-        
-        # Send order confirmation email in background
+        tracking_url = f"{settings.FRONTEND_URL}/track/{order_id}"        # Send order confirmation email in background
         background_tasks.add_task(
             EmailService.send_order_confirmation,
             recipient_email=current_user.email,
@@ -510,8 +509,7 @@ async def admin_update_order(
                 tracking_url=tracking_url,
                 additional_message=getattr(order_in, 'notes', None)
             )
-        
-        # Send cancellation email for cancelled status
+          # Send cancellation email for cancelled status
         elif order_in.status == "cancelled":
             background_tasks.add_task(
                 EmailService.send_order_cancellation,
@@ -521,28 +519,56 @@ async def admin_update_order(
                 cancellation_reason=getattr(order_in, 'cancellation_reason', None),
                 additional_message=getattr(order_in, 'notes', None)
             )
+    
+    # If order payment status is being updated to "paid", distribute premium codes
+    if (order_in.payment_status == "paid" and 
+        order.payment_status != "paid"):
         
-        # If order has premium codes and status is completed/shipped, send premium codes
-        if order_in.status in ["completed", "shipped"] and hasattr(updated_order, 'premium_codes'):
-            order_details = await OrderRepository.get_with_premium_code(order_id)
-            if order_details and order_details.get('premium_codes'):
-                premium_codes = []
-                for code in order_details['premium_codes']:
-                    premium_codes.append({
-                        "code": code.get('code', ''),
-                        "product_name": code.get('product_name', ''),
-                        "instructions": code.get('instructions', '')
+        try:
+            # Distribute premium codes based on order quantity
+            distributed_codes = await PremiumCodeService.distribute_codes_for_order(
+                order_id, background_tasks
+            )            
+            
+            logger.info(f"Distributed {len(distributed_codes)} premium codes for order {order_id}")
+        except Exception as e:
+            logger.error(f"Failed to distribute premium codes for order {order_id}: {str(e)}")
+            # Continue without failing the order update
+    
+    # If admin manually wants to resend premium codes for completed/shipped orders
+    elif (order_in.status in ["completed", "shipped"] and 
+          order.payment_status == "paid"):
+        
+        try:
+            # Check if codes already distributed
+            existing_codes = await PremiumCodeService.get_order_premium_codes(order_id)
+            if existing_codes:
+                # Resend existing codes
+                premium_codes_data = []
+                for code in existing_codes:
+                    premium_codes_data.append({
+                        "code": code.code,
+                        "description": code.description or "Premium Code",
+                        "instructions": "Use this code to access your premium content."
                     })
                 
-                if premium_codes:
+                if premium_codes_data:
                     background_tasks.add_task(
                         EmailService.send_premium_code,
                         recipient_email=user.email,
                         customer_name=user.full_name or user.email,
                         order_id=order_id,
-                        premium_codes=premium_codes,
-                        instructions="Your premium codes are ready! Use these codes to access your digital content."
+                        premium_codes=premium_codes_data,
+                        instructions="Your premium codes (resent by admin)."
                     )
+            else:
+                # First time sending codes for this order
+                distributed_codes = await PremiumCodeService.distribute_codes_for_order(
+                    order_id, background_tasks
+                )
+                logger.info(f"Distributed {len(distributed_codes)} premium codes for order {order_id}")
+        except Exception as e:
+            logger.error(f"Failed to handle premium codes for order {order_id}: {str(e)}")
     
     return updated_order
 
@@ -590,3 +616,49 @@ async def track_order(
         )
     
     return order
+
+@router.get("/{order_id}/premium-codes")
+async def get_order_premium_codes(
+    order_id: str,
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    """
+    Get premium codes distributed to a specific order.
+    """
+    order = await OrderRepository.get_by_id(order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+    
+    # Check that the order belongs to the current user or user is admin
+    is_admin = await UserRoleRepository.is_admin(current_user.id)
+    if order.user_id != current_user.id and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view premium codes for your own orders"
+        )
+    
+    # Get premium codes for this order
+    premium_codes = await PremiumCodeService.get_order_premium_codes(order_id)
+    
+    # Format the response
+    codes_data = []
+    for code in premium_codes:
+        codes_data.append({
+            "id": code.id,
+            "code": code.code,
+            "description": code.description or "Premium Code",
+            "distributed_at": code.distributed_at,
+            "usage_limit": code.usage_limit,
+            "used_count": code.used_count,
+            "is_active": code.is_active,
+            "expires_at": code.expires_at
+        })
+    
+    return {
+        "order_id": order_id,
+        "premium_codes": codes_data,
+        "total_codes": len(codes_data)
+    }

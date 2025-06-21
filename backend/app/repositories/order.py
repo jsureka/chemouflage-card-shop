@@ -1,14 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from bson import ObjectId
+
 from app.db.mongodb import get_database
-from app.models.product import (AdminOrderUpdate, Order, OrderCreate,
-                                OrderInDB, OrderItem, OrderItemCreate,
-                                OrderItemInDB, OrderItemResponse,
-                                OrderItemUpdate, OrderUpdate, OrderWithItems)
+from app.models.product import (
+    AdminOrderUpdate,
+    Order,
+    OrderCreate,
+    OrderInDB,
+    OrderItem,
+    OrderItemCreate,
+    OrderItemInDB,
+    OrderItemResponse,
+    OrderItemUpdate,
+    OrderUpdate,
+    OrderWithItems,
+)
 from app.repositories.premium_code import PremiumCodeRepository
 from app.services.cache import cache_service, cached
-from bson import ObjectId
 
 
 class OrderRepository:
@@ -313,16 +323,13 @@ class OrderRepository:
         
         update_data = {k: v for k, v in order_update.model_dump(exclude_unset=True).items() if v is not None}
         update_data["updated_at"] = datetime.utcnow()
-        
-        # Check if payment status is being updated to "paid"
+          # Check if payment status is being updated to "paid"
         if (order_update.payment_status == "paid" and 
-            current_order.payment_status != "paid" and 
-            not getattr(current_order, 'premium_code_id', None)):
+            current_order.payment_status != "paid"):
             
-            # Auto-bind an available premium code
-            premium_code = await OrderRepository._find_and_bind_premium_code(order_id, current_order.user_id)
-            if premium_code:
-                update_data["premium_code_id"] = premium_code.id
+            # Premium codes will be distributed via the service layer
+            # This allows for quantity-based distribution
+            pass
         
         if update_data:
             await db.orders.update_one(

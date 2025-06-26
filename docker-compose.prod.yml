@@ -12,16 +12,14 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
       MONGO_INITDB_DATABASE: ${DATABASE_NAME}
-    command: mongod --bind_ip_all --auth --replSet rs0 --storageEngine wiredTiger
     ports:
-      - "127.0.0.1:27017:27017" # Bind to localhost only for security
+      - "27017:27017" # Publicly accessible MongoDB port
     volumes:
       - mongodb_data:/data/db
-      - ./mongo-init:/docker-entrypoint-initdb.d
     networks:
       - chemouflage-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017/${DATABASE_NAME} --quiet
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
       timeout: 10s
       retries: 3

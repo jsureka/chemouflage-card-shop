@@ -15,6 +15,7 @@ from app.models.product import (
     PremiumCodeUpdate,
 )
 from app.repositories.user import UserRepository
+from app.services.cache import cache_invalidate_patterns, cached
 
 
 class PremiumCodeRepository:
@@ -25,6 +26,7 @@ class PremiumCodeRepository:
         return ''.join(secrets.choice(characters) for _ in range(length))
     
     @staticmethod
+    @cache_invalidate_patterns("premium_code:*")
     async def create(premium_code: PremiumCodeCreate) -> str:
         """Create a single premium code."""
         db = await get_database()
@@ -71,6 +73,7 @@ class PremiumCodeRepository:
         return created_ids
     
     @staticmethod
+    @cached("premium_code:id:{code_id}", ttl=600)  # Cache for 10 minutes
     async def get_by_id(code_id: str) -> Optional[PremiumCode]:
         """Get premium code by ID."""
         db = await get_database()

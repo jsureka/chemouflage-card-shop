@@ -155,6 +155,7 @@ class OrderRepository:
         return orders
     
     @staticmethod
+    @cached("orders:list:{skip}:{limit}:{status_filter}:{payment_status_filter}:{search}", ttl=300)
     async def get_all(
         skip: int = 0, 
         limit: int = 100, 
@@ -231,7 +232,9 @@ class OrderRepository:
             # Also delete related order items
             await db.order_items.delete_many({"order_id": ObjectId(order_id)})
             return True
-        return False    @staticmethod
+        return False    
+    
+    @staticmethod
     async def count(
         status_filter: Optional[str] = None,
         payment_status_filter: Optional[str] = None,
@@ -280,10 +283,13 @@ class OrderRepository:
         return await db.orders.count_documents(query)
     
     @staticmethod
+    @cached("orders:count_by_user:{user_id}", ttl=300)
     async def count_by_user(user_id: str) -> int:
         db = await get_database()
         return await db.orders.count_documents({"user_id": ObjectId(user_id)})
+    
     @staticmethod
+    @cached("orders:total_revenue", ttl=600)  # Cache revenue for 10 minutes
     async def get_total_revenue() -> float:
         db = await get_database()
         pipeline = [{"$group": {"_id": None, "total": {"$sum": "$total_amount"}}}]
@@ -291,6 +297,7 @@ class OrderRepository:
         return result[0]["total"] if result else 0
     
     @staticmethod
+    @cached("orders:revenue_period:{days_ago}", ttl=300)
     async def get_revenue_by_period(days_ago: int) -> float:
         """Get total revenue from a specific number of days ago to now"""
         db = await get_database()

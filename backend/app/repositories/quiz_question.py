@@ -16,7 +16,12 @@ from app.models.quiz import (
     QuestionUpdate,
     QuestionWithOptions,
 )
-from app.services.cache import cache_invalidate, cache_invalidate_patterns, cache_service, cached
+from app.services.cache import (
+    cache_invalidate,
+    cache_invalidate_patterns,
+    cache_service,
+    cached,
+)
 
 
 class QuestionRepository:
@@ -110,6 +115,7 @@ class QuestionRepository:
         return QuestionForUser(**user_question_data)
 
     @staticmethod
+    @cached("quiz_question:list:{skip}:{limit}:{topic_id}:{difficulty}:{question_type}:{active_only}:{search}:{include_options}", ttl=300)
     async def get_all(
         skip: int = 0,
         limit: int = 100,
@@ -136,17 +142,28 @@ class QuestionRepository:
         if search:
             query_filter["title"] = {"$regex": search, "$options": "i"}
         
-        # Get questions
+        # Use simple find with indexes instead of aggregation lookups
         cursor = db.quiz_questions.find(query_filter).skip(skip).limit(limit).sort("created_at", -1)
         questions = []
+        
+        # Cache topic names to avoid multiple lookups
+        topic_cache = {}
         
         async for question_doc in cursor:
             question_data = {**question_doc, "id": str(question_doc["_id"])}
             
-            # Get topic name
-            topic_doc = await db.quiz_topics.find_one({"_id": ObjectId(question_doc["topic_id"])})
-            if topic_doc:
-                question_data["topic_name"] = topic_doc["name"]
+            # Get topic name from cache or database
+            if question_doc["topic_id"] not in topic_cache:
+                topic_doc_lookup = await db.quiz_topics.find_one(
+                    {"_id": ObjectId(question_doc["topic_id"])}, 
+                    {"name": 1}
+                )
+                if topic_doc_lookup:
+                    topic_cache[question_doc["topic_id"]] = topic_doc_lookup["name"]
+                else:
+                    topic_cache[question_doc["topic_id"]] = None
+            
+            question_data["topic_name"] = topic_cache[question_doc["topic_id"]]
             
             # Get options if multiple choice and requested
             if include_options and question_doc["question_type"] == QuestionType.MULTIPLE_CHOICE:
@@ -162,6 +179,7 @@ class QuestionRepository:
         return questions
 
     @staticmethod
+    @cached("quiz_question:count:{topic_id}:{difficulty}:{question_type}:{active_only}:{search}", ttl=300)
     async def count(
         topic_id: Optional[str] = None,
         difficulty: Optional[DifficultyLevel] = None,
@@ -253,6 +271,7 @@ class QuestionRepository:
             return await QuestionRepository.get_all(topic_id=topic_id, active_only=True)
 
     @staticmethod
+    @cached("quiz_question:random:{topic_id}:{difficulty}:{limit}", ttl=60)  # Short cache for randomness
     async def get_random_questions(
         topic_id: Optional[str] = None,
         difficulty: Optional[DifficultyLevel] = None,
@@ -280,10 +299,52 @@ class QuestionRepository:
         cursor = db.quiz_questions.aggregate(pipeline)
         questions = []
         
+        # Cache topic names to avoid multiple lookups
+        topic_cache = {}
+        
         async for question_doc in cursor:
-            user_question = await QuestionRepository.get_for_user(str(question_doc["_id"]))
-            if user_question:
-                questions.append(user_question)
+            # Get topic name from cache or database
+            topic_name = None
+            if question_doc["topic_id"] not in topic_cache:
+                topic_doc_lookup = await db.quiz_topics.find_one(
+                    {"_id": ObjectId(question_doc["topic_id"])}, 
+                    {"name": 1}
+                )
+                if topic_doc_lookup:
+                    topic_cache[question_doc["topic_id"]] = topic_doc_lookup["name"]
+                else:
+                    topic_cache[question_doc["topic_id"]] = None
+            
+            topic_name = topic_cache[question_doc["topic_id"]]
+            
+            # Remove correct answer information for users
+            user_question_data = {
+                "id": str(question_doc["_id"]),
+                "topic_id": question_doc["topic_id"],
+                "title": question_doc["title"],
+                "image_url": question_doc.get("image_url"),
+                "difficulty": question_doc["difficulty"],
+                "question_type": question_doc["question_type"],
+                "topic_name": topic_name
+            }
+            
+            # For multiple choice, get options without correct answers
+            if question_doc["question_type"] == QuestionType.MULTIPLE_CHOICE:
+                options_cursor = db.quiz_question_options.find(
+                    {"question_id": str(question_doc["_id"])},
+                    {"title": 1, "image_url": 1}  # Exclude is_correct
+                )
+                user_options = []
+                async for option in options_cursor:
+                    user_option = {
+                        "id": str(option["_id"]),
+                        "title": option["title"],
+                        "image_url": option.get("image_url")
+                    }
+                    user_options.append(user_option)
+                user_question_data["options"] = user_options
+            
+            questions.append(QuestionForUser(**user_question_data))
         
         return questions
 

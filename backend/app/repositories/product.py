@@ -93,7 +93,9 @@ class ProductRepository:
             await cache_service.invalidate_product(product_id)
             await cache_service.invalidate_all_products()  # Invalidate list caches
             return True
-        return False    @staticmethod
+        return False
+
+    @staticmethod
     @cached("product_count_{active_only}", ttl=300)  # Cache for 5 minutes
     async def count(active_only: bool = False) -> int:
         db = await get_database()

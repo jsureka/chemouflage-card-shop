@@ -41,6 +41,7 @@ class TopicRepository:
         return None
 
     @staticmethod
+    @cached("quiz_topic:list:{skip}:{limit}:{active_only}:{search}", ttl=300)  # Cache for 5 minutes
     async def get_all(
         skip: int = 0, 
         limit: int = 100, 
@@ -92,6 +93,7 @@ class TopicRepository:
         return topics
 
     @staticmethod
+    @cached("quiz_topic:count:{active_only}:{search}", ttl=300)  # Cache for 5 minutes
     async def count(active_only: bool = False, search: Optional[str] = None) -> int:
         """Count total topics"""
         db = await get_database()

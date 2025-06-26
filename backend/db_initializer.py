@@ -199,6 +199,9 @@ class DatabaseInitializer:
                 ([('user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
                 ([('status', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
                 ([('user_id', ASCENDING), ('status', ASCENDING)], {"background": True}),
+                # Additional indexes for revenue calculations and search
+                ([('created_at', ASCENDING), ('total_amount', ASCENDING)], {"background": True}),
+                ([('shipping_address.firstName', TEXT), ('shipping_address.lastName', TEXT), ('shipping_address.phone', TEXT)], {"background": True}),
             ],
             'order_items': [
                 ([('order_id', ASCENDING)], {"background": True}),
@@ -225,6 +228,7 @@ class DatabaseInitializer:
             ],
             'quiz_topics': [
                 ([('name', ASCENDING)], {"unique": True, "background": True}),
+                ([('name', TEXT)], {"background": True}),  # For text search
                 ([('is_active', ASCENDING)], {"background": True}),
                 ([('created_at', DESCENDING)], {"background": True}),
                 ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
@@ -234,7 +238,11 @@ class DatabaseInitializer:
                 ([('difficulty', ASCENDING)], {"background": True}),
                 ([('question_type', ASCENDING)], {"background": True}),
                 ([('is_active', ASCENDING)], {"background": True}),
+                ([('title', TEXT)], {"background": True}),  # For text search
                 ([('created_at', DESCENDING)], {"background": True}),
+                # Compound indexes for optimized filtering
+                ([('topic_id', ASCENDING), ('is_active', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('difficulty', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
@@ -244,6 +252,11 @@ class DatabaseInitializer:
             'quiz_question_options': [
                 ([('question_id', ASCENDING)], {"background": True}),
                 ([('question_id', ASCENDING), ('is_correct', ASCENDING)], {"background": True}),
+            ],
+            'contact_messages': [
+                ([('status', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('email', ASCENDING)], {"background": True}),
             ],
         }
     
@@ -310,6 +323,9 @@ class DatabaseInitializer:
                 ([('user_id', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
                 ([('status', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
                 ([('user_id', ASCENDING), ('status', ASCENDING)], {"background": True}),
+                # Additional indexes for revenue calculations and search
+                ([('created_at', ASCENDING), ('total_amount', ASCENDING)], {"background": True}),
+                ([('shipping_address.firstName', TEXT), ('shipping_address.lastName', TEXT), ('shipping_address.phone', TEXT)], {"background": True}),
             ])
             
             # Order items collection indexes
@@ -345,6 +361,7 @@ class DatabaseInitializer:
             # Quiz topics collection indexes
             await self._create_collection_indexes('quiz_topics', [
                 ([('name', ASCENDING)], {"unique": True, "background": True}),
+                ([('name', TEXT)], {"background": True}),  # For text search
                 ([('is_active', ASCENDING)], {"background": True}),
                 ([('created_at', DESCENDING)], {"background": True}),
                 ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
@@ -356,7 +373,11 @@ class DatabaseInitializer:
                 ([('difficulty', ASCENDING)], {"background": True}),
                 ([('question_type', ASCENDING)], {"background": True}),
                 ([('is_active', ASCENDING)], {"background": True}),
+                ([('title', TEXT)], {"background": True}),  # For text search
                 ([('created_at', DESCENDING)], {"background": True}),
+                # Compound indexes for optimized filtering
+                ([('topic_id', ASCENDING), ('is_active', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('difficulty', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('difficulty', ASCENDING)], {"background": True}),
                 ([('topic_id', ASCENDING), ('question_type', ASCENDING)], {"background": True}),
@@ -368,6 +389,13 @@ class DatabaseInitializer:
             await self._create_collection_indexes('quiz_question_options', [
                 ([('question_id', ASCENDING)], {"background": True}),
                 ([('question_id', ASCENDING), ('is_correct', ASCENDING)], {"background": True}),
+            ])
+            
+            # Contact messages collection indexes
+            await self._create_collection_indexes('contact_messages', [
+                ([('status', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('email', ASCENDING)], {"background": True}),
             ])
             
             logger.info("Database indexes created successfully")

@@ -133,6 +133,17 @@ class RedisManager:
             logger.error(f"Redis DELETE error for key {key}: {e}")
             return False
     
+    async def delete_many(self, keys: list) -> int:
+        """Delete multiple keys from Redis."""
+        if not await self.is_connected() or not keys:
+            return 0
+        
+        try:
+            return await self.redis.delete(*keys)
+        except Exception as e:
+            logger.error(f"Redis DELETE_MANY error for {len(keys)} keys: {e}")
+            return 0
+    
     async def delete_pattern(self, pattern: str) -> int:
         """Delete keys matching pattern using SCAN to avoid blocking."""
         if not await self.is_connected():
@@ -207,6 +218,24 @@ class RedisManager:
         
         logger.error(f"Failed to connect to Redis after {max_retries} attempts")
         self.redis = None
+
+    async def scan_iter(self, pattern: str = "*", count: int = 100):
+        """
+        Async generator to iterate over keys matching pattern.
+        This provides compatibility with redis.scan_iter() functionality.
+        """
+        if not await self.is_connected():
+            return
+
+        try:
+            cursor = "0"
+            while cursor != 0:
+                cursor, keys = await self.redis.scan(cursor=cursor, match=pattern, count=count)
+                for key in keys:
+                    yield key
+        except Exception as e:
+            logger.error(f"Redis SCAN_ITER error for pattern {pattern}: {e}")
+            return
 
 # Global Redis manager instance
 redis_manager = RedisManager()

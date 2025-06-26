@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import List, Optional
 
+from bson import ObjectId
+
 from app.db.mongodb import get_database
 from app.models.contact import ContactMessage, ContactMessageCreate
 from app.models.pagination import PaginatedResponse, PaginationParams
-from bson import ObjectId
+from app.services.cache import cache_invalidate_patterns, cached
 
 
 class ContactRepository:
@@ -18,6 +20,7 @@ class ContactRepository:
             self.collection = self.db.contact_messages
         return self.collection
 
+    @cache_invalidate_patterns("contact:*")
     async def create_message(self, message_data: ContactMessageCreate) -> str:
         collection = await self._get_collection()
         message_dict = message_data.dict()
@@ -27,6 +30,7 @@ class ContactRepository:
         result = await collection.insert_one(message_dict)
         return str(result.inserted_id)
 
+    @cached("contact:list:{page}:{limit}:{status_filter}", ttl=300)
     async def get_all_messages(self, pagination: PaginationParams, status_filter: Optional[str] = None) -> PaginatedResponse:
         collection = await self._get_collection()
         

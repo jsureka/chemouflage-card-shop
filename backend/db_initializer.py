@@ -391,6 +391,18 @@ class DatabaseInitializer:
                 ([('question_id', ASCENDING), ('is_correct', ASCENDING)], {"background": True}),
             ])
             
+            # Notes collection indexes
+            await self._create_collection_indexes('notes', [
+                ([('title', TEXT)], {"background": True}),
+                ([('description', TEXT)], {"background": True}),
+                ([('uploaded_by', ASCENDING)], {"background": True}),
+                ([('created_at', DESCENDING)], {"background": True}),
+                ([('is_active', ASCENDING)], {"background": True}),
+                ([('cloudinary_public_id', ASCENDING)], {"background": True, "unique": True}),
+                ([('uploaded_by', ASCENDING), ('is_active', ASCENDING)], {"background": True}),
+                ([('is_active', ASCENDING), ('created_at', DESCENDING)], {"background": True}),
+            ])
+            
             # Contact messages collection indexes
             await self._create_collection_indexes('contact_messages', [
                 ([('status', ASCENDING)], {"background": True}),

@@ -36,6 +36,12 @@ const Header = () => {
             Home
           </Link>
           <Link
+            to="/notes"
+            className="text-foreground hover:text-teal-500 transition-colors"
+          >
+            Notes
+          </Link>
+          <Link
             to="/checkout"
             className="text-foreground hover:text-teal-500 transition-colors"
           >
@@ -124,6 +130,13 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
+            </Link>
+            <Link
+              to="/books"
+              className="text-foreground hover:text-teal-500 transition-colors py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Books
             </Link>
             <Link
               to="/checkout"

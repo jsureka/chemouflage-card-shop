@@ -9,6 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProductsProvider } from "./contexts/ProductsContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Auth from "./pages/Auth";
+import NotePage from "./pages/notes";
 import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -26,6 +27,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import TermsAndConditions from "./pages/TermsAndConditions";
+
 import {
   AdminCustomers,
   AdminOrders,
@@ -55,6 +57,7 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/notes" element={<NotePage />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/products" element={<ProductBrowser />} />
                 <Route path="/products/:id" element={<ProductDetail />} />

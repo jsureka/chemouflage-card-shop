@@ -4,6 +4,17 @@ import cloudinary.uploader
 import cloudinary.api
 from typing import Optional
 from fastapi import HTTPException, status
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Ensure .env file is loaded for Cloudinary config
+backend_dir = Path(__file__).resolve().parent.parent.parent
+env_path = backend_dir / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+    print(f"[cloudinary.py] Loaded .env from: {env_path}")
+else:
+    print(f"[cloudinary.py] WARNING: .env file not found at {env_path}")
 
 # Configure Cloudinary
 cloudinary.config(
@@ -11,6 +22,11 @@ cloudinary.config(
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
+
+# Debug print to verify configuration
+print(f"[cloudinary.py] CLOUDINARY_CLOUD_NAME: {os.getenv('CLOUDINARY_CLOUD_NAME')}")
+print(f"[cloudinary.py] CLOUDINARY_API_KEY: {os.getenv('CLOUDINARY_API_KEY')}")
+print(f"[cloudinary.py] CLOUDINARY_API_SECRET: {'*' * len(os.getenv('CLOUDINARY_API_SECRET', '')) if os.getenv('CLOUDINARY_API_SECRET') else 'None'}")
 
 def validate_cloudinary_config():
     """Validate that Cloudinary is properly configured"""
@@ -60,6 +76,50 @@ class CloudinaryService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to upload image: {str(e)}"
+            )
+
+    @staticmethod
+    async def upload_pdf(file_content: bytes, filename: str, folder: str = "notes") -> tuple[Optional[str], Optional[str], Optional[str]]:
+        """
+        Upload PDF to Cloudinary and return the public URL, public_id, and thumbnail URL
+        Returns: (pdf_url, public_id, thumbnail_url)
+        """
+        try:
+            # Validate configuration
+            validate_cloudinary_config()
+            
+            # Generate a unique public_id
+            public_id = f"{folder}/{filename}"
+            
+            # Upload PDF to Cloudinary
+            result = cloudinary.uploader.upload(
+                file_content,
+                public_id=public_id,
+                overwrite=True,
+                resource_type="raw",  # Use 'raw' for PDF files
+                format="pdf"
+            )
+            
+            pdf_url = result.get("secure_url")
+            cloudinary_public_id = result.get("public_id")
+            
+            # Generate thumbnail URL from first page of PDF
+            cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+            thumbnail_url = f"https://res.cloudinary.com/{cloud_name}/image/upload/c_fill,w_300,h_400,pg_1/{cloudinary_public_id}.jpg"
+            
+            return pdf_url, cloudinary_public_id, thumbnail_url
+            
+        except ValueError as e:
+            print(f"Cloudinary configuration error: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Cloudinary not configured: {str(e)}"
+            )
+        except Exception as e:
+            print(f"Error uploading PDF to Cloudinary: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to upload PDF: {str(e)}"
             )
     
     @staticmethod

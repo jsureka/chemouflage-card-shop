@@ -8,6 +8,7 @@ from app.models.product import Product, ProductCreate, ProductUpdate
 from app.models.user import User
 from app.repositories.product import ProductRepository
 from app.utils.pagination import create_paginated_response
+from app.utils.timing import profile_operation
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 
 router = APIRouter()
@@ -75,6 +76,7 @@ async def upload_product_image(
         )
 
 @router.get("/", response_model=PaginatedResponse[Product])
+@profile_operation("endpoint_read_products")
 async def read_products(
     pagination: PaginationParams = Depends(),
     active_only: bool = Query(False, description="Filter only active products"),
@@ -82,30 +84,34 @@ async def read_products(
 ) -> Any:
     """
     Retrieve products with pagination, with optional filtering.
+    All queries use proper pagination and leverage MongoDB indexes.
     """    
     if category:
-        # For category filtering, we need to implement pagination differently
-        # For now, we'll return all products by category (not paginated)
-        products = await ProductRepository.find_by_category(category)
-        # Create a simple paginated response for category filtering
-        return await create_paginated_response(
-            data=products,
-            page=1,
-            limit=len(products) if products else 0,
-            total_count=len(products) if products else 0
+        # Use optimized category filtering with pagination
+        products = await ProductRepository.get_by_category(
+            category=category,
+            skip=pagination.skip, 
+            limit=pagination.limit,
+            active_only=active_only
         )
+        total_count = await ProductRepository.count_by_category(category, active_only=active_only)
     else:
-        products = await ProductRepository.get_all(skip=pagination.skip, limit=pagination.limit, active_only=active_only)
+        products = await ProductRepository.get_all(
+            skip=pagination.skip, 
+            limit=pagination.limit, 
+            active_only=active_only
+        )
         total_count = await ProductRepository.count(active_only=active_only)
         
-        return await create_paginated_response(
-            data=products,
-            page=pagination.page,
-            limit=pagination.limit,
-            total_count=total_count
-        )
+    return await create_paginated_response(
+        data=products,
+        page=pagination.page,
+        limit=pagination.limit,
+        total_count=total_count
+    )
 
 @router.get("/{product_id}", response_model=Product)
+@profile_operation("endpoint_read_product")
 async def read_product(
     product_id: str
 ) -> Any:
@@ -161,12 +167,27 @@ async def delete_product(
             detail="Failed to delete product"
         )
 
-@router.get("/search/{query}", response_model=List[Product])
+@router.get("/search/{query}", response_model=PaginatedResponse[Product])
+@profile_operation("endpoint_search_products")
 async def search_products(
-    query: str
+    query: str,
+    pagination: PaginationParams = Depends(),
+    active_only: bool = Query(False, description="Filter only active products")
 ) -> Any:
     """
-    Search products by name, description or category.
+    Search products by name, description or category with pagination.
     """
-    products = await ProductRepository.search(query)
-    return products
+    products = await ProductRepository.search(
+        query=query,
+        skip=pagination.skip,
+        limit=pagination.limit,
+        active_only=active_only
+    )
+    total_count = await ProductRepository.count_search(query, active_only=active_only)
+    
+    return await create_paginated_response(
+        data=products,
+        page=pagination.page,
+        limit=pagination.limit,
+        total_count=total_count
+    )

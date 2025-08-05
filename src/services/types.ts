@@ -160,3 +160,39 @@ export interface TopicStats {
     descriptive: number;
   };
 }
+
+// Quiz Game Types
+export interface ReactionQuestion {
+  id: string;
+  topic_id: string;
+  title: string;
+  image_url?: string;
+  difficulty: string;
+  question_type: string;
+  options: QuestionOption[];
+  topic_name?: string;
+}
+
+export interface QuizSubmissionResponse {
+  is_correct: boolean;
+  correct_option_id: string;
+  explanation?: string;
+  score: number;
+  streak: number;
+  daily_score: number;
+  daily_streak: number;
+}
+
+export interface DailyLeaderboardEntry {
+  user_name: string;
+  daily_score: number;
+  daily_streak: number;
+  questions_answered: number;
+  correct_answers: number;
+  accuracy_percentage: number;
+}
+
+export interface DailyLeaderboardResponse {
+  date: string;
+  leaderboard: DailyLeaderboardEntry[];
+}

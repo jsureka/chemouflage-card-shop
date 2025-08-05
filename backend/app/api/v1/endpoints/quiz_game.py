@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from app.api.dependencies import get_current_user
 from app.models.quiz import QuestionType
@@ -20,6 +21,11 @@ from app.utils.quiz_game import (
 )
 
 router = APIRouter()
+
+
+class QuizSubmissionRequest(BaseModel):
+    question_id: str
+    selected_option_id: str
 
 
 @router.get("/reaction-question", response_model=dict)
@@ -73,8 +79,7 @@ async def get_reaction_question(
 
 @router.post("/submit", response_model=QuizSubmissionResponse)
 async def submit_quiz_answer(
-    question_id: str,
-    selected_option_id: str,
+    request: QuizSubmissionRequest,
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
@@ -82,7 +87,7 @@ async def submit_quiz_answer(
     Returns correctness, updated score, and streak information.
     """
     # Get the question with correct answers (admin view)
-    db_question = await QuestionRepository.get_by_id(question_id)
+    db_question = await QuestionRepository.get_by_id(request.question_id)
     if not db_question:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,7 +101,7 @@ async def submit_quiz_answer(
     for option in db_question.options or []:
         if option.is_correct:
             correct_option = option
-        if option.id == selected_option_id:
+        if option.id == request.selected_option_id:
             selected_option = option
     
     if not correct_option:
@@ -112,7 +117,7 @@ async def submit_quiz_answer(
         )
     
     # Check if answer is correct
-    is_correct = selected_option_id == correct_option.id
+    is_correct = request.selected_option_id == correct_option.id
     
     # Get current user scores
     user_score = await UserQuizScoreRepository.get_by_user_id(current_user.id)

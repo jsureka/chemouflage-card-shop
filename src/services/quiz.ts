@@ -3,9 +3,12 @@ import type {
   ApiResponse,
   CreateQuestionRequest,
   CreateTopicRequest,
+  DailyLeaderboardResponse,
   PaginatedResponse,
   Question,
   QuizStats,
+  QuizSubmissionResponse,
+  ReactionQuestion,
   Topic,
   TopicStats,
 } from "./types";
@@ -213,6 +216,39 @@ class QuizService {
     });
 
     return this.handleResponse<TopicStats[]>(response);
+  }
+
+  // Quiz Game methods
+  async getReactionQuestion(): Promise<ApiResponse<ReactionQuestion>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/reaction-question`, {
+      headers: this.setAuthHeader(),
+    });
+
+    return this.handleResponse<ReactionQuestion>(response);
+  }
+
+  async submitQuizAnswer(
+    questionId: string,
+    selectedOptionId: string
+  ): Promise<ApiResponse<QuizSubmissionResponse>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/submit`, {
+      method: "POST",
+      headers: this.setAuthHeader(),
+      body: JSON.stringify({
+        question_id: questionId,
+        selected_option_id: selectedOptionId,
+      }),
+    });
+
+    return this.handleResponse<QuizSubmissionResponse>(response);
+  }
+
+  async getDailyLeaderboard(): Promise<ApiResponse<DailyLeaderboardResponse>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/scoreboard/daily`, {
+      headers: this.setAuthHeader(),
+    });
+
+    return this.handleResponse<DailyLeaderboardResponse>(response);
   }
 }
 

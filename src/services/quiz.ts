@@ -6,6 +6,10 @@ import type {
   DailyLeaderboardResponse,
   PaginatedResponse,
   Question,
+  QuizSession,
+  QuizSessionAnswerResponse,
+  QuizSessionCompleteResponse,
+  QuizSessionStatus,
   QuizStats,
   QuizSubmissionResponse,
   ReactionQuestion,
@@ -220,9 +224,12 @@ class QuizService {
 
   // Quiz Game methods
   async getReactionQuestion(): Promise<ApiResponse<ReactionQuestion>> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/reaction-question`, {
-      headers: this.setAuthHeader(),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/quiz/reaction-question`,
+      {
+        headers: this.setAuthHeader(),
+      }
+    );
 
     return this.handleResponse<ReactionQuestion>(response);
   }
@@ -241,6 +248,74 @@ class QuizService {
     });
 
     return this.handleResponse<QuizSubmissionResponse>(response);
+  }
+
+  // Quiz Session methods
+  async getQuizSessionStatus(): Promise<ApiResponse<QuizSessionStatus>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/session/status`, {
+      headers: this.setAuthHeader(),
+    });
+
+    return this.handleResponse<QuizSessionStatus>(response);
+  }
+
+  async startQuizSession(
+    questionCount: number = 10
+  ): Promise<ApiResponse<QuizSession>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/start-session`, {
+      method: "POST",
+      headers: this.setAuthHeader(),
+      body: JSON.stringify({
+        question_count: questionCount,
+      }),
+    });
+
+    return this.handleResponse<QuizSession>(response);
+  }
+
+  async getSessionQuestion(
+    sessionId: string
+  ): Promise<ApiResponse<ReactionQuestion>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/quiz/session/${sessionId}/question`,
+      {
+        headers: this.setAuthHeader(),
+      }
+    );
+
+    return this.handleResponse<ReactionQuestion>(response);
+  }
+
+  async submitSessionAnswer(
+    sessionId: string,
+    questionId: string,
+    selectedOptionId: string
+  ): Promise<ApiResponse<QuizSessionAnswerResponse>> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/quiz/session/answer`, {
+      method: "POST",
+      headers: this.setAuthHeader(),
+      body: JSON.stringify({
+        session_id: sessionId,
+        question_id: questionId,
+        selected_option_id: selectedOptionId,
+      }),
+    });
+
+    return this.handleResponse<QuizSessionAnswerResponse>(response);
+  }
+
+  async completeQuizSession(
+    sessionId: string
+  ): Promise<ApiResponse<QuizSessionCompleteResponse>> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/quiz/session/${sessionId}/complete`,
+      {
+        method: "POST",
+        headers: this.setAuthHeader(),
+      }
+    );
+
+    return this.handleResponse<QuizSessionCompleteResponse>(response);
   }
 
   async getDailyLeaderboard(): Promise<ApiResponse<DailyLeaderboardResponse>> {

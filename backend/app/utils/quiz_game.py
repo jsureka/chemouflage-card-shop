@@ -17,16 +17,25 @@ def shuffle_options(options: List[QuestionOption]) -> List[QuestionOption]:
     return shuffled
 
 
-def convert_options_for_reaction_game(options: List[QuestionOption]) -> List[dict]:
+def convert_options_for_reaction_game(options: List) -> List[dict]:
     """Convert options to reaction game format (remove is_correct field)"""
-    return [
-        {
-            "id": option.id,
-            "title": option.title,
-            "image_url": option.image_url
-        }
-        for option in options
-    ]
+    result = []
+    for option in options:
+        if isinstance(option, dict):
+            # Handle dictionary format (from get_random_questions)
+            result.append({
+                "id": option["id"],
+                "title": option["title"],
+                "image_url": option.get("image_url")
+            })
+        else:
+            # Handle object format (QuestionOption)
+            result.append({
+                "id": option.id,
+                "title": option.title,
+                "image_url": option.image_url
+            })
+    return result
 
 
 def calculate_streak_bonus(streak: int) -> int:

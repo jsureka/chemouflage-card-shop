@@ -171,6 +171,10 @@ export interface ReactionQuestion {
   question_type: string;
   options: QuestionOption[];
   topic_name?: string;
+  // Session-specific fields
+  question_number?: number;
+  total_questions?: number;
+  session_id?: string;
 }
 
 export interface QuizSubmissionResponse {
@@ -181,6 +185,64 @@ export interface QuizSubmissionResponse {
   streak: number;
   daily_score: number;
   daily_streak: number;
+}
+
+// Quiz Session Types
+export interface QuizSession {
+  id: string;
+  user_id: string;
+  question_ids: string[];
+  current_question_index: number;
+  status: "active" | "completed";
+  started_at: string;
+  completed_at?: string;
+  total_time_seconds?: number;
+  answers: QuizSessionAnswer[];
+}
+
+export interface QuizSessionAnswer {
+  question_id: string;
+  selected_option_id: string;
+  is_correct: boolean;
+  answered_at: string;
+}
+
+export interface QuizSessionStartRequest {
+  question_count: number;
+}
+
+export interface QuizSessionAnswerRequest {
+  session_id: string;
+  question_id: string;
+  selected_option_id: string;
+}
+
+export interface QuizSessionAnswerResponse {
+  is_correct: boolean;
+  correct_option_id: string;
+  question_completed: boolean;
+  session_complete: boolean;
+  next_question_number?: number;
+  total_questions: number;
+}
+
+export interface QuizSessionCompleteResponse {
+  session_id: string;
+  total_questions: number;
+  correct_answers: number;
+  total_time_seconds: number;
+  score_earned: number;
+  streak_achieved: number;
+  daily_score: number;
+  daily_streak: number;
+}
+
+export interface QuizSessionStatus {
+  has_completed_today: boolean;
+  has_active_session: boolean;
+  active_session_id?: string;
+  current_question_index?: number;
+  total_questions?: number;
 }
 
 export interface DailyLeaderboardEntry {

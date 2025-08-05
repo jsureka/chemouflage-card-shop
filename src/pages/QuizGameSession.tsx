@@ -33,7 +33,7 @@ interface GameState {
   startTime: number;
 }
 
-export default function QuizGame() {
+export default function QuizGameSession() {
   const [gameState, setGameState] = useState<GameState>({
     phase: "loading",
     showResult: false,
@@ -515,60 +515,53 @@ export default function QuizGame() {
                 )}
 
                 <div className="grid gap-3">
-                  {question.options.map((option) => {
-                    const isSelected = gameState.selectedOption === option.id;
-                    const isCorrect =
-                      gameState.showResult &&
-                      option.id ===
-                        gameState.lastAnswerResult?.correct_option_id;
-                    const isIncorrect =
-                      gameState.showResult &&
-                      option.id === gameState.selectedOption &&
-                      !isCorrect;
-                    return (
-                      <Button
-                        key={option.id}
-                        variant={
-                          gameState.showResult
-                            ? isCorrect
-                              ? "default"
-                              : isIncorrect
-                              ? "destructive"
-                              : "outline"
-                            : isSelected
+                  {question.options.map((option) => (
+                    <Button
+                      key={option.id}
+                      variant={
+                        gameState.showResult
+                          ? option.id ===
+                            gameState.lastAnswerResult?.correct_option_id
                             ? "default"
+                            : option.id === gameState.selectedOption
+                            ? "destructive"
                             : "outline"
-                        }
-                        className={`h-auto p-4 text-left justify-start border-2 transition-all duration-150 ${
-                          isSelected && !gameState.showResult
-                            ? "border-blue-500 bg-blue-50 hover:bg-blue-100 text-black"
-                            : "border-transparent"
-                        } ${
-                          isCorrect
-                            ? "bg-green-500 hover:bg-green-600 border-green-500 text-white"
-                            : isIncorrect
-                            ? "bg-red-500 hover:bg-red-600 border-red-500 text-white"
+                          : gameState.selectedOption === option.id
+                          ? "default"
+                          : "outline"
+                      }
+                      className={`h-auto p-4 text-left justify-start ${
+                        gameState.showResult
+                          ? option.id ===
+                            gameState.lastAnswerResult?.correct_option_id
+                            ? "bg-green-500 hover:bg-green-600"
+                            : option.id === gameState.selectedOption
+                            ? "bg-red-500 hover:bg-red-600"
                             : ""
-                        }`}
-                        onClick={() => selectOption(option.id)}
-                        disabled={gameState.showResult || submitting}
-                      >
-                        <div className="flex items-center gap-3">
-                          {gameState.showResult && (
-                            <>
-                              {isCorrect && (
-                                <CheckCircle className="h-5 w-5 text-white" />
-                              )}
-                              {isIncorrect && (
+                          : ""
+                      }`}
+                      onClick={() => selectOption(option.id)}
+                      disabled={gameState.showResult || submitting}
+                    >
+                      <div className="flex items-center gap-3">
+                        {gameState.showResult && (
+                          <>
+                            {option.id ===
+                              gameState.lastAnswerResult?.correct_option_id && (
+                              <CheckCircle className="h-5 w-5 text-white" />
+                            )}
+                            {option.id === gameState.selectedOption &&
+                              option.id !==
+                                gameState.lastAnswerResult
+                                  ?.correct_option_id && (
                                 <XCircle className="h-5 w-5 text-white" />
                               )}
-                            </>
-                          )}
-                          <span className="text-sm">{option.title}</span>
-                        </div>
-                      </Button>
-                    );
-                  })}
+                          </>
+                        )}
+                        <span className="text-sm">{option.title}</span>
+                      </div>
+                    </Button>
+                  ))}
                 </div>
 
                 {!gameState.showResult && (

@@ -22,9 +22,11 @@ import PaymentFailed from "./pages/PaymentFailed";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ProductDetail from "./pages/ProductDetail";
+import QuizGame from "./pages/QuizGame";
 import RefundPolicy from "./pages/RefundPolicy";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
+import Scoreboard from "./pages/Scoreboard";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import {
   AdminCustomers,
@@ -58,6 +60,25 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/products" element={<ProductBrowser />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
+                
+                {/* Quiz Game Routes */}
+                <Route
+                  path="/quiz-game"
+                  element={
+                    <ProtectedRoute>
+                      <QuizGame />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/scoreboard"
+                  element={
+                    <ProtectedRoute>
+                      <Scoreboard />
+                    </ProtectedRoute>
+                  }
+                />
+                
                 <Route
                   path="/checkout"
                   element={

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Chemouflage API"
     
     # MongoDB Configuration
-    MONGODB_URI: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    MONGODB_URI: str = os.getenv("MONGODB_URL", "mongodb://admin:devpassword@mongodb:27017/chemouflage_dev?authSource=admin")
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", "chemouflagedb")
     
     # Redis Configuration

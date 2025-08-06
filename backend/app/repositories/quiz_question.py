@@ -54,7 +54,7 @@ class QuestionRepository:
         return question_id
 
     @staticmethod
-    @cached("quiz_question:{question_id}", ttl=300)
+    @cached("quiz_question:{question_id}:{include_options}", ttl=300)
     async def get_by_id(question_id: str, include_options: bool = True) -> Optional[Question]:
         """Get question by ID with or without options"""
         db = await get_database()
@@ -88,30 +88,40 @@ class QuestionRepository:
         question = await QuestionRepository.get_by_id(question_id)
         if not question:
             return None
-        
-        # Remove correct answer information for users
+
+        get = lambda k: question[k] if isinstance(question, dict) else getattr(question, k)
         user_question_data = {
-            "id": question.id,
-            "topic_id": question.topic_id,
-            "title": question.title,
-            "image_url": question.image_url,
-            "difficulty": question.difficulty,
-            "question_type": question.question_type,
-            "topic_name": question.topic_name
+            "id": get("id"),
+            "topic_id": get("topic_id"),
+            "title": get("title"),
+            "image_url": get("image_url"),
+            "difficulty": get("difficulty"),
+            "question_type": get("question_type"),
+            "topic_name": get("topic_name"),
         }
-        
-        # For multiple choice, remove is_correct field
-        if question.options:
+
+        # Always fetch options from DB if missing
+        options = get("options")
+        if not options and get("question_type") == QuestionType.MULTIPLE_CHOICE:
+            db = await get_database()
+            options_cursor = db.quiz_question_options.find({"question_id": question_id})
+            options = []
+            async for option_doc in options_cursor:
+                option_data = {**option_doc, "id": str(option_doc["_id"])}
+                options.append(option_data)
+
+        if options:
             user_options = []
-            for option in question.options:
+            for option in options:
+                get_opt = lambda k: option[k] if isinstance(option, dict) else getattr(option, k)
                 user_option = {
-                    "id": option.id,
-                    "title": option.title,
-                    "image_url": option.image_url
+                    "id": get_opt("id"),
+                    "title": get_opt("title"),
+                    "image_url": get_opt("image_url"),
                 }
                 user_options.append(user_option)
             user_question_data["options"] = user_options
-        
+
         return QuestionForUser(**user_question_data)
 
     @staticmethod
@@ -271,10 +281,11 @@ class QuestionRepository:
             return await QuestionRepository.get_all(topic_id=topic_id, active_only=True)
 
     @staticmethod
-    @cached("quiz_question:random:{topic_id}:{difficulty}:{limit}", ttl=60)  # Short cache for randomness
+    @cached("quiz_question:random:{topic_id}:{difficulty}:{question_type}:{limit}", ttl=60)  # Short cache for randomness
     async def get_random_questions(
         topic_id: Optional[str] = None,
         difficulty: Optional[DifficultyLevel] = None,
+        question_type: Optional[QuestionType] = None,
         limit: int = 10
     ) -> List[QuestionForUser]:
         """Get random questions for quiz"""
@@ -289,6 +300,8 @@ class QuestionRepository:
             pipeline[0]["$match"]["topic_id"] = topic_id
         if difficulty:
             pipeline[0]["$match"]["difficulty"] = difficulty
+        if question_type:
+            pipeline[0]["$match"]["question_type"] = question_type
         
         pipeline.extend([
             {"$sample": {"size": limit}},

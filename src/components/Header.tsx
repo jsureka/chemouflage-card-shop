@@ -49,6 +49,22 @@ const Header = () => {
               My Orders
             </Link>
           )}
+          {user && (
+            <>
+              <Link
+                to="/quiz-game"
+                className="text-foreground hover:text-teal-500 transition-colors"
+              >
+                Quiz Game
+              </Link>
+              <Link
+                to="/scoreboard"
+                className="text-foreground hover:text-teal-500 transition-colors"
+              >
+                Scoreboard
+              </Link>
+            </>
+          )}
           <Link
             to="/track-order"
             className="text-foreground hover:text-teal-500 transition-colors"
@@ -140,6 +156,24 @@ const Header = () => {
               >
                 My Orders
               </Link>
+            )}
+            {user && (
+              <>
+                <Link
+                  to="/quiz-game"
+                  className="text-foreground hover:text-teal-500 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Quiz Game
+                </Link>
+                <Link
+                  to="/scoreboard"
+                  className="text-foreground hover:text-teal-500 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Scoreboard
+                </Link>
+              </>
             )}
             <Link
               to="/track-order"

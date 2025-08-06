@@ -8,9 +8,11 @@ from app.api.v1.endpoints import (
     payments,
     premium_codes,
     products,
+    quiz_game,
     quiz_questions,
     quiz_stats,
     quiz_topics,
+    scoreboard,
     settings,
 )
 
@@ -28,3 +30,7 @@ api_router.include_router(settings.router, prefix="/settings", tags=["settings"]
 api_router.include_router(quiz_topics.router, prefix="/quiz/topics", tags=["quiz-topics"])
 api_router.include_router(quiz_questions.router, prefix="/quiz/questions", tags=["quiz-questions"])
 api_router.include_router(quiz_stats.router, prefix="/quiz/stats", tags=["quiz-statistics"])
+
+# Reaction Quiz Game routes  
+api_router.include_router(quiz_game.router, prefix="/quiz", tags=["quiz-game"])
+api_router.include_router(scoreboard.router, prefix="/scoreboard", tags=["scoreboard"])

@@ -23,14 +23,16 @@ REQUIRED_VARS=(
 MISSING_VARS=()
 
 # Check if .env file exists
-if [ ! -f .env ]; then
-    echo "❌ .env file not found!"
+ENV_FILE="backend/.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "❌ $ENV_FILE file not found!"
     exit 1
 fi
 
-# Source the .env file
+# Source the backend .env file
 set -a
-source .env
+source "$ENV_FILE"
 set +a
 
 # Check each required variable

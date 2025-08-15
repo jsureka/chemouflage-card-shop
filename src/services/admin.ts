@@ -1,7 +1,7 @@
 import { authService } from "./auth";
 import { ApiResponse, Order, PaginatedResponse, User } from "./types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL as string;
 
 class AdminService {
   private setAuthHeader(): HeadersInit {

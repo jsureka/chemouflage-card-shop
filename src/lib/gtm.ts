@@ -5,8 +5,6 @@ declare global {
   }
 }
 
-// GTM Container ID
-export const GTM_CONTAINER_ID = 'GTM-WBDPRPG4';
 
 // Initialize dataLayer if it doesn't exist
 export const initGTM = () => {

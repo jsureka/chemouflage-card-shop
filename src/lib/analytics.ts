@@ -23,7 +23,7 @@ import {
 } from './gtm';
 
 // Google Analytics Configuration
-export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-ZVCQR84VR5';
+export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string;
 
 // Initialize Google Analytics and GTM
 export const initGA = () => {

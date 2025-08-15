@@ -26,9 +26,12 @@ from pymongo.errors import ConnectionFailure, DuplicateKeyError, OperationFailur
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Load environment variables
-root_dir = Path(__file__).parent.parent
-env_path = root_dir / ".env"
+# Load environment variables from backend/.env
+backend_dir = Path(__file__).resolve().parent
+env_path = backend_dir / ".env"
+print(f"[db_initializer] Loading .env from: {env_path}")
+if not env_path.exists():
+    print(f"[db_initializer] WARNING: .env file not found at {env_path}", file=sys.stderr)
 load_dotenv(dotenv_path=env_path)
 
 # MongoDB connection configuration

@@ -1,8 +1,7 @@
 // Cloudinary configuration and utilities
 
 // Cloudinary cloud name from environment variables
-const CLOUDINARY_CLOUD_NAME =
-  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dacjxfyhr";
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
 
 // Base URL for Cloudinary image delivery
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload`;

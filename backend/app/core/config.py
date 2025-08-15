@@ -6,9 +6,9 @@ from typing import List
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-# Load .env file from the project root directory (parent of backend folder)
-root_dir = Path(__file__).resolve().parent.parent.parent.parent
-env_path = root_dir / ".env"
+# Load .env file from the backend directory
+backend_dir = Path(__file__).resolve().parent.parent.parent
+env_path = backend_dir / ".env"
 print(f"[config.py] Loading .env from: {env_path}")
 if not env_path.exists():
     print(f"[config.py] WARNING: .env file not found at {env_path}", file=sys.stderr)
@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     FIREBASE_API_KEY: str = os.getenv("FIREBASE_API_KEY", "")
 
     class Config:
-        env_file = str(root_dir / ".env")
+        env_file = str(env_path)
         case_sensitive = True
         extra = "ignore"  # Ignore extra environment variables
 

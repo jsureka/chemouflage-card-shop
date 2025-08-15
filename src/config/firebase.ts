@@ -8,23 +8,13 @@ import {
 
 // Firebase config - uses environment variables
 const firebaseConfig = {
-  apiKey:
-    import.meta.env.VITE_FIREBASE_API_KEY ||
-    "AIzaSyBtMX2XRFQ2W5GJ8qKZ9aP3dN7fR2mK1Qc",
-  authDomain:
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
-    "chemouflage-edu.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "chemouflage-edu",
-  storageBucket:
-    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
-    "chemouflage-edu.appspot.com",
-  messagingSenderId:
-    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ||
-    "117112518336326671589",
-  appId:
-    import.meta.env.VITE_FIREBASE_APP_ID ||
-    "1:117112518336326671589:web:abc123def456ghi789",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-ABCD123456",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string,
 };
 
 // Initialize Firebase

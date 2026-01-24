@@ -44,7 +44,7 @@ sudo chown ubuntu:ubuntu /opt/chemouflage-card-shop
 # Clone repository (replace with your actual repository URL)
 echo "📥 Cloning repository..."
 cd /opt/chemouflage-card-shop
-git clone https://github.com/YOUR_USERNAME/chemouflage-card-shop.git .
+git clone https://github.com/TasmiaZerin1128/chemouflage-card-shop.git .
 
 # Create logs directory
 sudo mkdir -p /var/log/chemouflage

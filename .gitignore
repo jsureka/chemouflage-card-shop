@@ -35,3 +35,4 @@ venv/
 
 *firebase-credentials.json
 package-lock.json
+*.pem

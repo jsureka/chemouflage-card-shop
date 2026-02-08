@@ -48,8 +48,8 @@ app.add_middleware(
 # Add rate limiting middleware
 app.add_middleware(
     RateLimitMiddleware,
-    default_requests_per_minute=60,
-    default_requests_per_hour=1000,
+    default_requests_per_minute=120,
+    default_requests_per_hour=3600,
     enable_rate_limiting=True
 )
 

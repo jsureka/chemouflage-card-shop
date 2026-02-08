@@ -28,10 +28,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Define different rate limits for different endpoints
         self.endpoint_limits = {
-            "/api/v1/auth/login": {"requests": 5, "window": 300},  # 5 requests per 5 minutes
-            "/api/v1/auth/register": {"requests": 3, "window": 300},  # 3 requests per 5 minutes
-            "/api/v1/auth/reset-password": {"requests": 3, "window": 600},  # 3 requests per 10 minutes
-            "/api/v1/products": {"requests": 100, "window": 60},  # 100 requests per minute
+            "/api/v1/auth/login": {"requests": 100, "window": 60},  # 100 requests per minute
+            "/api/v1/auth/register": {"requests": 100, "window": 60},  # 100 requests per minute
+            "/api/v1/auth/reset-password": {"requests": 50, "window": 60},  # 50 requests per minute
+            "/api/v1/products": {"requests": 300, "window": 60},  # 300 requests per minute
         }
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:

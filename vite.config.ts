@@ -18,19 +18,17 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    sourcemap: false, // Disable sourcemaps to save memory
+    chunkSizeWarningLimit: 1000, // Increase warning limit
     commonjsOptions: {
       include: [/node_modules/],
     },
     rollupOptions: {
-      external: [],
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
-          ui: [
-            "@radix-ui/react-toast",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-          ],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
       },
     },

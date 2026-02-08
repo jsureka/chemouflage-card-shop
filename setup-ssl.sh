@@ -38,7 +38,7 @@ sudo certbot certonly --webroot \
     -w /var/www/certbot \
     -d chemouflage.app \
     -d www.chemouflage.app \
-    --email jiteshsureka@gmail.com \
+    --email chemouflage.edu@gmail.com \
     --agree-tos \
     --non-interactive
 
@@ -47,7 +47,7 @@ echo "Obtaining certificate for api.chemouflage.app..."
 sudo certbot certonly --webroot \
     -w /var/www/certbot \
     -d api.chemouflage.app \
-    --email jiteshsureka@gmail.com \
+    --email chemouflage.ed@gmail.com \
     --agree-tos \
     --non-interactive
 

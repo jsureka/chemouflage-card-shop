@@ -183,30 +183,32 @@ class SessionService:
             (is_allowed, current_count, ttl_seconds)
         """
         key = f"{self.rate_limit_prefix}{identifier}:{action}"
-        
-        # Get current count
-        current_count = await cache_service.get(key)
-        if current_count is None:
-            current_count = 0
-        else:
-            current_count = int(current_count)
-        
-        # Increment counter
-        new_count = current_count + 1
-        await cache_service.set(key, new_count, ttl=window_seconds)
-        
+
+        # Use Redis atomic increment to update the counter. This ensures we don't
+        # overwrite the key's TTL on every request which previously caused the
+        # remaining window time to reset, effectively disabling the rate limit.
+        redis_manager = await cache_service._get_redis()
+        new_count = await redis_manager.increment(key, 1)
+
+        # If Redis isn't available, allow the request
+        if new_count is None:
+            return True, 0, window_seconds
+
+        # When the key is created (count is 1), set the expiration window
+        if new_count == 1:
+            await redis_manager.redis.expire(key, window_seconds)
+
         # Check if limit exceeded
         is_allowed = new_count <= limit
-        
-        # Get TTL
-        redis_manager = await cache_service._get_redis()
+
+        # Get remaining TTL for the key
         ttl = await redis_manager.get_ttl(key)
         if ttl is None or ttl < 0:
             ttl = window_seconds
-        
+
         if not is_allowed:
             logger.warning(f"Rate limit exceeded for {identifier}: {new_count}/{limit}")
-        
+
         return is_allowed, new_count, ttl
     
     async def cleanup_expired_sessions(self) -> int:
